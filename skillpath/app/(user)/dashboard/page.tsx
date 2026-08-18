@@ -1,4 +1,3 @@
-
 import { redirect } from 'next/navigation';
 
 import {supabase} from '@/helper/SupabaseClient';
