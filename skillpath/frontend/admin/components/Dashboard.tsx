@@ -2,8 +2,26 @@ import { StatCard } from "./statCard";
 import { AssessmentActivityCard } from "./activityCard";
 import { MostProlificUsersCard } from "./remarkableUsers";
 import { WeakestCategoriesCard } from "./weakCategories";
+import type {
+    AssessmentActivityItem,
+    DashboardStat,
+    TopUser,
+    WeakCategory,
+} from "@/frontend/admin/lib/mock-data";
 
-export default function Dashboard() {
+type DashboardProps = {
+    stats: DashboardStat[];
+    assessmentActivity: AssessmentActivityItem[];
+    topUsers: TopUser[];
+    weakestCategories: WeakCategory[];
+};
+
+export default function Dashboard({
+    stats,
+    assessmentActivity,
+    topUsers,
+    weakestCategories,
+}: DashboardProps) {
     return (
         <main className="flex-1 bg-background p-8 text-foreground">
             <div className="mx-auto max-w-7xl space-y-8">
@@ -12,22 +30,23 @@ export default function Dashboard() {
                     <p className="mt-1 text-sm text-muted-foreground">SkillPath Admin Overview</p>
                 </div>
 
-                {/* 1. Stat Cards */}
                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard title="Total Students" value={128} change="+12 this mo." />
-                    <StatCard title="Assessments" value={342} change="+24 this mo." />
-                    <StatCard title="Questions" value={156} change="+8 this mo." />
-                    <StatCard title="Categories" value={12} change="+2 this mo." />
+                    {stats.map((stat) => (
+                        <StatCard
+                            key={stat.title}
+                            title={stat.title}
+                            value={stat.value}
+                            change={stat.change}
+                        />
+                    ))}
                 </div>
 
-                {/* 2. Assessment Activity + Weakest Categories */}
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <AssessmentActivityCard />
-                    <WeakestCategoriesCard />
+                    <AssessmentActivityCard items={assessmentActivity} />
+                    <WeakestCategoriesCard categories={weakestCategories} />
                 </div>
 
-                {/* 3. Most Prolific Users Table */}
-                <MostProlificUsersCard />
+                <MostProlificUsersCard users={topUsers} />
             </div>
         </main>
     );

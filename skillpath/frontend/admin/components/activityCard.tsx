@@ -1,22 +1,16 @@
 import React from "react";
 import { BarChart2 } from "lucide-react";
+import type { AssessmentActivityItem } from "@/frontend/admin/lib/mock-data";
 
-const MOCK_ASSESSMENT_ACTIVITY = [
-    { day: "Mon", fullDay: "Monday", count: 18 },
-    { day: "Tue", fullDay: "Tuesday", count: 25 },
-    { day: "Wed", fullDay: "Wednesday", count: 14 },
-    { day: "Thu", fullDay: "Thursday", count: 31 },
-    { day: "Fri", fullDay: "Friday", count: 22 },
-    { day: "Sat", fullDay: "Saturday", count: 36 },
-    { day: "Sun", fullDay: "Sunday", count: 28 },
-];
+type AssessmentActivityCardProps = {
+    items: AssessmentActivityItem[];
+};
 
-export function AssessmentActivityCard() {
-    const maxCount = Math.max(...MOCK_ASSESSMENT_ACTIVITY.map((d) => d.count));
+export function AssessmentActivityCard({ items }: AssessmentActivityCardProps) {
+    const maxCount = Math.max(...items.map((d) => d.count), 1);
 
     return (
         <div className="rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm">
-            {/* Header */}
             <div className="flex items-center justify-between pb-6">
                 <div>
                     <h2 className="text-lg font-semibold tracking-tight text-card-foreground">
@@ -31,9 +25,8 @@ export function AssessmentActivityCard() {
                 </div>
             </div>
 
-            {/* Bar Chart Section */}
             <div className="flex h-52 items-end justify-between gap-3 sm:gap-6 pt-4">
-                {MOCK_ASSESSMENT_ACTIVITY.map((item) => {
+                {items.map((item) => {
                     const heightPercentage = Math.round((item.count / maxCount) * 100);
 
                     return (
@@ -41,21 +34,17 @@ export function AssessmentActivityCard() {
                             key={item.day}
                             className="group flex flex-1 flex-col items-center h-full justify-end"
                         >
-                            {/* Numeric Value above bar */}
                             <span className="mb-2 text-xs font-semibold text-muted-foreground transition-colors group-hover:text-primary">
                                 {item.count}
                             </span>
 
-                            {/* Track Container */}
                             <div className="relative flex w-full max-w-[42px] flex-1 items-end rounded-t-lg bg-muted/60 p-1">
-                                {/* Dynamic Bar mapped to OKLCH Primary color */}
                                 <div
                                     className="w-full rounded-t-md bg-primary transition-all duration-300 group-hover:opacity-85"
                                     style={{ height: `${heightPercentage}%` }}
                                 />
                             </div>
 
-                            {/* Day Abbreviation */}
                             <span className="mt-3 text-xs font-medium text-muted-foreground transition-colors group-hover:text-card-foreground">
                                 {item.day}
                             </span>

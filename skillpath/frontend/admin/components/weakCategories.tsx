@@ -1,14 +1,9 @@
 import { AlertTriangle } from "lucide-react";
+import type { WeakCategory } from "@/frontend/admin/lib/mock-data";
 
-// TODO: Replace mock data with category performance calculated/retrieved
-// from the backend based on aggregated assessment results.
-const WEAKEST_CATEGORIES = [
-    { id: "database", label: "Database", percentage: 68 },
-    { id: "backend", label: "Backend", percentage: 54 },
-    { id: "devops", label: "DevOps", percentage: 41 },
-    { id: "frontend", label: "Frontend", percentage: 32 },
-    { id: "testing", label: "Testing", percentage: 21 },
-];
+type WeakestCategoriesCardProps = {
+    categories: WeakCategory[];
+};
 
 type Severity = "high" | "medium" | "low";
 
@@ -30,10 +25,9 @@ const BADGE_COLOR: Record<Severity, string> = {
     low: "bg-chart-3/15 text-chart-3",
 };
 
-export function WeakestCategoriesCard() {
+export function WeakestCategoriesCard({ categories }: WeakestCategoriesCardProps) {
     return (
         <div className="rounded-xl border border-border bg-card p-6 text-card-foreground shadow-sm transition-all hover:border-border/80">
-            {/* Header */}
             <div className="flex items-center justify-between pb-5">
                 <div>
                     <h2 className="text-lg font-semibold tracking-tight text-card-foreground">
@@ -48,9 +42,8 @@ export function WeakestCategoriesCard() {
                 </div>
             </div>
 
-            {/* Category list, sorted weakest -> strongest */}
             <ul className="space-y-3">
-                {WEAKEST_CATEGORIES.map((category) => {
+                {categories.map((category) => {
                     const severity = getSeverity(category.percentage);
 
                     return (
