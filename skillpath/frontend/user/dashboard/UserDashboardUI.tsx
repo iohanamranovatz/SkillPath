@@ -9,7 +9,7 @@ import RecentResults from "@/frontend/user/components/recent-results";
 import {RecommendedResources} from "@/frontend/user/components/recommended-resources";
 
 
-export default function UserDashboardUI() {
+export  function UserDashboardUI() {
     return (
         <div className="flex min-h-screen bg-background">
             <Sidebar />
@@ -34,3 +34,4 @@ export default function UserDashboardUI() {
         </div>
     )
 }
+
