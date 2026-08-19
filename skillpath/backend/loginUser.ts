@@ -18,9 +18,9 @@ export async function loginUser(email : string, password: string)
     const { data : profile}= await supabase.from("users").select("role").eq("auth_key",userID).single();
 
     if( profile?.role=='admin')
-            redirect('/admin/dashboard');
+            redirect('/adminDashboard');
         else
-            redirect('/user/dashboard');
+            redirect('/userDashboard');
 }
 
 
