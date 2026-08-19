@@ -20,17 +20,17 @@ export async function signUpUser(name: string, email: string, password: string)
         return { success: false, message: error.message };
     }
 
-    if (data.user) {
-        const { error: profileError } = await supabase.from("users").insert({
-            auth_key: data.user.id,
-            email: email,
-            name: name,
-            role: "user",
-            estimated_level: "Beginner"
-        });
-
-        if (profileError)
-            console.error("Error creating user profile:", profileError.message);
+    // if (data.user) {
+    //     const { error: profileError } = await supabase.from("users").insert({
+    //         auth_key: data.user.id,
+    //         email: email,
+    //         name: name,
+    //         role: "user",
+    //         estimated_level: "Beginner"
+    //     });
+    //
+    //     if (profileError)
+    //         console.error("Error creating user profile:", profileError.message);
     }
 
     return {
