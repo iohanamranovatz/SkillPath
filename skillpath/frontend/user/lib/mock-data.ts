@@ -115,3 +115,17 @@ export const availableTests = [
     { id: "t2", title: "Sliding Window Mastery", difficulty: "Medium" as Difficulty, questions: 15 },
     { id: "t3", title: "Advanced Graph Theory", difficulty: "Hard" as Difficulty, questions: 18 },
 ]
+
+export type View = "Dashboard" | "Tests" | "Results" | "Resources" | "Profile"
+
+export const tests = [
+    { id: "ct1", title: "Dynamic Programming", category: "Algorithms", difficulty: "Medium" as Difficulty, questions: 10, time: "25 min", score: 82 },
+    { id: "ct2", title: "Data Structures", category: "Coding", difficulty: "Easy" as Difficulty, questions: 12, time: "30 min", score: 91 },
+    { id: "ct3", title: "Graph Theory", category: "Algorithms", difficulty: "Hard" as Difficulty, questions: 8, time: "20 min", score: null },
+]
+
+export const learningResources = [
+    { id: "lr1", title: "Mastering Dynamic Programming", type: "Course" as const, detail: "8 lessons · 2h 40m", tag: "Recommended", icon: "BrainCircuit" as const },
+    { id: "lr2", title: "The Coding Interview Guide", type: "E-book" as const, detail: "142 pages · Updated today", tag: "For you", icon: "Code2" as const },
+    { id: "lr3", title: "Graph Algorithms Explained", type: "Video series" as const, detail: "12 videos · 1h 15m", tag: "Continue", icon: "LineChart" as const },
+]

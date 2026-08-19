@@ -15,7 +15,7 @@ export function Logo({ label = "SkillPath", className = "" }: LogoProps) {
             </div>
 
             {/* Brand Name */}
-            <span className="text-xl font-bold tracking-tight text-white">
+            <span className="text-xl font-bold tracking-tight text-black">
         {label}
       </span>
         </div>

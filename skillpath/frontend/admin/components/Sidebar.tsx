@@ -31,7 +31,11 @@ export default function AdminSidebar() {
             <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
                 {!collapsed && (
                     <div>
+<<<<<<< HEAD
                         <Logo label="SkillPath" />
+=======
+                        <Logo label="SkillPath" className="text-black"/>
+>>>>>>> 30bc409 (fronted for the user done)
                         <p className="text-xs text-muted-foreground"></p>
                     </div>
                 )}
