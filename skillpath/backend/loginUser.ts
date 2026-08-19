@@ -13,14 +13,14 @@ export async function loginUser(email : string, password: string)
     if(error)
         return { succes:false, message: "Email sau parola incorecta!"};
 
-    const userID=data.user.user_metadata.sub;
+    const userID=data.user.id;
 
-    const { data : profile}= await supabase.from("users").select("role").eq("id",userID).single();
+    const { data : profile}= await supabase.from("users").select("role").eq("auth_key",userID).single();
 
     if( profile?.role=='admin')
             redirect('/admin/dashboard');
         else
-            redirect('/dashboard');
+            redirect('/user/dashboard');
 }
 
 
