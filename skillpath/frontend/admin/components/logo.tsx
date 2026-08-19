@@ -6,7 +6,7 @@ interface LogoProps {
     className?: string;
 }
 
-export function Logo({ label = "Codewell", className = "" }: LogoProps) {
+export function Logo({ label = "SkillPath", className = "" }: LogoProps) {
     return (
         <div className={`flex items-center gap-3 ${className}`}>
             {/* Icon Badge */}
