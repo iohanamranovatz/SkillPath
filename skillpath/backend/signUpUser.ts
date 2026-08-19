@@ -31,7 +31,7 @@ export async function signUpUser(name: string, email: string, password: string)
     //
     //     if (profileError)
     //         console.error("Error creating user profile:", profileError.message);
-    }
+    // }
 
     return {
         success: true,
