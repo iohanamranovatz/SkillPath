@@ -31,7 +31,7 @@ export default function AdminSidebar() {
             <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
                 {!collapsed && (
                     <div>
-                        <Logo label="Codewell" />
+                        <Logo label="SkillPath" />
                         <p className="text-xs text-muted-foreground"></p>
                     </div>
                 )}

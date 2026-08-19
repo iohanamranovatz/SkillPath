@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from 'react';
-import { loginUser } from '@/backend/loginUser'; 
+import { loginUser } from '@/backend/loginUser';
+import Link from "next/link";
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -11,13 +12,12 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setEroare('');
-    
-    
-  const rezultat = await loginUser(email, password);
 
-if (rezultat && rezultat.succes === false) {
-    setEroare(rezultat.message);
-}
+    const rezultat = await loginUser(email, password);
+
+    if (rezultat && rezultat.succes === false) {
+        setEroare(rezultat.message);
+    }
   };
 
   return (
@@ -33,7 +33,7 @@ if (rezultat && rezultat.succes === false) {
               <path strokeLinecap="round" strokeLinejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-wide">Codewell</h1>
+          <h1 className="text-2xl font-bold text-white tracking-wide">SkillPath</h1>
         </div>
 
         <div className="mb-8 text-center">
@@ -99,7 +99,7 @@ if (rezultat && rezultat.succes === false) {
             Forgot your password?
           </a>
           <p className="text-sm text-gray-400">
-            Don't have an account? <a href="#" className="text-[#6B72E1] hover:text-white font-medium transition-colors">Sign up</a>
+            Don't have an account? <a href="/signup" className="text-[#6B72E1] hover:text-white font-medium transition-colors">Sign up</a>
           </p>
         </div>
 

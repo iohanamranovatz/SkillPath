@@ -31,7 +31,7 @@ export function Sidebar() {
                 <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                     <Code2 className="size-5" />
                 </div>
-                <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">Codewell</span>
+                <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">SkillPath</span>
             </div>
 
             <nav className="flex flex-1 flex-col gap-1 p-4" aria-label="Main navigation">
