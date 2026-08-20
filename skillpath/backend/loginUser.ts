@@ -10,17 +10,30 @@ export async function loginUser(email : string, password: string)
         email : email,
         password: password 
     });
-    if(error)
-        return { succes:false, message: "Email sau parola incorecta!"};
 
-    const userID=data.user.user_metadata.sub;
+    if(error){
+        // verificare daca eroarea e legata de neconfirmarea email-ului
+        if (error.message.includes("Email not confirmed")) {
+            return {
+                succes:false,
+                message: "Va rugam sa va confirmati email-ul inainte de a va loga!"
+            };
+        }
 
-    const { data : profile}= await supabase.from("users").select("role").eq("id",userID).single();
+        return {
+            succes:false,
+            message: "Email sau parola incorecta!"
+        };
+    }
+
+    const userID=data.user.id;
+
+    const { data : profile}= await supabase.from("users").select("role").eq("auth_key",userID).single();
 
     if( profile?.role=='admin')
-            redirect('/admin/dashboard');
+            redirect('/adminDashboard');
         else
-            redirect('/dashboard');
+            redirect('/userDashboard');
 }
 
 
