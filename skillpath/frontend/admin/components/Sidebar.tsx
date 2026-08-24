@@ -1,32 +1,36 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
     HelpCircle,
     FolderTree,
     Users,
     Settings,
+    Menu,
 } from "lucide-react";
-import { Logo } from "@/frontend/admin/components/logo";
+import { Logo } from "./logo";
 
 const navItems = [
-    { label: "Dashboard", icon: LayoutDashboard },
-    { label: "Manage Questions", icon: HelpCircle },
-    { label: "Manage Categories", icon: FolderTree },
-    { label: "Manage Users", icon: Users },
+    { label: "Dashboard", href: "/adminDashboard", icon: LayoutDashboard },
+    { label: "Question Bank", href: "/questions", icon: HelpCircle },
+    { label: "Manage Categories", href: "/categories", icon: FolderTree },
+    { label: "Manage Users", href: "/manageUsers", icon: Users },
 ];
 
 export default function AdminSidebar() {
     const [collapsed, setCollapsed] = useState(false);
-    const [active, setActive] = useState("Dashboard");
+    const pathname = usePathname();
 
     return (
         <aside
-            className={`hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 lg:flex ${
-                collapsed ? "w-16" : "w-60"
+            className={`hidden shrink-0 flex-col border-r border-sidebar-border bg-sidebar transition-all duration-300 ease-in-out lg:flex ${
+                collapsed ? "w-[72px]" : "w-[260px]"
             }`}
         >
+<<<<<<< HEAD
             {/* Header */}
             <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
                 {!collapsed && (
@@ -36,50 +40,64 @@ export default function AdminSidebar() {
                     </div>
                 )}
 
+=======
+            {/* Header / Toggle Button Area */}
+            <div className="flex h-16 items-center gap-2 px-3 border-b border-sidebar-border">
+>>>>>>> refs/remotes/origin/main
                 <button
                     onClick={() => setCollapsed(!collapsed)}
-                    className="rounded-md p-2 text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                    className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground shrink-0"
                     aria-label="Toggle sidebar"
                 >
-                    ☰
+                    <Menu className="size-5" />
                 </button>
+
+                {!collapsed && (
+                    <div className="flex items-center overflow-hidden">
+                        <Logo />
+                    </div>
+                )}
             </div>
 
             {/* Navigation */}
-            <nav className="flex flex-1 flex-col gap-1 p-4" aria-label="Main navigation">
+            <nav className="flex flex-1 flex-col gap-1.5 p-3" aria-label="Main navigation">
                 {navItems.map((item) => {
-                    const isActive = active === item.label;
+                    const isActive = pathname.startsWith(item.href);
                     const Icon = item.icon;
 
                     return (
-                        <button
+                        <Link
                             key={item.label}
-                            type="button"
-                            onClick={() => setActive(item.label)}
+                            href={item.href}
                             aria-current={isActive ? "page" : undefined}
-                            className={`flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                            title={collapsed ? item.label : undefined}
+                            className={`flex h-11 items-center gap-3 rounded-full px-3.5 text-sm font-medium transition-colors ${
                                 isActive
                                     ? "bg-sidebar-accent text-sidebar-accent-foreground"
                                     : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-                            }`}
+                            } ${collapsed ? "justify-center px-0" : ""}`}
                         >
-                            <Icon className="size-[18px] shrink-0" />
-                            {!collapsed && <span>{item.label}</span>}
-                        </button>
+                            <Icon className="size-5 shrink-0" />
+                            {!collapsed && <span className="truncate">{item.label}</span>}
+                        </Link>
                     );
                 })}
             </nav>
 
             {/* Bottom Section */}
-            <div className="border-t border-sidebar-border p-4">
-                <button
-                    type="button"
-                    onClick={(e) => e.preventDefault()}
-                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+            <div className="border-t border-sidebar-border p-3">
+                <Link
+                    href="/admin/settings"
+                    title={collapsed ? "Settings" : undefined}
+                    className={`flex h-11 items-center gap-3 rounded-full px-3.5 text-sm font-medium transition-colors ${
+                        pathname.startsWith("/admin/settings")
+                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                            : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
+                    } ${collapsed ? "justify-center px-0" : ""}`}
                 >
-                    <Settings className="size-[18px] shrink-0" />
-                    {!collapsed && <span>Settings</span>}
-                </button>
+                    <Settings className="size-5 shrink-0" />
+                    {!collapsed && <span className="truncate">Settings</span>}
+                </Link>
             </div>
         </aside>
     );
