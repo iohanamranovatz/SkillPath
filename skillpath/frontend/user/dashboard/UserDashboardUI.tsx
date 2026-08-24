@@ -36,7 +36,21 @@ function DashboardView({ onStart }: { onStart: () => void }) {
     )
 }
 
-export function UserDashboardUI() {
+interface UserProfileData {
+    id: number;
+    email: string;
+    name: string;
+    role: string;
+    estimated_level: string;
+    current_objective: string;
+    current_interest: string;
+}
+
+interface UserDashboardUIProps {
+    initialData: UserProfileData;
+}
+
+export function UserDashboardUI({initialData}: UserDashboardUIProps) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -65,7 +79,7 @@ export function UserDashboardUI() {
                     {view === "Tests" && <TestsView onStart={startTest} />}
                     {view === "Results" && <ResultsView />}
                     {view === "Resources" && <ResourcesView />}
-                    {view === "Profile" && <ProfileView />}
+                    {view === "Profile" && <ProfileView initialData={initialData}/>}
                 </main>
             </div>
         </div>
