@@ -30,20 +30,8 @@ export default function AdminSidebar() {
                 collapsed ? "w-[72px]" : "w-[260px]"
             }`}
         >
-<<<<<<< HEAD
-            {/* Header */}
-            <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-                {!collapsed && (
-                    <div>
-                        <Logo label="SkillPath" />
-                        <p className="text-xs text-muted-foreground"></p>
-                    </div>
-                )}
-
-=======
             {/* Header / Toggle Button Area */}
             <div className="flex h-16 items-center gap-2 px-3 border-b border-sidebar-border">
->>>>>>> refs/remotes/origin/main
                 <button
                     onClick={() => setCollapsed(!collapsed)}
                     className="flex h-10 w-10 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground shrink-0"

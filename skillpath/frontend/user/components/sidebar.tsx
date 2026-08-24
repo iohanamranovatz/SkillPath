@@ -57,13 +57,10 @@ export function Sidebar({
                         <X className="size-5" />
                     </button>
                 </div>
-<<<<<<< HEAD
-=======
 
                 <div>
                     <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">SkillPath</span>
                 </div>
->>>>>>> refs/remotes/origin/main
 
                 <nav className="flex flex-1 flex-col gap-1 p-4" aria-label="Main navigation">
                     {nav.map(({ label, icon: Icon }) => {
