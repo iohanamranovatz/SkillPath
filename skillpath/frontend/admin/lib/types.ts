@@ -38,3 +38,21 @@ export type Assessment = {
     questions: Question[];
     score: string;
 }
+
+export interface AddUserModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onUserAdded: (newUser: User) => void;
+}
+
+export interface PageProps {
+    params: Promise<{ id: string }>;
+}
+
+export interface WeakCategory {
+    categoryId: number;
+    categoryName: string;
+    wrongAnswersCount: number;
+    totalAnswersCount: number;
+    errorPercentage: number;
+}

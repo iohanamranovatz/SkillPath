@@ -7,12 +7,42 @@ import UserTable from "@/frontend/admin/ManageUsers/table";
 import AdminSidebar from "@/frontend/admin/components/Sidebar";
 import AdminHeader from "@/frontend/admin/components/Header";
 import AdminFooter from "@/frontend/admin/components/Footer";
-import { useMemo, useState } from "react";
+import {useEffect, useMemo, useState} from "react";
+import supabase from "@/helper/SupabaseClient";
+import AddUserModal from "@/frontend/admin/ManageUsers/AddUserModal";
 
 export default function UserManagementPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [level, setLevel] = useState("all");
-    const [users, setUsers] = useState<User[]>(MOCK_USERS);
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+    const fetchUsers = async () => {
+        const { data, error } = await supabase
+            .from("users")
+            .select("*")
+            .ilike("role", "user");
+
+        if (error) {
+            console.log("Error getting users from database: ", error.message);
+        } else {
+            if (data){
+                setUsers(data);
+            }
+        }
+
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchUsers();
+        }, 0);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     const filteredUsers = useMemo(() => {
         return users.filter((u) => {
@@ -23,7 +53,17 @@ export default function UserManagementPage() {
         });
     }, [users, searchTerm, level]);
 
-    const handleDelete = (id: number) => {
+    const handleDelete = async (id: number) => {
+        const { error } = await supabase
+            .from("users")
+            .delete()
+            .eq("id", id);
+
+        if (error) {
+            console.log(`Error deleting user with ID: ${id}, `, error.message);
+            return;
+        }
+
         setUsers((prev) => prev.filter((u) => u.id !== id));
     };
 
@@ -44,7 +84,10 @@ export default function UserManagementPage() {
                                     <h1 className="text-3xl font-bold tracking-tight text-foreground">User Management</h1>
                                     <p className="text-muted-foreground mt-1 text-sm">Manage user accounts and track proficiency levels.</p>
                                 </div>
-                                <button className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30">
+                                <button
+                                    className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
+                                    onClick={() => setIsAddModalOpen(true)}
+                                >
                                     + Add User
                                 </button>
                             </div>
@@ -63,6 +106,13 @@ export default function UserManagementPage() {
                     </div>
                 </main>
                 <AdminFooter />
+
+                <AddUserModal
+                    isOpen={isAddModalOpen}
+                    onClose={() => setIsAddModalOpen(false)}
+                    onUserAdded={(newUser) => setUsers((prev) => [newUser, ...prev])}
+                >
+                </AddUserModal>
             </div>
         </div>
     );
