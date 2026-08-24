@@ -2,6 +2,8 @@
 
 import { User} from "@/frontend/admin/lib/types";
 import { Trash2 } from "lucide-react";
+import Link from "next/link";
+import {user} from "@/frontend/user/lib/mock-data";
 
 interface Props {
     users: User[];
@@ -40,6 +42,15 @@ export default function UserTable({ users, onDelete }: Props) {
                 ) : (
                     users.map((u) => (
                         <tr key={u.id} className="data-table-row">
+                            <td className="py-3 px-4 font-medium">
+                                <Link
+                                    href={`/manageUsers/${u.id}`}
+                                    className="hover:text-blue-400 hover:underline transition-colors"
+                                >
+                                    {u.name}
+                                </Link>
+                            </td>
+
                             <td className="data-table-td font-medium text-foreground">{u.name}</td>
                             <td className="data-table-td text-muted-foreground">{u.email}</td>
                             <td className="data-table-td">
