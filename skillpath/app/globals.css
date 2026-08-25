@@ -3,6 +3,21 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Tailwind v4 nu mai pune automat cursor:pointer pe butoane — îl readăugăm */
+@layer base {
+    button:not(:disabled),
+    [role="button"]:not([aria-disabled="true"]),
+    label[for],
+    summary,
+    a[href] {
+        cursor: pointer;
+    }
+
+    button:disabled {
+        cursor: not-allowed;
+    }
+}
+
 @theme inline {
 
     --color-sidebar-ring: var(--sidebar-ring);
