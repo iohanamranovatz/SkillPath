@@ -25,21 +25,32 @@ export default async function DashboardPage(){
         return { error: 'User extracting data from database.' };
     }
 
-    const currentInterestName = userData?.user_interests?.[0]?.tags?.[0]?.name || '';
+    const { data: objectives } = await supabase
+        .from("user_objectives")
+        .select("*")
+        .eq("user_id", userData.id);
 
-    const initialData = {
-        id: userData?.id || 0,
-        email: userData?.email || "",
-        name: userData?.name || "",
-        role: userData?.role || "User",
-        estimated_level: userData?.estimated_level || "Beginner",
-        current_objective: "",
-        current_interest: currentInterestName,
-    }
+    const { data: userInterests } = await supabase
+        .from("user_interests")
+        .select("tag_id")
+        .eq("user_id", userData.id);
+
+    const userInterestTagIds = userInterests?.map(
+        (item) => item.tag_id
+    ) || [];
+
+    const { data: allTags } = await supabase
+        .from("tags")
+        .select("id, name");
 
     return (
             <main>
-                <UserDashboardUI initialData={initialData}></UserDashboardUI>
+                <UserDashboardUI
+                    initialData={userData}
+                    objectives={objectives || []}
+                    userInterestTagIds={userInterestTagIds}
+                    allTags={allTags || []}
+                ></UserDashboardUI>
         </main>
     );
 }

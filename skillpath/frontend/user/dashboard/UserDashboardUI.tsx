@@ -15,6 +15,7 @@ import { ResultsView } from "@/frontend/user/components/results-view"
 import { ResourcesView } from "@/frontend/user/components/resources-view"
 import { ProfileView } from "@/frontend/user/components/profile-view"
 import type { View } from "@/frontend/user/lib/mock-data"
+import {UserDashboardUIProps} from "@/frontend/user/lib/types";
 
 function DashboardView({ onStart }: { onStart: () => void }) {
     return (
@@ -36,21 +37,12 @@ function DashboardView({ onStart }: { onStart: () => void }) {
     )
 }
 
-interface UserProfileData {
-    id: number;
-    email: string;
-    name: string;
-    role: string;
-    estimated_level: string;
-    current_objective: string;
-    current_interest: string;
-}
-
-interface UserDashboardUIProps {
-    initialData: UserProfileData;
-}
-
-export function UserDashboardUI({initialData}: UserDashboardUIProps) {
+export function UserDashboardUI({
+    initialData,
+    objectives = [],
+    userInterestTagIds = [],
+    allTags = []
+}: UserDashboardUIProps) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -79,7 +71,14 @@ export function UserDashboardUI({initialData}: UserDashboardUIProps) {
                     {view === "Tests" && <TestsView onStart={startTest} />}
                     {view === "Results" && <ResultsView />}
                     {view === "Resources" && <ResourcesView />}
-                    {view === "Profile" && <ProfileView initialData={initialData}/>}
+                    {view === "Profile" && (
+                        <ProfileView
+                            initialData={initialData}
+                            objectives={objectives}
+                            userInterestTagIds={userInterestTagIds}
+                            allTags={allTags}
+                        />
+                    )}
                 </main>
             </div>
         </div>
