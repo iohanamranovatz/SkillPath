@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
+
 
 @custom-variant dark (&:is(.dark *));
 
@@ -159,5 +159,82 @@
     }
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    /* ================= DATA TABLE STYLES ================= */
+
+    /* Table Container & Layout */
+    .data-table-container {
+        @apply w-full overflow-hidden rounded-xl border border-white/10 shadow-lg;
+    }
+
+    .data-table {
+        @apply w-full text-left text-sm text-gray-300 border-collapse;
+    }
+
+    /* Header Styling - slightly larger font, more breathable */
+    .data-table-header {
+        @apply border-b border-white/10 text-gray-400 font-medium tracking-wide bg-white/[0.02];
+    }
+
+    .data-table-th {
+        @apply px-6 py-4 font-semibold text-sm;
+    }
+
+    /* Row Styling - subtle hover effect */
+    .data-table-row {
+        @apply border-b border-white/5 hover:bg-white/[0.04] transition-colors duration-200;
+    }
+
+    .data-table-td {
+        @apply px-6 py-4 whitespace-nowrap align-middle;
+    }
+
+    /* ================= BADGES ================= */
+
+    /* Base Badge Wrapper */
+    .table-badge {
+        @apply inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border;
+    }
+
+    /* Category Badge - Dark tone of blue-gray (No bright colors) */
+    .badge-category {
+        @apply bg-slate-800/80 text-slate-300 border-slate-700/50 shadow-sm;
+    }
+
+    /* Status Badges */
+    .badge-status-active {
+        @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20;
+    }
+
+    .badge-status-draft {
+        @apply bg-gray-500/10 text-gray-400 border-gray-500/20;
+    }
+
+    /* Difficulty Badges */
+    .badge-diff-easy {
+        @apply bg-green-500/10 text-green-500 border-green-500/20 uppercase text-[10px] tracking-wider;
+    }
+
+    .badge-diff-medium {
+        @apply bg-yellow-500/10 text-yellow-500 border-yellow-500/20 uppercase text-[10px] tracking-wider;
+    }
+
+    .badge-diff-hard {
+        @apply bg-red-500/10 text-red-500 border-red-500/20 uppercase text-[10px] tracking-wider;
+    }
+
+    /* ================= INPUTS & ACTIONS ================= */
+
+    /* Search Input Glow Effect */
+    .search-input-modern {
+        @apply transition-all duration-300 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 bg-transparent;
+    }
+
+    /* Action Buttons (Eye / Edit icons) */
+    .action-btn {
+        @apply p-2 rounded-md text-gray-500 hover:text-gray-200 hover:bg-white/10 transition-colors duration-200 inline-flex items-center justify-center;
     }
 }
