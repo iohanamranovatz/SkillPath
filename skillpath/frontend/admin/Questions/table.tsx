@@ -1,24 +1,44 @@
 "use client";
 
-import { Question} from "@/frontend/admin/lib/types";
+import { useState } from "react";
+import { Question } from "@/frontend/admin/lib/types";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2, Loader2 } from "lucide-react";
+import { deleteQuestion } from "@/backend/admin/actions/questions";
 
 interface Props {
     questions: Question[];
-    onDelete?: (id: string) => void;
 }
 
-export default function QuestionTable({ questions, onDelete }: Props) {
+export default function QuestionTable({ questions }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const activeId = searchParams.get("id");
 
+    // Track which question is currently being deleted to show the spinner
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
     const openPanel = (id: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set("id", id);
         router.push(`${pathname}?${params.toString()}`);
+    };
+
+    const handleDelete = async (e: React.MouseEvent, id: string) => {
+        e.stopPropagation(); // Prevent the row click event from opening the panel
+
+        if (confirm("Are you sure you want to delete this question? This cannot be undone.")) {
+            setDeletingId(id);
+
+            const response = await deleteQuestion(id);
+
+            setDeletingId(null);
+
+            if (!response.success) {
+                alert(response.error || "Failed to delete question.");
+            }
+        }
     };
 
     const getDifficultyClass = (diff: string) => {
@@ -61,7 +81,7 @@ export default function QuestionTable({ questions, onDelete }: Props) {
                             <td className="data-table-td font-medium text-foreground">{q.title}</td>
                             <td className="data-table-td">
                                 <span className="table-badge badge-category">
-                                    {q.categoryId}
+                                    {q.category}
                                 </span>
                             </td>
                             <td className="data-table-td">
@@ -94,14 +114,16 @@ export default function QuestionTable({ questions, onDelete }: Props) {
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDelete?.(q.id);
-                                        }}
+                                        onClick={(e) => handleDelete(e, q.id)}
+                                        disabled={deletingId === q.id}
                                         aria-label={`Delete question ${q.id}`}
-                                        className="group inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive active:scale-90"
+                                        className="group inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive active:scale-90 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
                                     >
-                                        <Trash2 className="size-4 transition-transform group-hover:scale-110" />
+                                        {deletingId === q.id ? (
+                                            <Loader2 className="size-4 animate-spin text-destructive" />
+                                        ) : (
+                                            <Trash2 className="size-4 transition-transform group-hover:scale-110" />
+                                        )}
                                     </button>
                                 </div>
                             </td>

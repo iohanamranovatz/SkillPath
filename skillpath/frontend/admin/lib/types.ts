@@ -12,7 +12,7 @@ export interface Question {
     categoryId: string;
     difficulty: Difficulty;
     options: Option[];
-    correctAnswerId: string;
+    correctAnswersId: string;
     isActive: boolean;
 }
 
