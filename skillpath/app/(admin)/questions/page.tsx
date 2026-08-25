@@ -1,5 +1,5 @@
 // page.tsx
-import { getQuestions } from "@/backend/admin/handleQuestions/questions"
+import { getQuestions } from "@/backend/admin/actions/questions"
 import QuestionBankClient from "./client";
 
 export const dynamic = "force-dynamic"; // Tells Next.js not to cache this page statically
