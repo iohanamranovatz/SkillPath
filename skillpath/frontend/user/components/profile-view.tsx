@@ -83,6 +83,7 @@ export function ProfileView({
                         </p>
                     )}
 
+                    {/* Name */}
                     <div className="grid gap-5 sm:grid-cols-2">
                         <label className="space-y-2 text-sm text-muted-foreground">
                             Full name
@@ -92,13 +93,6 @@ export function ProfileView({
                                 defaultValue={initialData?.name || ""}
                             />
                         </label>
-
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                            <span>Role</span>
-                            <div className="block w-full rounded-lg border border-border/50 bg-card/50 px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed">
-                                {initialData?.role || "user"}
-                            </div>
-                        </div>
 
                         <div className="space-y-2 text-sm text-muted-foreground">
                             <span>Experience level</span>
