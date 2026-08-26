@@ -27,6 +27,7 @@ export type User = {
     id: number;
     name: string;
     email: string;
+    role: string;
     estimated_level: string;
     assessments?: Assessment[];
     readonly profile?: string;
