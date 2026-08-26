@@ -8,10 +8,15 @@ import AdminHeader from "@/frontend/admin/components/Header";
 import AdminFooter from "@/frontend/admin/components/Footer";
 import { useMemo, useState } from "react";
 import {Question} from "@/frontend/admin/lib/types";
+import Pagination from "@/frontend/components/pagination";
+
+// paginare -> numarul de intrebari per pagina
+const ITEMS_PER_PAGE = 6;
 
 export default function QuestionBankClient({ initialQuestions }: { initialQuestions: Question[] }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [difficulty, setDifficulty] = useState("all");
+    const [currentPage, setCurrentPage] = useState(1);
 
     const filteredQuestions = useMemo(() => {
         return initialQuestions.filter((q) => {
@@ -23,6 +28,14 @@ export default function QuestionBankClient({ initialQuestions }: { initialQuesti
             return matchesSearch && matchesDifficulty;
         });
     }, [searchTerm, difficulty, initialQuestions]);
+
+    const totalPages = Math.ceil(filteredQuestions.length / ITEMS_PER_PAGE) || 1;
+
+    const paginatedQuestions = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredQuestions.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredQuestions, currentPage]);
+
 
     return (
         <div className="flex min-h-screen bg-background text-foreground">
@@ -36,11 +49,27 @@ export default function QuestionBankClient({ initialQuestions }: { initialQuesti
                             <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card p-4 shadow-xl sm:p-6 backdrop-blur-xl">
                                 <QuestionToolbar
                                     searchTerm={searchTerm}
-                                    onSearchChange={setSearchTerm}
+                                    onSearchChange={(val) => {
+                                        setSearchTerm(val);
+                                        setCurrentPage(1);
+                                    }}
                                     difficulty={difficulty}
-                                    onDifficultyChange={setDifficulty}
+                                    onDifficultyChange={(val) => {
+                                        setDifficulty(val);
+                                        setCurrentPage(1);
+                                    }}
                                 />
-                                <QuestionTable questions={filteredQuestions} />
+                                <QuestionTable questions={paginatedQuestions} />
+
+                                {/* Paginare */}
+                                <Pagination
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    totalItems={filteredQuestions.length}
+                                    itemsPerPage={ITEMS_PER_PAGE}
+                                    onPageChange={(newPage) => setCurrentPage(newPage)}
+                                />
+
                             </div>
                         </div>
                         {/* Slide-in Detail Panel */}

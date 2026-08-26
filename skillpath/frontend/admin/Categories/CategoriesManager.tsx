@@ -10,6 +10,7 @@ import {
     deleteCategory,
 } from "@/backend/categories";
 import { SearchBar } from "@/frontend/admin/Questions/search-bar";
+import Pagination from "@/frontend/components/pagination";
 
 type CategoryRow = {
     id: number;
@@ -17,6 +18,9 @@ type CategoryRow = {
     description: string | null;
     exerciseCount: number;
 };
+
+// paginare -> numarul de categorii per pagina
+const ITEMS_PER_PAGE = 6;
 
 export function CategoriesManager() {
     const router = useRouter();
@@ -36,6 +40,9 @@ export function CategoriesManager() {
     const [toDelete, setToDelete] = useState<CategoryRow | null>(null);
     const [deleting, setDeleting] = useState(false);
 
+    // paginare
+    const [currentPage, setCurrentPage] = useState(1);
+
     async function load() {
         setLoading(true);
         const res = await getCategories();
@@ -48,6 +55,14 @@ export function CategoriesManager() {
         () => categories.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase())),
         [categories, searchTerm]
     );
+
+    const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+
+    const paginatedCategories = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filtered.slice(start, start + ITEMS_PER_PAGE);
+    }, [filtered, currentPage]);
+
 
     function openCreate() {
         setEditing(null);
@@ -125,57 +140,68 @@ export function CategoriesManager() {
             {loading ? (
                 <p className="text-sm text-muted-foreground">Loading…</p>
             ) : filtered.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filtered.map((cat) => {
-                        const initials = cat.name.slice(0, 4);
-                        return (
-                            <div
-                                key={cat.id}
-                                onClick={() => router.push(`/categories/${cat.id}`)}
-                                role="button"
-                                tabIndex={0}
-                                className="relative bg-card rounded-2xl border border-white/10 p-6 shadow-lg transition-all duration-300 ease-out flex flex-col justify-between h-full hover:-translate-y-1 hover:border-blue-500/40 hover:shadow-[0_0_25px_-5px_rgba(59,130,246,0.3)] group"
-                            >
-                                {/* Actions (hover) */}
-                                <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); openEdit(cat); }}
-                                        title="Edit"
-                                        className="p-2 rounded-md text-muted-foreground hover:text-blue-400 hover:bg-white/10 transition-colors"
-                                    >
-                                        <Pencil className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setToDelete(cat); }}
-                                        title="Delete"
-                                        className="p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-white/10 transition-colors"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
-                                </div>
-
-                                <div className="space-y-4">
-                                    <div className="w-12 h-12 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-sm shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                                        {initials}
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {paginatedCategories.map((cat) => {
+                            const initials = cat.name.slice(0, 4);
+                            return (
+                                <div
+                                    key={cat.id}
+                                    onClick={() => router.push(`/categories/${cat.id}`)}
+                                    role="button"
+                                    tabIndex={0}
+                                    className="relative bg-card rounded-2xl border border-white/10 p-6 shadow-lg transition-all duration-300 ease-out flex flex-col justify-between h-full hover:-translate-y-1 hover:border-blue-500/40 hover:shadow-[0_0_25px_-5px_rgba(59,130,246,0.3)] group"
+                                >
+                                    {/* Actions (hover) */}
+                                    <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); openEdit(cat); }}
+                                            title="Edit"
+                                            className="p-2 rounded-md text-muted-foreground hover:text-blue-400 hover:bg-white/10 transition-colors"
+                                        >
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setToDelete(cat); }}
+                                            title="Delete"
+                                            className="p-2 rounded-md text-muted-foreground hover:text-red-400 hover:bg-white/10 transition-colors"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
                                     </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold mb-1 group-hover:text-blue-400 transition-colors">
-                                            {cat.name}
-                                        </h3>
-                                        {cat.description && (
-                                            <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
-                                                {cat.description}
-                                            </p>
-                                        )}
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Dumbbell className="w-4 h-4 text-muted-foreground/70" />
-                                            <span>{cat.exerciseCount} exercises</span>
+
+                                    <div className="space-y-4">
+                                        <div className="w-12 h-12 rounded-xl border border-blue-500/30 bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold text-sm shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                                            {initials}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold mb-1 group-hover:text-blue-400 transition-colors">
+                                                {cat.name}
+                                            </h3>
+                                            {cat.description && (
+                                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                                                    {cat.description}
+                                                </p>
+                                            )}
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Dumbbell className="w-4 h-4 text-muted-foreground/70" />
+                                                <span>{cat.exerciseCount} exercises</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
+
+                    {/* 2. Paginarea este in afara grid-ului, pe toata latimea */}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={filtered.length}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={setCurrentPage}
+                    />
                 </div>
             ) : (
                 <div className="text-center py-16 bg-card rounded-2xl border border-white/10 shadow-sm">
