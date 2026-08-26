@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { signUpUser } from '@/backend/signUpUser';
+import { signUpUser } from '@/backend/auth/signUpUser';
 
 export function SignUpForm() {
     const [name, setName] = useState('');

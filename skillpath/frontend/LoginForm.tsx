@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { loginUser } from '@/backend/loginUser';
+import { loginUser } from '@/backend/auth/loginUser';
 import Link from "next/link";
 
 export function LoginForm() {
