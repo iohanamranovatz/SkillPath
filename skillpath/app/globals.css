@@ -1,9 +1,8 @@
 @import 'tailwindcss';
 
-
 @custom-variant dark (&:is(.dark *));
 
-/* Tailwind v4 nu mai pune automat cursor:pointer pe butoane — îl readăugăm */
+/* Tailwind v4 - Cursor pointer pe butoane */
 @layer base {
     button:not(:disabled),
     [role="button"]:not([aria-disabled="true"]),
@@ -19,7 +18,6 @@
 }
 
 @theme inline {
-
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -60,112 +58,41 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* SETĂRI GLOBALE (Impunem Dark Theme ca fiind tema implicită) */
 :root {
-    color-scheme: light;
-    --background: oklch(0.985 0.002 264);
-    --foreground: oklch(0.21 0.02 264);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.21 0.02 264);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.21 0.02 264);
-    --primary: oklch(0.52 0.17 264);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.96 0.005 264);
-    --secondary-foreground: oklch(0.32 0.02 264);
-    --muted: oklch(0.96 0.005 264);
-    --muted-foreground: oklch(0.55 0.015 264);
-    --accent: oklch(0.95 0.02 264);
-    --accent-foreground: oklch(0.42 0.14 264);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.91 0.006 264);
-    --input: oklch(0.91 0.006 264);
-    --ring: oklch(0.52 0.17 264);
-    --chart-1: oklch(0.52 0.17 264);
-    --chart-2: oklch(0.64 0.14 210);
-    --chart-3: oklch(0.7 0.13 165);
-    --chart-4: oklch(0.75 0.14 85);
-    --chart-5: oklch(0.65 0.19 25);
-    --radius: 0.7rem;
-    --sidebar: oklch(1 0 0);
-    --sidebar-foreground: oklch(0.21 0.02 264);
-    --sidebar-primary: oklch(0.52 0.17 264);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.95 0.02 264);
-    --sidebar-accent-foreground: oklch(0.42 0.14 264);
-    --sidebar-border: oklch(0.91 0.006 264);
-    --sidebar-ring: oklch(0.52 0.17 264);
-}
-
-.dark {
     color-scheme: dark;
-    --background: oklch(0.19 0.015 264);
-    --foreground: oklch(0.96 0.005 264);
-    --card: oklch(0.23 0.018 264);
+    --background: oklch(0.18 0.02 260);        /* Fundal închis spre albastru/slate */
+    --foreground: oklch(0.96 0.005 264);        /* Text alb/deschis */
+    --card: oklch(0.22 0.02 260);              /* Carduri ușor mai deschise decât fundalul */
     --card-foreground: oklch(0.96 0.005 264);
-    --popover: oklch(0.23 0.018 264);
+    --popover: oklch(0.22 0.02 260);
     --popover-foreground: oklch(0.96 0.005 264);
-    --primary: oklch(0.66 0.16 264);
-    --primary-foreground: oklch(0.16 0.02 264);
-    --secondary: oklch(0.28 0.02 264);
+    --primary: oklch(0.60 0.18 255);            /* Albastru intens (pentru butoane/butoane active) */
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.26 0.02 260);
     --secondary-foreground: oklch(0.96 0.005 264);
-    --muted: oklch(0.28 0.02 264);
+    --muted: oklch(0.26 0.02 260);
     --muted-foreground: oklch(0.7 0.02 264);
-    --accent: oklch(0.32 0.05 264);
+    --accent: oklch(0.30 0.04 260);
     --accent-foreground: oklch(0.9 0.03 264);
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.66 0.16 264);
-    --chart-1: oklch(0.66 0.16 264);
+    --ring: oklch(0.60 0.18 255);
+    --chart-1: oklch(0.60 0.18 255);
     --chart-2: oklch(0.68 0.13 210);
     --chart-3: oklch(0.72 0.13 165);
     --chart-4: oklch(0.78 0.14 85);
     --chart-5: oklch(0.68 0.18 25);
-    --sidebar: oklch(0.23 0.018 264);
+    --radius: 0.7rem;
+    --sidebar: oklch(0.20 0.02 260);            /* Sidebar închis separat */
     --sidebar-foreground: oklch(0.96 0.005 264);
-    --sidebar-primary: oklch(0.66 0.16 264);
-    --sidebar-primary-foreground: oklch(0.16 0.02 264);
-    --sidebar-accent: oklch(0.32 0.05 264);
+    --sidebar-primary: oklch(0.60 0.18 255);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.30 0.04 260);
     --sidebar-accent-foreground: oklch(0.9 0.03 264);
     --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.66 0.16 264);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root:not(.light) {
-        color-scheme: dark;
-        --background: oklch(0.19 0.015 264);
-        --foreground: oklch(0.96 0.005 264);
-        --card: oklch(0.23 0.018 264);
-        --card-foreground: oklch(0.96 0.005 264);
-        --popover: oklch(0.23 0.018 264);
-        --popover-foreground: oklch(0.96 0.005 264);
-        --primary: oklch(0.66 0.16 264);
-        --primary-foreground: oklch(0.16 0.02 264);
-        --secondary: oklch(0.28 0.02 264);
-        --secondary-foreground: oklch(0.96 0.005 264);
-        --muted: oklch(0.28 0.02 264);
-        --muted-foreground: oklch(0.7 0.02 264);
-        --accent: oklch(0.32 0.05 264);
-        --accent-foreground: oklch(0.9 0.03 264);
-        --destructive: oklch(0.704 0.191 22.216);
-        --border: oklch(1 0 0 / 10%);
-        --input: oklch(1 0 0 / 15%);
-        --ring: oklch(0.66 0.16 264);
-        --chart-1: oklch(0.66 0.16 264);
-        --chart-2: oklch(0.68 0.13 210);
-        --chart-3: oklch(0.72 0.13 165);
-        --chart-4: oklch(0.78 0.14 85);
-        --chart-5: oklch(0.68 0.18 25);
-        --sidebar: oklch(0.23 0.018 264);
-        --sidebar-foreground: oklch(0.96 0.005 264);
-        --sidebar-primary: oklch(0.66 0.16 264);
-        --sidebar-primary-foreground: oklch(0.16 0.02 264);
-        --sidebar-accent: oklch(0.32 0.05 264);
-        --sidebar-accent-foreground: oklch(0.9 0.03 264);
-        --sidebar-border: oklch(1 0 0 / 10%);
-        --sidebar-ring: oklch(0.66 0.16 264);
-    }
+    --sidebar-ring: oklch(0.60 0.18 255);
 }
 
 @layer base {
@@ -180,46 +107,40 @@
 @layer components {
     /* ================= DATA TABLE STYLES ================= */
 
-    /* Table Container & Layout */
     .data-table-container {
-        @apply w-full overflow-hidden rounded-xl border border-white/10 shadow-lg;
+        @apply w-full overflow-hidden rounded-xl border border-white/10 shadow-lg bg-card;
     }
 
     .data-table {
-        @apply w-full text-left text-sm text-gray-300 border-collapse;
+        @apply w-full text-left text-sm text-muted-foreground border-collapse;
     }
 
-    /* Header Styling - slightly larger font, more breathable */
     .data-table-header {
-        @apply border-b border-white/10 text-gray-400 font-medium tracking-wide bg-white/[0.02];
+        @apply border-b border-white/10 text-muted-foreground font-medium tracking-wide bg-white/[0.02];
     }
 
     .data-table-th {
-        @apply px-6 py-4 font-semibold text-sm;
+        @apply px-6 py-4 font-semibold text-sm text-foreground;
     }
 
-    /* Row Styling - subtle hover effect */
     .data-table-row {
         @apply border-b border-white/5 hover:bg-white/[0.04] transition-colors duration-200;
     }
 
     .data-table-td {
-        @apply px-6 py-4 whitespace-nowrap align-middle;
+        @apply px-6 py-4 whitespace-nowrap align-middle text-foreground;
     }
 
     /* ================= BADGES ================= */
 
-    /* Base Badge Wrapper */
     .table-badge {
         @apply inline-flex items-center justify-center px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide border;
     }
 
-    /* Category Badge - Dark tone of blue-gray (No bright colors) */
     .badge-category {
         @apply bg-slate-800/80 text-slate-300 border-slate-700/50 shadow-sm;
     }
 
-    /* Status Badges */
     .badge-status-active {
         @apply bg-emerald-500/10 text-emerald-400 border-emerald-500/20;
     }
@@ -228,7 +149,6 @@
         @apply bg-gray-500/10 text-gray-400 border-gray-500/20;
     }
 
-    /* Difficulty Badges */
     .badge-diff-easy {
         @apply bg-green-500/10 text-green-500 border-green-500/20 uppercase text-[10px] tracking-wider;
     }
@@ -243,13 +163,11 @@
 
     /* ================= INPUTS & ACTIONS ================= */
 
-    /* Search Input Glow Effect */
     .search-input-modern {
-        @apply transition-all duration-300 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 bg-transparent;
+        @apply transition-all duration-300 focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500/50 bg-card text-foreground border-white/10;
     }
 
-    /* Action Buttons (Eye / Edit icons) */
     .action-btn {
-        @apply p-2 rounded-md text-gray-500 hover:text-gray-200 hover:bg-white/10 transition-colors duration-200 inline-flex items-center justify-center;
+        @apply p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors duration-200 inline-flex items-center justify-center;
     }
 }
