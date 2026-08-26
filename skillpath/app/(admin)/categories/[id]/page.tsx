@@ -1,8 +1,7 @@
 import {
     getCategoryById,
     getCategoryTags,
-    getResources,
-    getQuestionsByCategory,
+    getQuestionsByCategory, getResourcesFromCategory,
 } from "@/backend/categories";
 import { AddResourceForm } from "@/frontend/admin/Categories/AddResourceForm";
 import { TagsManager } from "@/frontend/admin/Categories/TagsManager";
@@ -20,7 +19,7 @@ export default async function CategoryDetailPage({
     const [cat, tags, resources, questions] = await Promise.all([
         getCategoryById(id),
         getCategoryTags(id),
-        getResources(id),
+        getResourcesFromCategory(id),
         getQuestionsByCategory(id),
     ]);
 

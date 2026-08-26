@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "../helper/SupabaseClient";
+import {Resource} from "@/frontend/user/lib/types";
 
 // --- Toate categoriile + numărul de întrebări (pentru lista principală) ---
 export async function getCategories() {
@@ -45,7 +46,7 @@ export async function getCategoryTags(categoryId: number | string) {
 }
 
 // --- Resursele unei categorii (prin taguri: learning_resources -> tags -> category) ---
-export async function getResources(categoryId: number | string) {
+export async function getResourcesFromCategory(categoryId: number | string) {
     const { data, error } = await supabase
         .from("learning_resources")
         // tags!inner => face join și permite filtrarea după coloana din tags
@@ -200,4 +201,35 @@ export async function getQuestionsByCategory(categoryId: number | string) {
 
     if (error) return { success: false, message: error.message, data: [] };
     return { success: true, data: data ?? [] };
+}
+
+export async function getAllResources(): Promise<{ success: boolean; message?: string; data: Resource[] }> {
+    const { data, error } = await supabase
+        .from("learning_resources")
+        .select("id, title, url, type, tag_id, tags(name)")
+        .order("id", { ascending: false });
+
+    if (error) return { success: false, message: error.message, data: [] };
+
+    const resources: Resource[] = (data ?? []).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? "",
+        url: r.url ?? "",
+        type: r.type ?? "Resource",
+        tag: r.tags?.name ?? "General",
+    }));
+
+    return { success: true, data: resources };
+}
+
+export async function fetchAllResourcesWrapper(): Promise<Resource[]> {
+    const response = await getAllResources();
+
+    if (!response.success) {
+        console.error("Failed to fetch all resources:", response.message);
+        return [];
+    }
+
+    // trebuie returnat doar array-ul de resurse, fără success/message
+    return response.data;
 }
