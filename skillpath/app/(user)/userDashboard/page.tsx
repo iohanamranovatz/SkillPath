@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import {supabase} from '@/helper/SupabaseClient';
 
 import { UserDashboardUI } from '@/frontend/user/dashboard/UserDashboardUI';
+import {fetchAllResourcesWrapper} from "@/backend/admin/actions/questions";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -43,6 +44,8 @@ export default async function DashboardPage(){
         .from("tags")
         .select("id, name");
 
+    const initialResources = await fetchAllResourcesWrapper();
+
     return (
             <main>
                 <UserDashboardUI
@@ -50,6 +53,7 @@ export default async function DashboardPage(){
                     objectives={objectives || []}
                     userInterestTagIds={userInterestTagIds}
                     allTags={allTags || []}
+                    initialResources={initialResources}
                 ></UserDashboardUI>
         </main>
     );
