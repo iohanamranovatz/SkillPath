@@ -24,9 +24,19 @@ export interface ProfileViewProps {
     allTags: Tag[]; // Toate tag-urile disponibile din tabela tags
 }
 
+export interface Resource {
+
+    id: number;
+    tag: string;
+    title: string;
+    url: string;
+    type: string;
+}
+
 export interface UserDashboardUIProps {
     initialData: UserProfileData;
     objectives: Objective[];
     userInterestTagIds: number[];
     allTags: Tag[];
+    initialResources: Resource[];
 }
