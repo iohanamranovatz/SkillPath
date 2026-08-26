@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { Question, Option } from "@/frontend/admin/lib/types";
 import supabase from "@/helper/SupabaseClient";
+import {Resource} from "@/frontend/user/lib/types";
 
 export type ActionResponse<T = any> = {
     success: boolean;
@@ -149,20 +150,33 @@ export async function deleteQuestion(questionId: string): Promise<ActionResponse
     }
 }
 
-export async function getAllCategories(): Promise<string[]> {
-    try {
-        const { data, error } = await supabase
-            .from("categories")
-            .select("name");
+export async function getAllResources(): Promise<{ success: boolean; message?: string; data: Resource[] }> {
+    const { data, error } = await supabase
+        .from("learning_resources")
+        .select("id, title, url, type, tag_id, tags(name)")
+        .order("id", { ascending: false });
 
-        if (error) {
-            console.error("Error fetching categories:", error.message);
-            return [];
-        }
+    if (error) return { success: false, message: error.message, data: [] };
 
-        return data.map((row: any) => row.name);
-    } catch (error: any) {
-        console.error("Unexpected error fetching categories:", error.message);
+    const resources: Resource[] = (data ?? []).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? "",
+        url: r.url ?? "",
+        type: r.type ?? "Resource",
+        tag: r.tags?.name ?? "General",
+    }));
+
+    return { success: true, data: resources };
+}
+
+export async function fetchAllResourcesWrapper(): Promise<Resource[]> {
+    const response = await getAllResources();
+
+    if (!response.success) {
+        console.error("Failed to fetch all resources:", response.message);
         return [];
     }
+
+    // trebuie returnat doar array-ul de resurse, fără success/message
+    return response.data;
 }
