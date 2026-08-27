@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { supabase } from "../helper/SupabaseClient";
+import { supabase } from "../../helper/SupabaseClient";
 
 export async function signUpUser(name: string, email: string, password: string)
 {

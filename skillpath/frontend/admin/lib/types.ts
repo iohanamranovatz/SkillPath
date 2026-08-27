@@ -12,7 +12,7 @@ export interface Question {
     categoryId: string;
     difficulty: Difficulty;
     options: Option[];
-    correctAnswerId: string;
+    correctAnswersId: string;
     isActive: boolean;
 }
 
@@ -27,6 +27,7 @@ export type User = {
     id: number;
     name: string;
     email: string;
+    role: string;
     estimated_level: string;
     assessments?: Assessment[];
     readonly profile?: string;
@@ -37,4 +38,22 @@ export type Assessment = {
     category: Category;
     questions: Question[];
     score: string;
+}
+
+export interface AddUserModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onUserAdded: (newUser: User) => void;
+}
+
+export interface PageProps {
+    params: Promise<{ id: string }>;
+}
+
+export interface WeakCategory {
+    categoryId: number;
+    categoryName: string;
+    wrongAnswersCount: number;
+    totalAnswersCount: number;
+    errorPercentage: number;
 }
