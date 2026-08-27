@@ -51,7 +51,7 @@ export function ScoreChart() {
                                     color: "var(--popover-foreground)",
                                     fontSize: 12,
                                 }}
-                                formatter={(value: number) => [`${value}%`, "Avg score"]}
+                                formatter={(value: any) => [`${value}%`, "Avg score"]}
                             />
                             <Area
                                 type="monotone"

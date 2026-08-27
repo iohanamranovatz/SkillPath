@@ -19,7 +19,7 @@ const NEW_QUESTION_TEMPLATE: Question = {
         { id: "opt_3", text: "" },
         { id: "opt_4", text: "" },
     ],
-    correctAnswersId: [],
+    correctAnswersId: "",
     isActive: false,
 };
 
