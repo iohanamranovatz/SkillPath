@@ -1,5 +1,5 @@
 export type Difficulty = "Easy" | "Medium" | "Hard"
-export type ResourceType = "Article" | "Video" | "Exercise" | "Course"
+export type ResourceType = "Article" | "Video" | "Exercise" | " Course"
 
 export const user = {
     name: "Alex Rivera",

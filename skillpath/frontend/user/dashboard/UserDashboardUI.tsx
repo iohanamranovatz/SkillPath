@@ -41,7 +41,8 @@ export function UserDashboardUI({
     initialData,
     objectives = [],
     userInterestTagIds = [],
-    allTags = []
+    allTags = [],
+    initialResources=[]
 }: UserDashboardUIProps) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
@@ -70,7 +71,7 @@ export function UserDashboardUI({
                     {view === "Dashboard" && <DashboardView onStart={startTest} />}
                     {view === "Tests" && <TestsView onStart={startTest} />}
                     {view === "Results" && <ResultsView />}
-                    {view === "Resources" && <ResourcesView />}
+                    {view === "Resources" && <ResourcesView resources={initialResources} />}
                     {view === "Profile" && (
                         <ProfileView
                             initialData={initialData}

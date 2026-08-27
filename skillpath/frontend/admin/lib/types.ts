@@ -9,7 +9,7 @@ export interface Question {
     id: string;
     title: string;
     text: string;
-    categoryId: string;
+    category: string;
     difficulty: Difficulty;
     options: Option[];
     correctAnswersId: string;

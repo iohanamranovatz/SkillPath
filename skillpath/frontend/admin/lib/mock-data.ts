@@ -72,7 +72,7 @@ export const MOCK_QUESTIONS: Question[] = [
         id: "q_1",
         title: "React - useEffect Basics",
         text: "What is the primary purpose of the useEffect dependency array?",
-        categoryId: "Frontend",
+        category: "Frontend",
         difficulty: "EASY",
         options: [
             { id: "opt_1", text: "To trigger re-renders" },
@@ -87,7 +87,7 @@ export const MOCK_QUESTIONS: Question[] = [
         id: "q_2",
         title: "Node.js - Event Loop",
         text: "Which phase of the Node.js event loop executes setTimeout callbacks?",
-        categoryId: "Backend",
+        category: "Backend",
         difficulty: "HARD",
         options: [
             { id: "opt_1", text: "Timers Phase" },
@@ -101,7 +101,7 @@ export const MOCK_QUESTIONS: Question[] = [
         id: "q_3",
         title: "SQL - INNER JOIN",
         text: "What does an INNER JOIN return?",
-        categoryId: "Database",
+        category: "Database",
         difficulty: "MEDIUM",
         options: [
             { id: "opt_1", text: "All records from the left table" },
