@@ -2,27 +2,31 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
     HelpCircle,
     FolderTree,
     Users,
-    Settings,
     Menu,
+    LogOut,
 } from "lucide-react";
 import { Logo } from "./logo";
+import signOut from "@/backend/auth/signOut";
 
 const navItems = [
     { label: "Dashboard", href: "/adminDashboard", icon: LayoutDashboard },
-    { label: "Question Bank", href: "/questions", icon: HelpCircle },
-    { label: "Manage Categories", href: "/categories", icon: FolderTree },
-    { label: "Manage Users", href: "/manageUsers", icon: Users },
+    { label: "Question bank", href: "/questions", icon: HelpCircle },
+    { label: "Manage bategories", href: "/categories", icon: FolderTree },
+    { label: "Manage users", href: "/manageUsers", icon: Users },
+    { label: "Sign out", href: "/login", icon: LogOut, onClick: signOut },
 ];
+
 
 export default function AdminSidebar() {
     const [collapsed, setCollapsed] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
 
     return (
         <aside
@@ -68,24 +72,15 @@ export default function AdminSidebar() {
                             <Icon className="size-5 shrink-0" />
                             {!collapsed && <span className="truncate">{item.label}</span>}
                         </Link>
+
                     );
                 })}
             </nav>
 
-            {/* Bottom Section */}
-            <div className="border-t border-sidebar-border p-3">
-                <Link
-                    href="/admin/settings"
-                    title={collapsed ? "Settings" : undefined}
-                    className={`flex h-11 items-center gap-3 rounded-full px-3.5 text-sm font-medium transition-colors ${
-                        pathname.startsWith("/admin/settings")
-                            ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                            : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-                    } ${collapsed ? "justify-center px-0" : ""}`}
-                >
-                    <Settings className="size-5 shrink-0" />
-                    {!collapsed && <span className="truncate">Settings</span>}
-                </Link>
+
+            {/* Logout Button (Poziționat jos în sidebar, stilizat identic cu restul elementelor) */}
+            <div className="p-3 border-t border-sidebar-border">
+
             </div>
         </aside>
     );

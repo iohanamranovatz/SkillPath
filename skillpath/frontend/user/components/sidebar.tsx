@@ -8,10 +8,11 @@ import {
     User,
     Settings,
     Code2,
-    X,
+    X, LogOut,
 } from "lucide-react"
 import { cn } from "@/frontend/user/lib/utils"
 import type { View } from "@/frontend/user/lib/mock-data"
+import signOut from "@/backend/auth/signOut";
 
 const nav: { label: View; icon: typeof LayoutDashboard }[] = [
     { label: "Dashboard", icon: LayoutDashboard },
@@ -19,6 +20,7 @@ const nav: { label: View; icon: typeof LayoutDashboard }[] = [
     { label: "Results", icon: BarChart3 },
     { label: "Resources", icon: BookOpen },
     { label: "Profile", icon: User },
+    {label: "Sign out", icon: LogOut},
 ]
 
 export function Sidebar({
