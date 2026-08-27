@@ -7,6 +7,9 @@ import {updateProfile} from "@/backend/user/updateProfile";
 import { ProfileViewProps } from "@/frontend/user/lib/types";
 import {addObjective, deleteObjective, toggleInterestTag, toggleObjective} from "@/backend/user/profileActions";
 
+const MAX_OBJECTIVES = 5;
+const MAX_TAGS = 3;
+
 export function ProfileView({
     initialData,
     objectives = [],
@@ -20,6 +23,11 @@ export function ProfileView({
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState<"all" | "completed" | "incompleted">("all");
 
+    const [showAllTags, setShowAllTags] = useState(false);
+
+    const visibleTags = showAllTags ? allTags : allTags.slice(0, 8);
+    const hasMoreTags = allTags.length > 8;
+
     async function handleSubmit(formData: FormData) {
         setMessage(null);
         const response = await updateProfile(formData);
@@ -27,7 +35,7 @@ export function ProfileView({
     }
 
     const handleAddObjective = async () => {
-        if (!newObjective.trim()) return;
+        if (!newObjective.trim() || objectives.length >= MAX_OBJECTIVES) return;
 
         await addObjective(initialData.id, newObjective);
         setNewObjective("");
@@ -56,6 +64,13 @@ export function ProfileView({
             (objective) => objective.is_completed
         ).length;
 
+    const progressPercentage = objectives.length > 0
+        ? Math.round((completedCount / objectives.length) * 100)
+        : 0;
+
+    const isObjectiveLimitReached = objectives.length >= MAX_OBJECTIVES;
+    const isTagLimitReached = userInterestTagIds.length >= MAX_TAGS;
+
     return (
         <div className="space-y-6">
             <PageHeading
@@ -83,6 +98,7 @@ export function ProfileView({
                         </p>
                     )}
 
+                    {/* Name */}
                     <div className="grid gap-5 sm:grid-cols-2">
                         <label className="space-y-2 text-sm text-muted-foreground">
                             Full name
@@ -92,13 +108,6 @@ export function ProfileView({
                                 defaultValue={initialData?.name || ""}
                             />
                         </label>
-
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                            <span>Role</span>
-                            <div className="block w-full rounded-lg border border-border/50 bg-card/50 px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed">
-                                {initialData?.role || "user"}
-                            </div>
-                        </div>
 
                         <div className="space-y-2 text-sm text-muted-foreground">
                             <span>Experience level</span>
@@ -118,29 +127,73 @@ export function ProfileView({
                         <h3 className="text-lg font-semibold">My Objectives</h3>
                         <p className="text-xs text-muted-foreground">Add and track your learning goals.</p>
                     </div>
-                    {objectives.length > 0 && (
-                        <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary border border-primary/20">
-                            {completedCount} of {objectives.length} completed
-                        </span>
-                    )}
+
+                    {/* Badge clar pentru limita de sloturi */}
+                    <span className="rounded-full bg-secondary/80 px-3 py-1 text-xs font-medium text-muted-foreground border border-border">
+                        <strong className="text-foreground">{objectives.length}</strong> of {MAX_OBJECTIVES} active goals (Max 5)
+                    </span>
+
                 </div>
 
-                <div className="flex gap-2">
-                    <input
-                        type="text"
-                        placeholder="e.g. Master React Hooks"
-                        className="block w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring"
-                        value={newObjective}
-                        onChange={(e) => setNewObjective(e.target.value)}
-                    />
-                    <Button onClick={handleAddObjective} type="button" className="inline-flex items-center gap-1">
-                        <Plus className="size-4" /> Add
-                    </Button>
+                {/* Bara de progres vizuala */}
+                {objectives.length > 0 && (
+                    <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
+                            <span className="flex items-center gap-1.5 text-foreground/80">
+                                <Check className="size-3.5 text-primary" /> Completion Progress
+                            </span>
+
+                            <span className="text-primary font-semibold">
+                                {progressPercentage}%
+                            </span>
+                        </div>
+
+                        <div className="relative flex items-center">
+                            <div className="h-2.5 w-full overflow-hidden rounded-full bg-secondary border border-border/50">
+                                <div
+                                    className="h-full bg-primary transition-all duration-500 ease-out rounded-full"
+                                    style={{ width: `${progressPercentage}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Zona adaugare obiectiv + avertisment limita */}
+                <div className="space-y-1.5">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder={
+                                isObjectiveLimitReached
+                                    ? `Maximum limit of ${MAX_OBJECTIVES} objectives reached`
+                                    : "e.g. Master React Hooks"
+                            }
+                            disabled={isObjectiveLimitReached}
+                            className="block w-full rounded-lg border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring disabled:opacity-50 disabled:cursor-not-allowed"
+                            value={newObjective}
+                            onChange={(e) => setNewObjective(e.target.value)}
+                        />
+                        <Button
+                            onClick={handleAddObjective}
+                            type="button"
+                            disabled={isObjectiveLimitReached}
+                            className="inline-flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Plus className="size-4" /> Add
+                        </Button>
+                    </div>
+
+                    {isObjectiveLimitReached && (
+                        <p className="text-xs text-amber-500 font-medium">
+                            You have reached the maximum limit of {MAX_OBJECTIVES} active objectives. Delete an objective to add a new one.
+                        </p>
+                    )}
                 </div>
 
                 {objectives.length > 0 && (
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border/40 pt-4">
-                        {/* Input Căutare */}
+                        {/* Input Cautare */}
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                             <input
@@ -223,69 +276,44 @@ export function ProfileView({
                         ))
                     )}
                 </div>
-
-                {/*<div className="space-y-2">*/}
-                {/*    {objectives.length === 0 ? (*/}
-                {/*        <p className="text-sm text-muted-foreground">No objectives added yet.</p>*/}
-                {/*    ) : (*/}
-                {/*        objectives.map((obj) => (*/}
-                {/*            <div*/}
-                {/*                key={obj.id}*/}
-                {/*                className="flex items-center justify-between rounded-lg border border-border/50 bg-card/50 p-3"*/}
-                {/*            >*/}
-                {/*                <div className="flex items-center gap-3">*/}
-                {/*                    <button*/}
-                {/*                        type="button"*/}
-                {/*                        onClick={() => toggleObjective(obj.id, obj.is_completed)}*/}
-                {/*                        className={`flex size-5 items-center justify-center rounded border transition-colors ${*/}
-                {/*                            obj.is_completed*/}
-                {/*                                ? "bg-primary border-primary text-primary-foreground"*/}
-                {/*                                : "border-border"*/}
-                {/*                        }`}*/}
-                {/*                    >*/}
-                {/*                        {obj.is_completed && <Check className="size-3.5" />}*/}
-                {/*                    </button>*/}
-                {/*                    <span className={`text-sm ${obj.is_completed ? "line-through text-muted-foreground" : "text-foreground"}`}>*/}
-                {/*                        {obj.title}*/}
-                {/*                    </span>*/}
-                {/*                </div>*/}
-
-                {/*                <button*/}
-                {/*                    type="button"*/}
-                {/*                    onClick={async () => {*/}
-                {/*                        const confirmed = window.confirm(`Are you sure you want to delete "${obj.title}"?`);*/}
-
-                {/*                        if (confirmed)*/}
-                {/*                            await deleteObjective(obj.id);*/}
-                {/*                    }}*/}
-                {/*                    className="text-muted-foreground hover:text-red-400 transition-colors"*/}
-                {/*                >*/}
-                {/*                    <Trash2 className="size-4" />*/}
-                {/*                </button>*/}
-                {/*            </div>*/}
-                {/*        ))*/}
-                {/*    )}*/}
-                {/*</div>*/}
             </Card>
 
             <Card className="space-y-4 p-7">
-                <div>
-                    <h3 className="text-lg font-semibold">Interests & Topics</h3>
-                    <p className="text-xs text-muted-foreground">Select topics you want to focus on.</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold">Interests & Topics</h3>
+                        <p className="text-xs text-muted-foreground">
+                            Select up to {MAX_TAGS} topics you want to focus on.
+                        </p>
+                    </div>
+
+                    <span className={`text-xs font-medium px-2.5 py-1 rounded-full border ${
+                        isTagLimitReached
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            : "bg-card text-muted-foreground border-border"
+                    }`}>
+            {userInterestTagIds.length} / {MAX_TAGS} selected
+        </span>
                 </div>
 
+                {/* Randăm doar visibleTags */}
                 <div className="flex flex-wrap gap-2">
-                    {allTags.map((tag) => {
+                    {visibleTags.map((tag) => {
                         const isSelected = userInterestTagIds.includes(tag.id);
+                        const isDisabled = isTagLimitReached && !isSelected;
+
                         return (
                             <button
                                 key={tag.id}
                                 type="button"
+                                disabled={isDisabled}
                                 onClick={() => toggleInterestTag(initialData.id, tag.id, isSelected)}
-                                className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
+                                className={`rounded-full px-3 py-1.5 text-xs font-medium border transition-all ${
                                     isSelected
-                                        ? "bg-primary text-primary-foreground border-primary"
+                                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
                                         : "bg-card text-muted-foreground border-border hover:border-foreground"
+                                } ${
+                                    isDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"
                                 }`}
                             >
                                 {tag.name} {isSelected ? "✓" : "+"}
@@ -293,8 +321,24 @@ export function ProfileView({
                         );
                     })}
                 </div>
-            </Card>
 
+                {/* Butonul de Show More / Show Less */}
+                {hasMoreTags && (
+                    <button
+                        type="button"
+                        onClick={() => setShowAllTags(!showAllTags)}
+                        className="text-xs text-primary hover:underline font-medium pt-1 block"
+                    >
+                        {showAllTags ? "Show less" : `+ Show ${allTags.length - 8} more topics`}
+                    </button>
+                )}
+
+                {isTagLimitReached && (
+                    <p className="text-xs text-amber-400/90 font-medium pt-1">
+                        Maximum limit of {MAX_TAGS} topics reached. Deselect one to choose another.
+                    </p>
+                )}
+            </Card>
         </div>
     )
 }
