@@ -1,8 +1,9 @@
 "use server";
 
 import { supabase } from "../helper/SupabaseClient";
+import {Resource} from "@/frontend/user/lib/types";
 
-// --- Toate categoriile + numărul de întrebări (pentru lista principală) ---
+// --- Toate categoriile + numarul de intrebari (pentru lista principala)
 export async function getCategories() {
     const { data, error } = await supabase
         .from("categories")
@@ -20,7 +21,7 @@ export async function getCategories() {
     return { success: true, data: categories };
 }
 
-// --- O categorie după id (pentru titlul paginii de detaliu) ---
+// --- O categorie dupa id (pentru titlul paginii de detaliu) ---
 export async function getCategoryById(id: number | string) {
     const { data, error } = await supabase
         .from("categories")
@@ -32,7 +33,7 @@ export async function getCategoryById(id: number | string) {
     return { success: true, data };
 }
 
-// --- Tagurile unei categorii (afișate + folosite în dropdown-ul de resurse) ---
+// --- Tagurile unei categorii (afisate + folosite în dropdown-ul de resurse) ---
 export async function getCategoryTags(categoryId: number | string) {
     const { data, error } = await supabase
         .from("tags")
@@ -45,10 +46,10 @@ export async function getCategoryTags(categoryId: number | string) {
 }
 
 // --- Resursele unei categorii (prin taguri: learning_resources -> tags -> category) ---
-export async function getResources(categoryId: number | string) {
+export async function getResourcesFromCategory(categoryId: number | string) {
     const { data, error } = await supabase
         .from("learning_resources")
-        // tags!inner => face join și permite filtrarea după coloana din tags
+        // tags!inner => face join si permite filtrarea dupa coloana din tags
         .select("id, title, url, type, tag_id, tags!inner(category_id, name)")
         .eq("tags.category_id", categoryId)
         .order("id", { ascending: false });
@@ -66,17 +67,17 @@ export async function getResources(categoryId: number | string) {
     return { success: true, data: resources };
 }
 
-// --- Admin adaugă o resursă (legată de un TAG) ---
+// --- Admin adauga o resursa
 export async function addResource(input: {
-    tagId: number;          // OBLIGATORIU — resursa aparține unui tag
+    tagId: number;          // OBLIGATORIU — resursa apartine unui tag
     title: string;
     url?: string;
     type?: string;          // article | video | course
 }) {
     if (!input.title?.trim())
-        return { success: false, message: "Titlul este obligatoriu." };
+        return { success: false, message: "Please add title !" };
     if (!input.tagId)
-        return { success: false, message: "Alege un tag pentru resursă." };
+        return { success: false, message: "Please choose resource tag!." };
 
     const { data, error } = await supabase
         .from("learning_resources")
@@ -90,17 +91,17 @@ export async function addResource(input: {
         .single();
 
     if (error) return { success: false, message: error.message };
-    return { success: true, data, message: "Resursă adăugată!" };
+    return { success: true, data, message: "Resource was added!!" };
 }
 
-// --- Admin editează o categorie ---
+// --- Admin editeaza o categorie ---
 export async function updateCategory(input: {
     id: number;
     name: string;
     description?: string | null;
 }) {
     if (!input.name?.trim())
-        return { success: false, message: "Numele categoriei este obligatoriu." };
+        return { success: false, message: "Please add the name of the category!" };
 
     const { data, error } = await supabase
         .from("categories")
@@ -110,29 +111,29 @@ export async function updateCategory(input: {
         .single();
 
     if (error) return { success: false, message: error.message };
-    return { success: true, data, message: "Categorie actualizată!" };
+    return { success: true, data, message: "Updated category!" };
 }
 
-// --- Admin șterge o categorie ---
+// --- Admin sterge o categorie ---
 export async function deleteCategory(id: number) {
     const { error } = await supabase.from("categories").delete().eq("id", id);
 
     if (error) {
-        // 23503 = foreign key violation (are taguri/întrebări asociate)
+        // 23503 = foreign key violation (are taguri/întrebari asociate)
         if (error.code === "23503")
             return {
                 success: false,
-                message: "Nu poți șterge categoria: are taguri sau întrebări asociate.",
+                message: "You can't delete this category, questions and tags are tied to it.",
             };
         return { success: false, message: error.message };
     }
     return { success: true, message: "Categorie ștearsă!" };
 }
 
-// --- Admin adaugă un tag la o categorie ---
+// --- Admin adauga un tag la o categorie ---
 export async function addTag(input: { categoryId: number; name: string }) {
     if (!input.name?.trim())
-        return { success: false, message: "Numele tagului este obligatoriu." };
+        return { success: false, message: "Tag Name is obligatory!" };
 
     const { data, error } = await supabase
         .from("tags")
@@ -141,13 +142,13 @@ export async function addTag(input: { categoryId: number; name: string }) {
         .single();
 
     if (error) return { success: false, message: error.message };
-    return { success: true, data, message: "Tag adăugat!" };
+    return { success: true, data, message: "Added tag!" };
 }
 
-// --- Admin editează un tag ---
+// --- Admin editeaza un tag ---
 export async function updateTag(input: { id: number; name: string }) {
     if (!input.name?.trim())
-        return { success: false, message: "Numele tagului este obligatoriu." };
+        return { success: false, message: "Tag name is obligatory." };
 
     const { data, error } = await supabase
         .from("tags")
@@ -157,10 +158,10 @@ export async function updateTag(input: { id: number; name: string }) {
         .single();
 
     if (error) return { success: false, message: error.message };
-    return { success: true, data, message: "Tag actualizat!" };
+    return { success: true, data, message: "Tag updated!" };
 }
 
-// --- Admin șterge un tag ---
+// --- Admin sterge un tag ---
 export async function deleteTag(id: number) {
     const { error } = await supabase.from("tags").delete().eq("id", id);
 
@@ -168,17 +169,17 @@ export async function deleteTag(id: number) {
         if (error.code === "23503")
             return {
                 success: false,
-                message: "Nu poți șterge tagul: are resurse sau întrebări asociate.",
+                message: "This tag cannot be deleted, questions are tied to it.",
             };
         return { success: false, message: error.message };
     }
-    return { success: true, message: "Tag șters!" };
+    return { success: true, message: "Tag deleted!" };
 }
 
-// --- Admin adaugă o categorie nouă ---
+// --- Admin adauga o categorie nouă ---
 export async function addCategory(input: { name: string; description?: string }) {
     if (!input.name?.trim())
-        return { success: false, message: "Numele categoriei este obligatoriu." };
+        return { success: false, message: "Name of the category is obligatory." };
 
     const { data, error } = await supabase
         .from("categories")
@@ -187,7 +188,7 @@ export async function addCategory(input: { name: string; description?: string })
         .single();
 
     if (error) return { success: false, message: error.message };
-    return { success: true, data, message: "Categorie adăugată!" };
+    return { success: true, data, message: "Category added!" };
 }
 
 // --- Întrebările dintr-o categorie ---
@@ -200,4 +201,35 @@ export async function getQuestionsByCategory(categoryId: number | string) {
 
     if (error) return { success: false, message: error.message, data: [] };
     return { success: true, data: data ?? [] };
+}
+
+export async function getAllResources(): Promise<{ success: boolean; message?: string; data: Resource[] }> {
+    const { data, error } = await supabase
+        .from("learning_resources")
+        .select("id, title, url, type, tag_id, tags(name)")
+        .order("id", { ascending: false });
+
+    if (error) return { success: false, message: error.message, data: [] };
+
+    const resources: Resource[] = (data ?? []).map((r: any) => ({
+        id: r.id,
+        title: r.title ?? "",
+        url: r.url ?? "",
+        type: r.type ?? "Resource",
+        tag: r.tags?.name ?? "General",
+    }));
+
+    return { success: true, data: resources };
+}
+
+export async function fetchAllResourcesWrapper(): Promise<Resource[]> {
+    const response = await getAllResources();
+
+    if (!response.success) {
+        console.error("Failed to fetch all resources:", response.message);
+        return [];
+    }
+
+    // trebuie returnat doar array-ul de resurse, fără success/message
+    return response.data;
 }
