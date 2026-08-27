@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import {useEffect, useState} from "react"
 import { Sidebar } from "@/frontend/user/components/sidebar"
 import { Topbar } from "@/frontend/user/components/topbar"
 import { GreetingHeader } from "@/frontend/user/components/greeting-header"
@@ -16,6 +16,7 @@ import { ResourcesView } from "@/frontend/user/components/resources-view"
 import { ProfileView } from "@/frontend/user/components/profile-view"
 import type { View } from "@/frontend/user/lib/mock-data"
 import {UserDashboardUIProps} from "@/frontend/user/lib/types";
+import signOut from "@/backend/auth/signOut";
 
 function DashboardView({ onStart }: { onStart: () => void }) {
     return (
@@ -58,6 +59,12 @@ export function UserDashboardUI({
         setMobileOpen(false)
     }
 
+    useEffect(() => {
+        if (view === "Sign out") {
+            signOut();
+        }
+    }, [view]);
+
     return (
         <div className="flex min-h-screen bg-background">
             <Sidebar
@@ -80,6 +87,11 @@ export function UserDashboardUI({
                             userInterestTagIds={userInterestTagIds}
                             allTags={allTags}
                         />
+                    )}
+                    {view === "Sign out" && (
+                        <div className="flex h-full items-center justify-center">
+                            <p className="text-muted-foreground">Signing out...</p>
+                        </div>
                     )}
                 </main>
             </div>

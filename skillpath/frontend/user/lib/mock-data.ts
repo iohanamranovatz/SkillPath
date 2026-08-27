@@ -116,7 +116,7 @@ export const availableTests = [
     { id: "t3", title: "Advanced Graph Theory", difficulty: "Hard" as Difficulty, questions: 18 },
 ]
 
-export type View = "Dashboard" | "Tests" | "Results" | "Resources" | "Profile"
+export type View = "Dashboard" | "Tests" | "Results" | "Resources" | "Profile"| "Sign out"
 
 export const tests = [
     { id: "ct1", title: "Dynamic Programming", category: "Algorithms", difficulty: "Medium" as Difficulty, questions: 10, time: "25 min", score: 82 },

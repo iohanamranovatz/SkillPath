@@ -108,95 +108,83 @@ export default function UserManagementPage() {
     };
 
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
-            <AdminSidebar />
+        <div className="relative flex h-full min-h-screen w-full flex-col bg-background text-foreground">
+            <div className="flex-1 overflow-y-auto p-2">
 
-            <div className="flex flex-1 flex-col">
-                <AdminHeader />
-
-                <main className="flex-1 bg-background p-8 text-foreground">
-                    <div className="relative flex h-full min-h-screen w-full flex-col bg-background text-foreground">
-                        <div className="flex-1 overflow-y-auto p-2">
-
-                            {/* Header Area */}
-                            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <h1 className="text-3xl font-bold tracking-tight text-foreground">User Management</h1>
-                                    <p className="text-muted-foreground mt-1 text-sm">Manage user accounts and track proficiency levels.</p>
-                                </div>
-                                <button
-                                    className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
-                                    onClick={() => setIsAddModalOpen(true)}
-                                >
-                                    + Add User
-                                </button>
-                            </div>
-
-                            {/* Main Content Card */}
-                            <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card p-4 shadow-xl sm:p-6 backdrop-blur-xl">
-                                <div className="flex flex-col sm:flex-row gap-3 items-center">
-                                    <div className="flex-1 w-full">
-                                        <UserToolbar
-                                            searchTerm={searchTerm}
-                                            onSearchChange={(val) => {
-                                                setSearchTerm(val);
-                                                setCurrentPage(1);
-                                            }}
-                                            level={level}
-                                            onLevelChange={(val) => {
-                                                setLevel(val);
-                                                setCurrentPage(1);
-                                            }}
-                                        />
-                                    </div>
-
-                                    {/* Dropdown Filtru Rol */}
-                                    <select
-                                        value={roleFilter}
-                                        onChange={(e) => {
-                                            setRoleFilter(e.target.value);
-                                            setCurrentPage(1);
-                                        }}
-                                        className="h-10 rounded-lg border border-white/10 bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-blue-500 cursor-pointer"
-                                    >
-                                        <option value="all">All Roles</option>
-                                        <option value="user">Users</option>
-                                        <option value="admin">Admins</option>
-                                    </select>
-                                </div>
-
-                                {loading ? (
-                                    <p className="text-sm text-muted-foreground">Loading users...</p>
-                                ) : (
-                                    <div className="space-y-4">
-                                        <UserTable
-                                            users={paginatedUsers}
-                                            onDelete={handleDelete}
-                                            onRoleChange={handleRoleChange}
-                                        />
-
-                                        <Pagination
-                                            currentPage={currentPage}
-                                            totalPages={totalPages}
-                                            totalItems={filteredUsers.length}
-                                            itemsPerPage={ITEMS_PER_PAGE}
-                                            onPageChange={setCurrentPage}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                {/* Header Area */}
+                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">User Management</h1>
+                        <p className="text-muted-foreground mt-1 text-sm">Manage user accounts and track proficiency levels.</p>
                     </div>
-                </main>
-                <AdminFooter />
+                    <button
+                        className="inline-flex h-10 items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-500 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
+                        onClick={() => setIsAddModalOpen(true)}
+                    >
+                        + Add User
+                    </button>
+                </div>
 
-                <AddUserModal
-                    isOpen={isAddModalOpen}
-                    onClose={() => setIsAddModalOpen(false)}
-                    onUserAdded={(newUser) => setUsers((prev) => [newUser, ...prev])}
-                >
-                </AddUserModal>
+                {/* Main Content Card */}
+                <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card p-4 shadow-xl sm:p-6 backdrop-blur-xl">
+                    <div className="flex flex-col sm:flex-row gap-3 items-center">
+                        <div className="flex-1 w-full">
+                            <UserToolbar
+                                searchTerm={searchTerm}
+                                onSearchChange={(val) => {
+                                    setSearchTerm(val);
+                                    setCurrentPage(1);
+                                }}
+                                level={level}
+                                onLevelChange={(val) => {
+                                    setLevel(val);
+                                    setCurrentPage(1);
+                                }}
+                            />
+                        </div>
+
+                        {/* Dropdown Filtru Rol */}
+                        <select
+                            value={roleFilter}
+                            onChange={(e) => {
+                                setRoleFilter(e.target.value);
+                                setCurrentPage(1);
+                            }}
+                            className="h-10 rounded-lg border border-white/10 bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-blue-500 cursor-pointer"
+                        >
+                            <option value="all">All Roles</option>
+                            <option value="user">Users</option>
+                            <option value="admin">Admins</option>
+                        </select>
+                    </div>
+
+                    {loading ? (
+                        <p className="text-sm text-muted-foreground">Loading users...</p>
+                    ) : (
+                        <div className="space-y-4">
+                            <UserTable
+                                users={paginatedUsers}
+                                onDelete={handleDelete}
+                                onRoleChange={handleRoleChange}
+                            />
+
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                totalItems={filteredUsers.length}
+                                itemsPerPage={ITEMS_PER_PAGE}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
+
+            <AddUserModal
+                isOpen={isAddModalOpen}
+                onClose={() => setIsAddModalOpen(false)}
+                onUserAdded={(newUser: any) => setUsers((prev: any) => [newUser, ...prev])}
+            />
         </div>
     );
 }

@@ -38,46 +38,37 @@ export default function QuestionBankClient({ initialQuestions }: { initialQuesti
 
 
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
-            <AdminSidebar />
-            <div className="flex flex-1 flex-col">
-                <AdminHeader />
-                <main className="flex-1 bg-background p-8 text-foreground">
-                    <div className="relative flex h-full min-h-screen w-full flex-col bg-background text-foreground">
-                        <div className="flex-1 overflow-y-auto p-2">
-                            {/* Main Content Card */}
-                            <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card p-4 shadow-xl sm:p-6 backdrop-blur-xl">
-                                <QuestionToolbar
-                                    searchTerm={searchTerm}
-                                    onSearchChange={(val) => {
-                                        setSearchTerm(val);
-                                        setCurrentPage(1);
-                                    }}
-                                    difficulty={difficulty}
-                                    onDifficultyChange={(val) => {
-                                        setDifficulty(val);
-                                        setCurrentPage(1);
-                                    }}
-                                />
-                                <QuestionTable questions={paginatedQuestions} />
+        <div className="relative flex h-full min-h-screen w-full flex-col bg-background text-foreground">
+            <div className="flex-1 overflow-y-auto p-2">
+                {/* Main Content Card */}
+                <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card p-4 shadow-xl sm:p-6 backdrop-blur-xl">
+                    <QuestionToolbar
+                        searchTerm={searchTerm}
+                        onSearchChange={(val) => {
+                            setSearchTerm(val);
+                            setCurrentPage(1);
+                        }}
+                        difficulty={difficulty}
+                        onDifficultyChange={(val) => {
+                            setDifficulty(val);
+                            setCurrentPage(1);
+                        }}
+                    />
+                    <QuestionTable questions={paginatedQuestions} />
 
-                                {/* Paginare */}
-                                <Pagination
-                                    currentPage={currentPage}
-                                    totalPages={totalPages}
-                                    totalItems={filteredQuestions.length}
-                                    itemsPerPage={ITEMS_PER_PAGE}
-                                    onPageChange={(newPage) => setCurrentPage(newPage)}
-                                />
+                    {/* Paginare */}
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={filteredQuestions.length}
+                        itemsPerPage={ITEMS_PER_PAGE}
+                        onPageChange={(newPage) => setCurrentPage(newPage)}
+                    />
 
-                            </div>
-                        </div>
-                        {/* Slide-in Detail Panel */}
-                        <QuestionPanel questions={initialQuestions} />
-                    </div>
-                </main>
-                <AdminFooter />
+                </div>
             </div>
+            {/* Slide-in Detail Panel */}
+            <QuestionPanel questions={initialQuestions} />
         </div>
     );
 }
