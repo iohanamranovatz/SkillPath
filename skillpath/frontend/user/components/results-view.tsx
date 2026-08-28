@@ -54,6 +54,13 @@ export function ResultsView() {
         );
     }
 
+    const resourcesList = data.recommendedResources || [];
+    const totalResourcesCount = resourcesList.length;
+    const completedResourcesCount = resourcesList.filter((r: any) => r.isCompleted).length;
+    const resourceProgressPercentage = totalResourcesCount > 0
+        ? Math.round((completedResourcesCount / totalResourcesCount) * 100)
+        : 0;
+
     return (
         <div className="max-w-5xl mx-auto space-y-6 p-6">
             <div>
@@ -128,51 +135,73 @@ export function ResultsView() {
 
             {(data.recommendedResources || []).length > 0 && (
                 <div className="p-6 border rounded-xl bg-card space-y-4">
-                    <div className="flex items-center gap-2 font-semibold text-lg">
-                        <BookOpen className="size-5 text-primary" />
-                        <h2>Recomandări de Învățare pentru Weak Areas</h2>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                        Bifează resursele pe măsură ce le parcurgi pentru a-ți salva progresul.
-                    </p>
+                   <div className="space-y-3">
+                       <div className="flex items-center gap-2 font-semibold text-lg">
+                           <BookOpen className="size-5 text-primary" />
+                           <h2>Recomandări de Învățare pentru Weak Areas</h2>
+                       </div>
+
+
+                       {/* Bara de progres resurse */}
+                       <div className="space-y-1.5 bg-muted/30 p-4 rounded-xl border">
+                           <div className="flex justify-between items-center text-sm font-medium">
+                                <span className="text-muted-foreground">
+                                    Progres resurse parcurse ({completedResourcesCount}/{totalResourcesCount})
+                                </span>
+                               <span className="font-bold text-primary">{resourceProgressPercentage}%</span>
+                           </div>
+                           <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                               <div
+                                   className="h-full bg-primary transition-all duration-300"
+                                   style={{ width: `${resourceProgressPercentage}%` }}
+                               />
+                           </div>
+                       </div>
+                   </div>
+
+                    {/* Lista de resurse cu bifă + Buton "Open Resource" */}
                     <div className="grid gap-3 sm:grid-cols-2">
                         {data.recommendedResources.map((res: any) => (
                             <div
                                 key={res.id}
-                                className={`p-4 border rounded-xl flex items-start gap-3 transition-colors ${
-                                    res.isCompleted ? "bg-muted/40 opacity-75" : "hover:border-primary/50"
+                                className={`p-4 border rounded-xl flex items-center justify-between gap-3 transition-colors ${
+                                    res.isCompleted ? "bg-muted/40 opacity-75 border-muted" : "hover:border-primary/50 bg-background"
                                 }`}
                             >
-                                <input
-                                    type="checkbox"
-                                    checked={res.isCompleted}
-                                    onChange={() => handleToggleResource(res.id, res.isCompleted)}
-                                    className="mt-1 size-4 accent-primary cursor-pointer shrink-0"
-                                />
-                                <div className="flex-1 min-w-0">
-                                    <a
-                                        href={res.url}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className={`font-medium hover:underline flex items-center gap-1 text-sm ${
+                                <div className="flex items-start gap-3 min-w-0 flex-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={res.isCompleted}
+                                        onChange={() => handleToggleResource(res.id, res.isCompleted)}
+                                        className="mt-1 size-4 accent-primary cursor-pointer shrink-0"
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                        <p className={`font-medium text-sm truncate ${
                                             res.isCompleted ? "line-through text-muted-foreground" : ""
-                                        }`}
-                                    >
-                                        <span className="truncate">{res.title}</span>
-                                        <ExternalLink className="size-3 shrink-0" />
-                                    </a>
-                                    <span className="text-xs text-muted-foreground uppercase tracking-wider block mt-0.5">
-                                        {res.type}
-                                    </span>
+                                        }`}>
+                                            {res.title}
+                                        </p>
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wider block mt-0.5">
+                                            {res.type}
+                                        </span>
+                                    </div>
                                 </div>
+
+                                {/* Buton separat care deschide link-ul/video-ul */}
+                                <a
+                                    href={res.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="px-3 py-1.5 border rounded-lg text-xs font-medium bg-secondary hover:bg-secondary/80 transition-colors flex items-center gap-1.5 shrink-0"
+                                >
+                                    <span>Open</span>
+                                    <ExternalLink className="size-3" />
+                                </a>
                             </div>
                         ))}
                     </div>
                 </div>
             )}
-
-
-
         </div>
     );
 }
