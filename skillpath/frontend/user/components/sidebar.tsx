@@ -8,10 +8,11 @@ import {
     User,
     Settings,
     Code2,
-    X,
+    X, LogOut,
 } from "lucide-react"
 import { cn } from "@/frontend/user/lib/utils"
 import type { View } from "@/frontend/user/lib/mock-data"
+import signOut from "@/backend/auth/signOut";
 
 const nav: { label: View; icon: typeof LayoutDashboard }[] = [
     { label: "Dashboard", icon: LayoutDashboard },
@@ -19,6 +20,7 @@ const nav: { label: View; icon: typeof LayoutDashboard }[] = [
     { label: "Results", icon: BarChart3 },
     { label: "Resources", icon: BookOpen },
     { label: "Profile", icon: User },
+    {label: "Sign out", icon: LogOut},
 ]
 
 export function Sidebar({
@@ -58,10 +60,6 @@ export function Sidebar({
                     </button>
                 </div>
 
-                <div>
-                    <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">SkillPath</span>
-                </div>
-
                 <nav className="flex flex-1 flex-col gap-1 p-4" aria-label="Main navigation">
                     {nav.map(({ label, icon: Icon }) => {
                         const isActive = activeView === label
@@ -83,13 +81,6 @@ export function Sidebar({
                         )
                     })}
                 </nav>
-
-                <div className="border-t border-sidebar-border p-4">
-                    <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground">
-                        <Settings className="size-[18px]" />
-                        Settings
-                    </button>
-                </div>
             </aside>
 
             {mobileOpen && (
