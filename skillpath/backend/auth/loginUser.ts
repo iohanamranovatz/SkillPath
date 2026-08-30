@@ -5,7 +5,6 @@ import { supabase } from '../../helper/SupabaseClient';
 
 export async function loginUser(email : string, password: string)
 {
-
     const {error, data} = await supabase.auth.signInWithPassword({
         email : email,
         password: password 
@@ -25,7 +24,6 @@ export async function loginUser(email : string, password: string)
             message: "Email sau parola incorecta!"
         };
     }
-
     const userID=data.user.id;
 
     const { data : profile}= await supabase.from("users").select("role").eq("auth_key",userID).single();

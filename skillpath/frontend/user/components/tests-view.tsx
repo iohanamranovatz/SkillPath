@@ -15,6 +15,7 @@ export type UserTest = {
     status: string
     startedAt: string | null
     completedAt: string | null
+    progress?: string | null, // "20%"
 }
 
 export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () => void }) {
@@ -83,9 +84,17 @@ export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () =>
                                 <span className="text-sm text-muted-foreground">
                                     {test.score === null ? "Not started yet" : "Completed"}
                                 </span>
-                                <Button variant="outline" size="sm">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => router.push(
+                                        test.score === null
+                                            ? `/assessment/${test.id}`
+                                            : `/assessment/${test.id}/completed`
+                                    )}
+                                >
                                     {test.score === null ? "Take test" : "Review"}
-                                    <ChevronRight className="size-4" />
+                                    <ChevronRight className="size-4 ml-2" />
                                 </Button>
                             </div>
                         </Card>

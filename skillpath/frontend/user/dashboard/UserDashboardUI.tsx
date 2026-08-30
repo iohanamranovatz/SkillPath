@@ -1,6 +1,6 @@
 "use client"
 
-import {useEffect, useState} from "react"
+import { useState } from "react"
 import { Sidebar } from "@/frontend/user/components/sidebar"
 import { Topbar } from "@/frontend/user/components/topbar"
 import { GreetingHeader } from "@/frontend/user/components/greeting-header"
@@ -15,15 +15,23 @@ import { ResultsView } from "@/frontend/user/components/results-view"
 import { ResourcesView } from "@/frontend/user/components/resources-view"
 import { ProfileView } from "@/frontend/user/components/profile-view"
 import type { View } from "@/frontend/user/lib/mock-data"
-import {UserDashboardUIProps} from "@/frontend/user/lib/types";
-import signOut from "@/backend/auth/signOut";
+import {Objective, UserDashboardUIProps, UserProfileData} from "@/frontend/user/lib/types";
 
-function DashboardView({ onStart }: { onStart: () => void }) {
+
+
+function DashboardView({initialData, tests, questions, objectives, onStart }: {initialData: UserProfileData, tests: UserTest[],
+    questions: number, objectives: Objective[] ,onStart?: [() => void, () => void] }) {
     return (
         <>
-            <GreetingHeader onStart={onStart} />
-            <StatCards />
-            <ContinueCard />
+            <GreetingHeader  name={initialData.name}
+                             level={initialData.estimated_level}
+                             onStart={onStart}
+            />
+            <StatCards testsCompleted={tests.filter(test => test.status == "completed").length}
+                       problemsSolved={questions}
+                       objectives={objectives}
+            />
+            <ContinueCard test={tests.find(t => t.status == "in_progress")}/>
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <ScoreChart />
@@ -45,7 +53,8 @@ export function UserDashboardUI({
     userInterestTagIds,
     allTags,
     initialResources,
-}: UserDashboardUIProps & { tests: UserTest[] }) {
+    questions
+}: UserDashboardUIProps & { tests: UserTest[] } & {questions: number}) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -54,16 +63,15 @@ export function UserDashboardUI({
         setMobileOpen(false)
     }
 
+    const viewProgress = () => {
+        setView("Results")
+        setMobileOpen(false)
+    }
+
     const startTest = () => {
         setView("Tests")
         setMobileOpen(false)
     }
-
-    useEffect(() => {
-        if (view === "Sign out") {
-            signOut();
-        }
-    }, [view]);
 
     return (
         <div className="flex min-h-screen bg-background">
@@ -73,10 +81,17 @@ export function UserDashboardUI({
                 mobileOpen={mobileOpen}
                 onClose={() => setMobileOpen(false)}
             />
-            <div className="flex min-w-0 flex-1 flex-col">
-                <Topbar onMenuOpen={() => setMobileOpen(true)} />
+            <div className="flex min-w-0 flex-1 flex-col will-change-[width]">
+                <Topbar data={{name: initialData.name, email: initialData.email}} onMenuOpen={() => setMobileOpen(true)} />
                 <main className="flex-1 space-y-6 p-4 md:p-6">
-                    {view === "Dashboard" && <DashboardView onStart={startTest} />}
+                    {view === "Dashboard" &&
+                        <DashboardView
+                            initialData={initialData}
+                            tests={tests}
+                            objectives={objectives}
+                            questions={questions}
+                            onStart={[viewProgress ,startTest]}
+                    />}
                     {view === "Tests" && <TestsView tests={tests} onStart={startTest} />}
                     {view === "Results" && <ResultsView />}
                     {view === "Resources" && <ResourcesView resources={initialResources} />}
@@ -87,11 +102,6 @@ export function UserDashboardUI({
                             userInterestTagIds={userInterestTagIds}
                             allTags={allTags}
                         />
-                    )}
-                    {view === "Sign out" && (
-                        <div className="flex h-full items-center justify-center">
-                            <p className="text-muted-foreground">Signing out...</p>
-                        </div>
                     )}
                 </main>
             </div>

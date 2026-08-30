@@ -1,8 +1,36 @@
-import { Search, Bell, Flame, LayoutDashboard } from "lucide-react"
-import { user } from "@/frontend/user/lib/mock-data"
-import { Avatar, AvatarFallback, AvatarImage } from "@/frontend/user/common/avatar"
+"use client"
 
-export function Topbar({ onMenuOpen }: { onMenuOpen: () => void }) {
+import { useState, useEffect, useRef } from "react"
+import { Search, LayoutDashboard, LogOut } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/frontend/user/common/avatar"
+import { Button } from "@/frontend/user/common/button"
+import signOut from "@/backend/auth/logout";
+
+export function Topbar({ data, onMenuOpen }: { data: {name: string, email: string} , onMenuOpen: () => void }) {
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking anywhere outside of it
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        if (isDropdownOpen) {
+            window.addEventListener("mousedown", handleClickOutside);
+        }
+        return () => {
+            window.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isDropdownOpen]);
+
+    const handleSignOut = () => {
+        signOut();
+        setIsDropdownOpen(false);
+    };
+
     return (
         <header className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-border bg-background/80 px-4 backdrop-blur-sm md:px-6">
             <button
@@ -24,29 +52,37 @@ export function Topbar({ onMenuOpen }: { onMenuOpen: () => void }) {
             </div>
 
             <div className="ml-auto flex items-center gap-3">
-                <div className="hidden items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-medium sm:flex">
-                    <Flame className="size-4 text-primary" />
-                    <span>{user.streak}</span>
-                    <span className="hidden text-muted-foreground sm:inline">day streak</span>
-                </div>
+                {/* Attach ref here to monitor clicks inside vs outside */}
+                <div className="relative" ref={dropdownRef}>
+                    <Button
+                        variant="ghost"
+                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        className="h-auto p-1.5 justify-start gap-3 hover:bg-card/80 cursor-pointer"
+                        aria-label="User menu"
+                    >
+                        <Avatar className="size-9 ring-1 ring-border">
+                            <AvatarFallback className="bg-muted text-foreground font-medium">
+                                {data.name.toUpperCase().slice(0, 1)}
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="hidden leading-tight sm:block text-left">
+                            <p className="text-sm font-medium text-foreground">{data.name}</p>
+                            <p className="text-xs text-muted-foreground">{data.email}</p>
+                        </div>
+                    </Button>
 
-                <button
-                    className="relative flex size-9 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:text-foreground"
-                    aria-label="Notifications"
-                >
-                    <Bell className="size-[18px]" />
-                    <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
-                </button>
-
-                <div className="flex items-center gap-2">
-                    <Avatar className="size-9">
-                        <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                        <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    <div className="hidden leading-tight sm:block">
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.role}</p>
-                    </div>
+                    {/* Dropdown Box */}
+                    {isDropdownOpen && (
+                        <div className="absolute right-0 mt-2 w-48 rounded-xl border border-border bg-card p-1 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150">
+                            <button
+                                onClick={handleSignOut}
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 cursor-pointer"
+                            >
+                                <LogOut className="size-4" />
+                                Sign out
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </header>

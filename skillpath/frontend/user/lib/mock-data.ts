@@ -12,7 +12,7 @@ export const user = {
 }
 
 export const stats = [
-    { label: "Tests completed", value: "34", delta: "+4 this week", trend: "up" as const },
+    { label: "Tests completed", value: "34"},
     { label: "Average score", value: "82%", delta: "+6% vs last month", trend: "up" as const },
     { label: "Problems solved", value: "418", delta: "+23 this week", trend: "up" as const },
     { label: "Current streak", value: "12 days", delta: "Personal best", trend: "flat" as const },

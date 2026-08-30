@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     // 2. are rol de admin?
     const { data: profile } = await supabase
         .from("users")
-        .select("role")
+        .select("role, name")
         .eq("auth_key", user.id)
         .single();
 
@@ -27,15 +27,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     }
 
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
-            <AdminSidebar />
-            <div className="flex flex-1 flex-col">
-                <AdminHeader />
-                <main className="flex-1 bg-background p-8 text-foreground">
-                    {children}
-                </main>
-                <AdminFooter />
-            </div>
-        </div>
+         <main>
+             {children}
+         </main>
     );
 }
