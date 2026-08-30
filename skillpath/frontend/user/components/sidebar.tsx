@@ -60,10 +60,6 @@ export function Sidebar({
                     </button>
                 </div>
 
-                <div>
-                    <span className="text-lg font-semibold tracking-tight text-sidebar-foreground">SkillPath</span>
-                </div>
-
                 <nav className="flex flex-1 flex-col gap-1 p-4" aria-label="Main navigation">
                     {nav.map(({ label, icon: Icon }) => {
                         const isActive = activeView === label
@@ -85,13 +81,6 @@ export function Sidebar({
                         )
                     })}
                 </nav>
-
-                <div className="border-t border-sidebar-border p-4">
-                    <button className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-foreground">
-                        <Settings className="size-[18px]" />
-                        Settings
-                    </button>
-                </div>
             </aside>
 
             {mobileOpen && (

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { submitAssessment } from "@/backend/user/submitAssessment";
+import { saveSingleAnswer} from "@/backend/user/saveProgressAssessment";
 import { Card } from "@/frontend/user/common/card";
 import { Button } from "@/frontend/user/common/button";
 
@@ -15,15 +16,14 @@ type Question = {
 };
 
 export function AssessmentRunner({
-    assessmentId,
-    questions,
-}: {
+                                     assessmentId,
+                                     questions,
+                                 }: {
     assessmentId: number;
     questions: Question[];
 }) {
     const router = useRouter();
 
-    // raspunsurile alese: { [questionId]: optionId }
     const [answers, setAnswers] = useState<Record<number, string>>(() => {
         const init: Record<number, string> = {};
         questions.forEach((q) => {
@@ -31,35 +31,61 @@ export function AssessmentRunner({
         });
         return init;
     });
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [result, setResult] = useState<{
-        correct: number;
-        total: number;
-        scorePct: number;
-        perCategory: { category: string; score: number; correct: number; total: number }[];
-        level: string | null;
-    } | null>(null);
+    const [result, setResult] = useState<any | null>(null);
 
-    const pick = (questionId: number, optionId: string) =>
+    // --- AUTO-SAVE STATE & REFS ---
+    const [isAutoSaving, setIsAutoSaving] = useState(false);
+    const saveTimers = useRef<Record<number, NodeJS.Timeout>>({});
+    const pendingSaves = useRef<Set<number>>(new Set());
+
+    const pick = (questionId: number, optionId: string) => {
+        // 1. Update UI instantly
         setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
+
+        // 2. Mark this question as pending a save and show loader
+        pendingSaves.current.add(questionId);
+        setIsAutoSaving(true);
+
+        // 3. Clear existing timer for THIS question if they change their mind quickly
+        if (saveTimers.current[questionId]) {
+            clearTimeout(saveTimers.current[questionId]);
+        }
+
+        // 4. Start a new 1-second debounce timer for this question
+        saveTimers.current[questionId] = setTimeout(async () => {
+            await saveSingleAnswer(assessmentId, questionId, optionId);
+
+            // Remove this question from pending saves
+            pendingSaves.current.delete(questionId);
+
+            // If no more saves are pending, hide the loader
+            if (pendingSaves.current.size === 0) {
+                setIsAutoSaving(false);
+            }
+        }, 1500); // 1500ms delay
+    };
 
     const allAnswered = questions.every((q) => answers[q.id]);
 
     const handleSubmit = async () => {
         setLoading(true);
         setError(null);
+        // Note: submitAssessment calculates the score, so we pass the answers state.
         const payload = questions.map((q) => ({ questionId: q.id, optionId: answers[q.id] }));
         const res = await submitAssessment(assessmentId, payload);
+
         setLoading(false);
         if (!res.success || !res.data) {
             setError(res.message ?? "Eroare la trimiterea testului.");
             return;
         }
         setResult(res.data);
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    // ecranul de rezultat (dupa submit)
     if (result) {
         return (
             <Card className="space-y-6 p-6">
@@ -78,7 +104,7 @@ export function AssessmentRunner({
 
                 <div className="space-y-3">
                     <h2 className="text-sm font-medium">Scor pe categorie</h2>
-                    {result.perCategory.map((c) => (
+                    {result.perCategory?.map((c: any) => (
                         <div key={c.category} className="space-y-1">
                             <div className="flex justify-between text-sm">
                                 <span>{c.category}</span>
@@ -100,22 +126,36 @@ export function AssessmentRunner({
                     ))}
                 </div>
 
-                <Button onClick={() => router.push("/userDashboard")}>Inapoi la dashboard</Button>
+                <Button onClick={() => router.push("/userDashboard")} className="w-full">Inapoi la dashboard</Button>
             </Card>
         );
     }
 
     return (
-        <div className="space-y-6">
+        <div className="relative rounded-xl border bg-muted/30 p-6 md:p-8 space-y-6">
+
+            {/* Auto-Save Loading Icon in top right */}
+            <div className="absolute top-6 right-6 flex h-6 items-center">
+                {isAutoSaving && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground animate-pulse">
+                        <svg className="h-4 w-4 animate-spin text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Saving...
+                    </div>
+                )}
+            </div>
+
             <div>
                 <h1 className="text-xl font-semibold">Test</h1>
                 <p className="text-sm text-muted-foreground">
-                    {questions.length} intrebari · raspunde la toate.
+                    {questions.length} întrebări · răspunde la toate.
                 </p>
             </div>
 
             {questions.map((q, idx) => (
-                <Card key={q.id} className="space-y-3 p-6">
+                <Card key={q.id} className="space-y-3 p-6 bg-background">
                     <div className="flex items-start justify-between gap-4">
                         <h2 className="font-medium">
                             {idx + 1}. {q.question_text}
@@ -123,8 +163,10 @@ export function AssessmentRunner({
                         <span className="text-xs text-muted-foreground">{q.difficulty}</span>
                     </div>
                     <div className="space-y-2">
-                        {q.options.map((opt) => {
+                        {q.options.map((opt, optIdx) => {
                             const selected = answers[q.id] === opt.id;
+                            const letter = String.fromCharCode(65 + optIdx); // 0 -> A, 1 -> B, 2 -> C...
+
                             return (
                                 <button
                                     key={opt.id}
@@ -136,6 +178,7 @@ export function AssessmentRunner({
                                             : "border-border hover:bg-muted"
                                     }`}
                                 >
+                                    <span className="font-semibold mr-2">{letter}.</span>
                                     {opt.text}
                                 </button>
                             );
@@ -146,12 +189,12 @@ export function AssessmentRunner({
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button onClick={handleSubmit} disabled={loading || !allAnswered}>
+            <Button onClick={handleSubmit} disabled={loading || !allAnswered} className="w-full">
                 {loading
                     ? "Se trimite..."
                     : allAnswered
-                    ? "Trimite testul"
-                    : "Raspunde la toate intrebarile"}
+                        ? "Submit test"
+                        : "All questions must be answered"}
             </Button>
         </div>
     );

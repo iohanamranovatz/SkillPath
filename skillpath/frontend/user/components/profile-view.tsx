@@ -1,4 +1,4 @@
-import {Check, Flame, Plus, Search, Trash2} from "lucide-react"
+import {Check, Plus, Search, Trash2} from "lucide-react"
 import { PageHeading } from "./page-heading"
 import { Card } from "@/frontend/user/common/card"
 import { Button } from "@/frontend/user/common/button"
