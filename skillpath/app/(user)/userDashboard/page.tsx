@@ -3,15 +3,16 @@ import { redirect } from 'next/navigation';
 import {supabase} from '@/helper/SupabaseClient';
 
 import { UserDashboardUI } from '@/frontend/user/dashboard/UserDashboardUI';
-import {fetchAllResourcesWrapper} from "@/backend/admin/actions/questions";
+import {fetchAllResourcesWrapper} from "@/backend/categories";
+import { getTests } from '@/backend/user/getTests';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function DashboardPage(){
-   
+
     const { data } = await supabase.auth.getUser();
-    //verificam daca avem un user logat a.i nu poate fi accesata pagina daca 
+    //verificam daca avem un user logat a.i nu poate fi accesata pagina daca
     //nu este user logat
     if(!data.user)
             redirect('/');
@@ -23,7 +24,7 @@ export default async function DashboardPage(){
         .single();
 
     if (error || !userData) {
-        return { error: 'User extracting data from database.' };
+        redirect('/');
     }
 
     const { data: objectives } = await supabase
@@ -46,16 +47,19 @@ export default async function DashboardPage(){
 
     const initialResources = await fetchAllResourcesWrapper();
 
+    // testele userului (pentru tab-ul Tests)
+    const testsRes = await getTests(userData.id);
+
     return (
             <main>
                 <UserDashboardUI
+                    tests={testsRes.data}
                     initialData={userData}
                     objectives={objectives || []}
                     userInterestTagIds={userInterestTagIds}
                     allTags={allTags || []}
                     initialResources={initialResources}
-                ></UserDashboardUI>
+                />
         </main>
     );
 }
-

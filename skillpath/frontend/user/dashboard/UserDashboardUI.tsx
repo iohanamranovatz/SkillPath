@@ -10,7 +10,7 @@ import { ScoreChart } from "@/frontend/user/components/score-chart"
 import { SkillRadar } from "@/frontend/user/components/skill-radar"
 import RecentResults from "@/frontend/user/components/recent-results"
 import { RecommendedResources } from "@/frontend/user/components/recommended-resources"
-import { TestsView } from "@/frontend/user/components/tests-view"
+import { TestsView, type UserTest } from "@/frontend/user/components/tests-view"
 import { ResultsView } from "@/frontend/user/components/results-view"
 import { ResourcesView } from "@/frontend/user/components/resources-view"
 import { ProfileView } from "@/frontend/user/components/profile-view"
@@ -38,11 +38,13 @@ function DashboardView({ onStart }: { onStart: () => void }) {
 }
 
 export function UserDashboardUI({
+    tests,
     initialData,
-    objectives = [],
-    userInterestTagIds = [],
-    allTags = []
-}: UserDashboardUIProps) {
+    objectives,
+    userInterestTagIds,
+    allTags,
+    initialResources,
+}: UserDashboardUIProps & { tests: UserTest[] }) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -68,9 +70,9 @@ export function UserDashboardUI({
                 <Topbar onMenuOpen={() => setMobileOpen(true)} />
                 <main className="flex-1 space-y-6 p-4 md:p-6">
                     {view === "Dashboard" && <DashboardView onStart={startTest} />}
-                    {view === "Tests" && <TestsView onStart={startTest} />}
+                    {view === "Tests" && <TestsView tests={tests} onStart={startTest} />}
                     {view === "Results" && <ResultsView />}
-                    {view === "Resources" && <ResourcesView />}
+                    {view === "Resources" && <ResourcesView resources={initialResources} />}
                     {view === "Profile" && (
                         <ProfileView
                             initialData={initialData}
