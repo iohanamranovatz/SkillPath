@@ -12,14 +12,12 @@ import {
     LogOut,
 } from "lucide-react";
 import { Logo } from "./logo";
-import signOut from "@/backend/auth/signOut";
 
 const navItems = [
     { label: "Dashboard", href: "/adminDashboard", icon: LayoutDashboard },
     { label: "Question bank", href: "/questions", icon: HelpCircle },
     { label: "Manage bategories", href: "/categories", icon: FolderTree },
     { label: "Manage users", href: "/manageUsers", icon: Users },
-    { label: "Sign out", href: "/login", icon: LogOut, onClick: signOut },
 ];
 
 
