@@ -203,11 +203,18 @@ export async function getQuestionsByCategory(categoryId: number | string) {
     return { success: true, data: data ?? [] };
 }
 
-export async function getAllResources(): Promise<{ success: boolean; message?: string; data: Resource[] }> {
-    const { data, error } = await supabase
+export async function getAllResources(categoryId?: number): Promise<{ success: boolean; message?: string; data: Resource[] }> {
+    let query = supabase
         .from("learning_resources")
-        .select("id, title, url, type, tag_id, tags(name)")
+        .select("id, title, url, type, category_id, categories(name)")
         .order("id", { ascending: false });
+
+    // Optional filter by category_id if provided
+    if (categoryId !== undefined) {
+        query = query.eq("category_id", categoryId);
+    }
+
+    const { data, error } = await query;
 
     if (error) return { success: false, message: error.message, data: [] };
 
@@ -216,7 +223,7 @@ export async function getAllResources(): Promise<{ success: boolean; message?: s
         title: r.title ?? "",
         url: r.url ?? "",
         type: r.type ?? "Resource",
-        tag: r.tags?.name ?? "General",
+        category: r.categories?.name ?? "General",
     }));
 
     return { success: true, data: resources };

@@ -21,7 +21,7 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
 
     // Filtrăm resursele după tag în funcție de ce introduce utilizatorul în searchbar
     const filteredResources = resources.filter((resource) =>
-        resource.tag?.toLowerCase().includes(searchQuery.toLowerCase())
+        resource.category?.toLowerCase().includes(searchQuery.toLowerCase())
     )
 
     return (
@@ -35,7 +35,7 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
                 <SearchBar
                     value={searchQuery}
                     onChange={setSearchQuery}
-                    placeholder="Search by tag (e.g., Frontend, Database)..."
+                    placeholder="Search by categoty (e.g., Frontend, Database)..."
                 />
             </div>
 
@@ -56,9 +56,9 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
                                         <span className="text-xs uppercase tracking-widest text-muted-foreground">
                                             {resource.type}
                                         </span>
-                                        {resource.tag && (
+                                        {resource.category && (
                                             <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                {resource.tag}
+                                                {resource.category}
                                             </span>
                                         )}
                                     </div>
