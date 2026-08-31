@@ -1,10 +1,16 @@
 import {useEffect, useState} from "react";
 import {getAssessmentAnalytics, toggleResourceCompletion} from "@/backend/user/actions/getAssessmentAnalytics";
-import {Award, CheckCircle2, AlertTriangle, BookOpen, ExternalLink} from "lucide-react";
+import {Award, CheckCircle2, AlertTriangle, BookOpen, ExternalLink, ChevronLeft, ChevronRight} from "lucide-react";
+
+// paginare -> numarul de categorii per pagina
+const ITEMS_PER_PAGE = 6;
 
 export function ResultsView() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    // paginare
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         async function loadAnalytics() {
@@ -61,11 +67,24 @@ export function ResultsView() {
         ? Math.round((completedResourcesCount / totalResourcesCount) * 100)
         : 0;
 
+    // Calcule pentru paginarea resurselor
+    const totalPages = Math.ceil(totalResourcesCount / ITEMS_PER_PAGE);
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const paginatedResources = resourcesList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+    const handlePrevPage = () => {
+        setCurrentPage((prev) => Math.max(prev - 1, 1));
+    };
+
+    const handleNextPage = () => {
+        setCurrentPage((prev) => Math.min(prev + 1, totalPages));
+    };
+
     return (
         <div className="max-w-5xl mx-auto space-y-6 p-6">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight">Rezultate & Analiză</h1>
-                <p className="text-muted-foreground">Urmărește evoluția și ariile care necesită atenție.</p>
+                <h1 className="text-3xl font-bold tracking-tight">Results & Analytics</h1>
+                <p className="text-muted-foreground">Track progress and areas that require attention.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -74,7 +93,7 @@ export function ResultsView() {
                         <Award className="size-8" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-muted-foreground">Punctaj Obținut (Medie)</p>
+                        <p className="text-sm font-medium text-muted-foreground">Final Score (Average)</p>
                         <h2 className="text-3xl font-bold">{data.scoreTotal}%</h2>
                     </div>
                 </div>
@@ -84,14 +103,14 @@ export function ResultsView() {
                         <CheckCircle2 className="size-8" />
                     </div>
                     <div>
-                        <p className="text-sm font-medium text-muted-foreground">Nivel Estimat</p>
+                        <p className="text-sm font-medium text-muted-foreground">Estimated level</p>
                         <h2 className="text-3xl font-bold capitalize">{data.estimatedLevel}</h2>
                     </div>
                 </div>
             </div>
 
             <div className="p-6 border rounded-xl bg-card space-y-4">
-                <h2 className="text-xl font-semibold">Scor pe Categorii</h2>
+                <h2 className="text-xl font-semibold">Score per Category</h2>
                 <div className="space-y-4">
                     {(data.categoryScores || []).map((cat: any) => (
                         <div key={cat.id} className="space-y-1.5">
@@ -118,7 +137,7 @@ export function ResultsView() {
                 <div className="p-6 border border-amber-500/30 rounded-xl bg-amber-500/5 space-y-3">
                     <div className="flex items-center gap-2 font-semibold text-amber-500 text-lg">
                         <AlertTriangle className="size-5" />
-                        <h2>Weak Areas Identificate (&lt; 60%)</h2>
+                        <h2>Identified Weaknesses (&lt; 60%)</h2>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {data.weakAreas.map((area: any) => (
@@ -135,33 +154,32 @@ export function ResultsView() {
 
             {(data.recommendedResources || []).length > 0 && (
                 <div className="p-6 border rounded-xl bg-card space-y-4">
-                   <div className="space-y-3">
-                       <div className="flex items-center gap-2 font-semibold text-lg">
-                           <BookOpen className="size-5 text-primary" />
-                           <h2>Recomandări de Învățare pentru Weak Areas</h2>
-                       </div>
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 font-semibold text-lg">
+                            <BookOpen className="size-5 text-primary" />
+                            <h2>Learning Recommendations for Weak Areas</h2>
+                        </div>
 
-
-                       {/* Bara de progres resurse */}
-                       <div className="space-y-1.5 bg-muted/30 p-4 rounded-xl border">
-                           <div className="flex justify-between items-center text-sm font-medium">
+                        {/* Bara de progres resurse */}
+                        <div className="space-y-1.5 bg-muted/30 p-4 rounded-xl border">
+                            <div className="flex justify-between items-center text-sm font-medium">
                                 <span className="text-muted-foreground">
-                                    Progres resurse parcurse ({completedResourcesCount}/{totalResourcesCount})
+                                    Progress of Completed Resources ({completedResourcesCount}/{totalResourcesCount})
                                 </span>
-                               <span className="font-bold text-primary">{resourceProgressPercentage}%</span>
-                           </div>
-                           <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                               <div
-                                   className="h-full bg-primary transition-all duration-300"
-                                   style={{ width: `${resourceProgressPercentage}%` }}
-                               />
-                           </div>
-                       </div>
-                   </div>
+                                <span className="font-bold text-primary">{resourceProgressPercentage}%</span>
+                            </div>
+                            <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-primary transition-all duration-300"
+                                    style={{ width: `${resourceProgressPercentage}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
 
-                    {/* Lista de resurse cu bifă + Buton "Open Resource" */}
+                    {/* Lista de resurse paginată */}
                     <div className="grid gap-3 sm:grid-cols-2">
-                        {data.recommendedResources.map((res: any) => (
+                        {paginatedResources.map((res: any) => (
                             <div
                                 key={res.id}
                                 className={`p-4 border rounded-xl flex items-center justify-between gap-3 transition-colors ${
@@ -187,7 +205,6 @@ export function ResultsView() {
                                     </div>
                                 </div>
 
-                                {/* Buton separat care deschide link-ul/video-ul */}
                                 <a
                                     href={res.url}
                                     target="_blank"
@@ -200,6 +217,31 @@ export function ResultsView() {
                             </div>
                         ))}
                     </div>
+
+                    {/* Controale de Paginare (se afișează doar dacă există mai mult de o pagină) */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-between pt-4 border-t text-sm">
+                            <span className="text-muted-foreground">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={handlePrevPage}
+                                    disabled={currentPage === 1}
+                                    className="p-2 border rounded-lg bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <ChevronLeft className="size-4" />
+                                </button>
+                                <button
+                                    onClick={handleNextPage}
+                                    disabled={currentPage === totalPages}
+                                    className="p-2 border rounded-lg bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    <ChevronRight className="size-4" />
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

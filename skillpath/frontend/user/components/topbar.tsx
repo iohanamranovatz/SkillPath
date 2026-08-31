@@ -41,15 +41,15 @@ export function Topbar({ data, onMenuOpen }: { data: {name: string, email: strin
                 <LayoutDashboard className="size-5" />
             </button>
 
-            <div className="relative hidden max-w-sm flex-1 md:block">
-                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                    type="search"
-                    placeholder="Search tests, topics, resources..."
-                    aria-label="Search"
-                    className="h-9 w-full rounded-md border border-input bg-card pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"
-                />
-            </div>
+            {/*<div className="relative hidden max-w-sm flex-1 md:block">*/}
+            {/*    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />*/}
+            {/*    <input*/}
+            {/*        type="search"*/}
+            {/*        placeholder="Search tests, topics, resources..."*/}
+            {/*        aria-label="Search"*/}
+            {/*        className="h-9 w-full rounded-md border border-input bg-card pl-9 pr-3 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30"*/}
+            {/*    />*/}
+            {/*</div>*/}
 
             <div className="ml-auto flex items-center gap-3">
                 {/* Attach ref here to monitor clicks inside vs outside */}

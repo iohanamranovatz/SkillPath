@@ -6,7 +6,6 @@ import {
     BarChart3,
     BookOpen,
     User,
-    Settings,
     Code2,
     X, LogOut,
 } from "lucide-react"

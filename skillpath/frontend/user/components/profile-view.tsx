@@ -8,7 +8,7 @@ import { ProfileViewProps } from "@/frontend/user/lib/types";
 import {addObjective, deleteObjective, toggleInterestTag, toggleObjective} from "@/backend/user/profile/profileActions";
 
 const MAX_OBJECTIVES = 5;
-const MAX_TAGS = 3;
+const MAX_TAGS = 5;
 
 export function ProfileView({
     initialData,

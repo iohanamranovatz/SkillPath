@@ -27,16 +27,16 @@ export default async function ProfilePage() {
 
     const { data: userInterests } = await supabase
         .from("user_interests")
-        .select("tag_id")
+        .select("category_id")
         .eq("user_id", user.id);
 
     const userInterestTagIds = userInterests
         ?.map(
-            (interest) => interest.tag_id
+            (interest) => interest.category_id
         ) || [];
 
     const { data: allTags } = await supabase
-        .from("tags")
+        .from("categories")
         .select("id, name");
 
     return (

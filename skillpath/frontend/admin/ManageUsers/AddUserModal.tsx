@@ -54,9 +54,21 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
                             name="email"
                             type="email"
                             required
-                            placeholder="john@example.com"
+                            placeholder="alex.doe@example.com"
                             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-blue-500"
                         />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm text-muted-foreground mb-1">Role</label>
+                        <select
+                            name="role"
+                            defaultValue="user"
+                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-blue-500"
+                        >
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select>
                     </div>
 
                     <div>

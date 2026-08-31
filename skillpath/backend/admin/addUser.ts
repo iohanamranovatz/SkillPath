@@ -6,6 +6,7 @@ import {revalidatePath} from "next/cache";
 export async function AddUser(formData: FormData) {
     const email = formData.get("email") as string;
     const name = formData.get("name") as string;
+    const role = formData.get("role") as string;
     const estimated_level = formData.get("estimated_level") as string;
 
     if (!name || !email || !estimated_level) {
@@ -21,7 +22,7 @@ export async function AddUser(formData: FormData) {
             {
                 email,
                 name,
-                role: "user",
+                role,
                 estimated_level: estimated_level || "Beginner"
             }
         ])
