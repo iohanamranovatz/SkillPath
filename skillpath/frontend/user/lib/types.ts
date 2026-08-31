@@ -27,7 +27,7 @@ export interface ProfileViewProps {
 export interface Resource {
 
     id: number;
-    tag: string;
+    category: string;
     title: string;
     url: string;
     type: string;

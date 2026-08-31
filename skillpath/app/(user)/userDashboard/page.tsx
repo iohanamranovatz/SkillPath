@@ -23,10 +23,10 @@ export default async function DashboardPage(){
         .eq("auth_key", data.user.id)
         .single();
 
-    if (error || !userData) {
+
+    if (error || !userData || userData.role !== 'user') {
         redirect('/');
     }
-
     const { data: objectives } = await supabase
         .from("user_objectives")
         .select("*")
@@ -45,21 +45,48 @@ export default async function DashboardPage(){
         .from("tags")
         .select("id, name");
 
+    const { data: userAssessments, error: assessmentErr } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('user_id', userData.id);
+
+    if (assessmentErr) {
+        console.error("Error fetching assessments:", assessmentErr.message);
+    }
+
+    // Extract just the IDs into a simple array [1, 2, 3...]
+    const assessmentIds = userAssessments?.map(a => a.id) || [];
+
+    // 2. Fetch only the correct answers that belong to those assessments
+    const { data: correctAnswers, error: errorQ } = await supabase
+        .from('assessment_answers')
+        .select('id')
+        .in('assessment_id', assessmentIds) // Match against the user's assessments
+        .eq('is_correct', true);
+
+    if (errorQ) {
+        console.error("Error fetching correct answers:", errorQ.message);
+    }
+
+    const totalCorrectAnswers = correctAnswers?.length || 0;
+
     const initialResources = await fetchAllResourcesWrapper();
 
-    // testele userului (pentru tab-ul Tests)
     const testsRes = await getTests(userData.id);
 
     return (
-            <main>
-                <UserDashboardUI
-                    tests={testsRes.data}
-                    initialData={userData}
-                    objectives={objectives || []}
-                    userInterestTagIds={userInterestTagIds}
-                    allTags={allTags || []}
-                    initialResources={initialResources}
-                />
+        <main>
+            <UserDashboardUI
+                tests={testsRes.data}
+                initialData={userData}
+                objectives={objectives || []}
+                userInterestTagIds={userInterestTagIds}
+                allTags={allTags || []}
+                initialResources={initialResources}
+                questions={totalCorrectAnswers}
+            />
         </main>
     );
 }
+
+

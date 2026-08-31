@@ -1,11 +1,11 @@
-import {Check, Flame, Plus, Search, Trash2} from "lucide-react"
+import {Check, Plus, Search, Trash2} from "lucide-react"
 import { PageHeading } from "./page-heading"
 import { Card } from "@/frontend/user/common/card"
 import { Button } from "@/frontend/user/common/button"
 import {useState} from "react";
-import {updateProfile} from "@/backend/user/updateProfile";
+import {updateProfile} from "@/backend/user/profile/updateProfile";
 import { ProfileViewProps } from "@/frontend/user/lib/types";
-import {addObjective, deleteObjective, toggleInterestTag, toggleObjective} from "@/backend/user/profileActions";
+import {addObjective, deleteObjective, toggleInterestTag, toggleObjective} from "@/backend/user/profile/profileActions";
 
 const MAX_OBJECTIVES = 5;
 const MAX_TAGS = 3;
