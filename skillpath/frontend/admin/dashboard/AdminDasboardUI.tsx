@@ -1,8 +1,8 @@
 import Dashboard from "@/frontend/admin/components/Dashboard";
-import { getDashboardData } from "@/frontend/admin/lib/mock-data";
+import { getAdminDashboardData } from "@/backend/admin/getAdminDashboardData";
 
-export function AdminDashboardUI() {
-    const { stats, assessmentActivity, topUsers, weakestCategories } = getDashboardData();
+export async function AdminDashboardUI() {
+    const { stats, assessmentActivity, topUsers, weakestCategories } = await getAdminDashboardData();
 
     return (
         <Dashboard

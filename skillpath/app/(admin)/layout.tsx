@@ -1,6 +1,5 @@
 import AdminSidebar from "@/frontend/admin/components/Sidebar";
 import AdminHeader from "@/frontend/admin/components/Header";
-import AdminFooter from "@/frontend/admin/components/Footer";
 
 // Layout comun pentru toate rutele din grupul (admin).
 // Randeaza chrome-ul (sidebar + header + footer) o singura data in jurul paginilor.
@@ -15,7 +14,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
                 <main className="flex-1 p-6 md:p-8">{children}</main>
 
-                <AdminFooter />
             </div>
         </div>
     );
