@@ -30,9 +30,10 @@ export async function evaluateUserLevel(userId: number) {
     const distinctCats = categories.size;
 
     // nivelul calculat din tot istoricul (praguri ajustabile)
+    // trebuie trecute teste (>=75%) in mai multe categorii DISTINCTE
     let level = "Beginner";
-    if (qualified >= 4 && distinctCats >= 3) level = "Advanced";
-    else if (qualified >= 2 && distinctCats >= 2) level = "Intermediate";
+    if (qualified >= 6 && distinctCats >= 6) level = "Advanced";
+    else if (qualified >= 4 && distinctCats >= 4) level = "Intermediate";
 
     await supabase.from("users").update({ estimated_level: level }).eq("id", userId);
 
