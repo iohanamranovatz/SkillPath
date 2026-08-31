@@ -5,8 +5,16 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/frontend/user/common/c
 import {Button} from "@/frontend/user/common/button";
 
 import {cn} from "@/frontend/user/lib/utils";
-import {Difficulty, recentResults} from "@/frontend/user/lib/mock-data";
+import {Difficulty} from "@/frontend/user/lib/mock-data";
 
+type RecentResult = {
+    id: number | string
+    title: string
+    topic: string
+    difficulty: Difficulty
+    score: number
+    date: string
+}
 
 function scoreColor(score: number) {
     if (score >= 85) return "text-chart-3"
@@ -14,7 +22,7 @@ function scoreColor(score: number) {
     return "text-chart-5"
 }
 
-function RecentResults() {
+function RecentResults({ results = [] }: { results?: RecentResult[] }) {
     return (
         <Card className="h-full">
             <CardHeader className="flex-row items-center justify-between">
@@ -25,8 +33,13 @@ function RecentResults() {
                 </Button>
             </CardHeader>
             <CardContent className="px-2">
+                {results.length === 0 ? (
+                    <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+                        No results yet. Complete a test to see it here.
+                    </p>
+                ) : (
                 <ul className="flex flex-col">
-                    {recentResults.map((result) => (
+                    {results.map((result) => (
                         <li key={result.id}>
                             <button className="flex w-full items-center gap-4 rounded-md px-4 py-3 text-left transition-colors hover:bg-muted">
                                 <div className="min-w-0 flex-1">
@@ -45,6 +58,7 @@ function RecentResults() {
                         </li>
                     ))}
                 </ul>
+                )}
             </CardContent>
         </Card>
     )

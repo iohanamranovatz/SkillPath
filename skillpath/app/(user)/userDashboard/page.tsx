@@ -5,6 +5,7 @@ import {supabase} from '@/helper/SupabaseClient';
 import { UserDashboardUI } from '@/frontend/user/dashboard/UserDashboardUI';
 import {fetchAllResourcesWrapper} from "@/backend/categories";
 import { getTests } from '@/backend/user/getTests';
+import { getDashboardData } from '@/backend/user/getDashboardData';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -74,6 +75,8 @@ export default async function DashboardPage(){
 
     const testsRes = await getTests(userData.id);
 
+    const dashboardData = await getDashboardData(userData.id);
+
     return (
         <main>
             <UserDashboardUI
@@ -84,6 +87,7 @@ export default async function DashboardPage(){
                 allTags={allTags || []}
                 initialResources={initialResources}
                 questions={totalCorrectAnswers}
+                dashboardData={dashboardData}
             />
         </main>
     );

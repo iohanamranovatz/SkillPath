@@ -1,27 +1,38 @@
 "use client"
 
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from "recharts"
-import {skills} from "@/frontend/user/lib/mock-data";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/frontend/user/common/card";
 
+type SkillPoint = { skill: string; score: number }
 
-export function SkillRadar() {
-    const strongest = [...skills].sort((a, b) => b.score - a.score)[0]
-    const weakest = [...skills].sort((a, b) => a.score - b.score)[0]
+export function SkillRadar({ data = [] }: { data?: SkillPoint[] }) {
+    const strongest = data.length ? [...data].sort((a, b) => b.score - a.score)[0] : null
+    const weakest = data.length ? [...data].sort((a, b) => a.score - b.score)[0] : null
 
     return (
         <Card className="h-full">
             <CardHeader>
                 <CardTitle>Skill breakdown</CardTitle>
                 <CardDescription>
-                    Strongest in <span className="font-medium text-chart-3">{strongest.skill}</span>, focus on{" "}
-                    <span className="font-medium text-chart-5">{weakest.skill}</span>
+                    {strongest && weakest ? (
+                        <>
+                            Strongest in <span className="font-medium text-chart-3">{strongest.skill}</span>, focus on{" "}
+                            <span className="font-medium text-chart-5">{weakest.skill}</span>
+                        </>
+                    ) : (
+                        "Your performance across categories"
+                    )}
                 </CardDescription>
             </CardHeader>
             <CardContent>
+                {data.length === 0 ? (
+                    <div className="flex h-[260px] w-full items-center justify-center text-sm text-muted-foreground">
+                        Complete a test to see your skill breakdown.
+                    </div>
+                ) : (
                 <div className="h-[260px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <RadarChart data={skills} outerRadius="72%">
+                        <RadarChart data={data} outerRadius="72%">
                             <PolarGrid stroke="var(--border)" />
                             <PolarAngleAxis
                                 dataKey="skill"
@@ -38,6 +49,7 @@ export function SkillRadar() {
                         </RadarChart>
                     </ResponsiveContainer>
                 </div>
+                )}
             </CardContent>
         </Card>
     )

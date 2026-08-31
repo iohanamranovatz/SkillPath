@@ -10,9 +10,10 @@ import {
     Tooltip,
 } from "recharts"
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/frontend/user/common/card";
-import {scoreHistory} from "@/frontend/user/lib/mock-data";
 
-export function ScoreChart() {
+type ScorePoint = { month: string; score: number }
+
+export function ScoreChart({ data = [] }: { data?: ScorePoint[] }) {
     return (
         <Card className="h-full">
             <CardHeader>
@@ -20,9 +21,14 @@ export function ScoreChart() {
                 <CardDescription>Your rolling test performance across the last 6 months</CardDescription>
             </CardHeader>
             <CardContent>
+                {data.length === 0 ? (
+                    <div className="flex h-[260px] w-full items-center justify-center text-sm text-muted-foreground">
+                        Complete a test to see your score history.
+                    </div>
+                ) : (
                 <div className="h-[260px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={scoreHistory} margin={{ left: -20, right: 8, top: 8 }}>
+                        <AreaChart data={data} margin={{ left: -20, right: 8, top: 8 }}>
                             <defs>
                                 <linearGradient id="scoreFill" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="0%" stopColor="var(--chart-1)" stopOpacity={0.3} />
@@ -63,6 +69,7 @@ export function ScoreChart() {
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
+                )}
             </CardContent>
         </Card>
     )

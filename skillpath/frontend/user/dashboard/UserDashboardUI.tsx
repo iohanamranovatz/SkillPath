@@ -16,11 +16,12 @@ import { ResourcesView } from "@/frontend/user/components/resources-view"
 import { ProfileView } from "@/frontend/user/components/profile-view"
 import type { View } from "@/frontend/user/lib/mock-data"
 import {Objective, UserDashboardUIProps, UserProfileData} from "@/frontend/user/lib/types";
+import type { DashboardData } from "@/backend/user/getDashboardData";
 
 
 
-function DashboardView({initialData, tests, questions, objectives, onStart }: {initialData: UserProfileData, tests: UserTest[],
-    questions: number, objectives: Objective[] ,onStart?: [() => void, () => void] }) {
+function DashboardView({initialData, tests, questions, objectives, dashboardData, onStart }: {initialData: UserProfileData, tests: UserTest[],
+    questions: number, objectives: Objective[], dashboardData: DashboardData, onStart?: [() => void, () => void] }) {
     return (
         <>
             <GreetingHeader  name={initialData.name}
@@ -34,13 +35,13 @@ function DashboardView({initialData, tests, questions, objectives, onStart }: {i
             <ContinueCard test={tests.find(t => t.status == "in_progress")}/>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <ScoreChart />
-                <SkillRadar />
+                <ScoreChart data={dashboardData.scoreHistory} />
+                <SkillRadar data={dashboardData.skills} />
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <RecentResults />
-                <RecommendedResources />
+                <RecentResults results={dashboardData.recentResults} />
+                <RecommendedResources resources={dashboardData.recommendedResources} />
             </div>
         </>
     )
@@ -53,8 +54,9 @@ export function UserDashboardUI({
     userInterestTagIds,
     allTags,
     initialResources,
-    questions
-}: UserDashboardUIProps & { tests: UserTest[] } & {questions: number}) {
+    questions,
+    dashboardData
+}: UserDashboardUIProps & { tests: UserTest[] } & {questions: number} & { dashboardData: DashboardData }) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
 
@@ -90,6 +92,7 @@ export function UserDashboardUI({
                             tests={tests}
                             objectives={objectives}
                             questions={questions}
+                            dashboardData={dashboardData}
                             onStart={[viewProgress ,startTest]}
                     />}
                     {view === "Tests" && <TestsView tests={tests} onStart={startTest} />}
