@@ -16,7 +16,7 @@ import { Logo } from "./logo";
 const navItems = [
     { label: "Dashboard", href: "/adminDashboard", icon: LayoutDashboard },
     { label: "Question bank", href: "/questions", icon: HelpCircle },
-    { label: "Manage bategories", href: "/categories", icon: FolderTree },
+    { label: "Manage categories", href: "/categories", icon: FolderTree },
     { label: "Manage users", href: "/manageUsers", icon: Users },
 ];
 

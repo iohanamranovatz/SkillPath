@@ -19,7 +19,7 @@ export default async function DashboardPage(){
 
     const { data: userData, error } = await supabase
         .from('users')
-        .select('id, email,name,role,estimated_level,user_interests ( tag_id, tags ( name ) )' )
+        .select('id, email,name,role,estimated_level,user_interests ( category_id, categories ( name ) )' )
         .eq("auth_key", data.user.id)
         .single();
 
@@ -34,11 +34,11 @@ export default async function DashboardPage(){
 
     const { data: userInterests } = await supabase
         .from("user_interests")
-        .select("tag_id")
+        .select("category_id")
         .eq("user_id", userData.id);
 
     const userInterestTagIds = userInterests?.map(
-        (item) => item.tag_id
+        (item) => item.category_id
     ) || [];
 
     const { data: allTags } = await supabase

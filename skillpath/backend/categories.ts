@@ -99,13 +99,14 @@ export async function updateCategory(input: {
     id: number;
     name: string;
     description?: string | null;
+    difficulty: string;
 }) {
     if (!input.name?.trim())
         return { success: false, message: "Please add the name of the category!" };
 
     const { data, error } = await supabase
         .from("categories")
-        .update({ name: input.name.trim(), description: input.description ?? null })
+        .update({ name: input.name.trim(), description: input.description ?? null, difficulty: input.difficulty })
         .eq("id", input.id)
         .select()
         .single();
@@ -177,13 +178,13 @@ export async function deleteTag(id: number) {
 }
 
 // --- Admin adauga o categorie nouă ---
-export async function addCategory(input: { name: string; description?: string }) {
+export async function addCategory(input: { name: string; description?: string; difficulty: string }) {
     if (!input.name?.trim())
         return { success: false, message: "Name of the category is obligatory." };
 
     const { data, error } = await supabase
         .from("categories")
-        .insert({ name: input.name.trim(), description: input.description ?? null })
+        .insert({ name: input.name.trim(), description: input.description ?? null, difficulty: input.difficulty })
         .select()
         .single();
 

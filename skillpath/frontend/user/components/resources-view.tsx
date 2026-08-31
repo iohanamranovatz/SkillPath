@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from "react"
+import {useMemo, useState} from "react"
 import { BrainCircuit, Code2, LineChart, ChevronRight } from "lucide-react"
 import { PageHeading } from "./page-heading"
 import { Card } from "@/frontend/user/common/card"
 import { Resource } from "@/frontend/user/lib/types"
 import { SearchBar } from "@/frontend/admin/Questions/search-bar"
+import Pagination from "@/frontend/components/pagination";
 
-
+// paginare -> numarul de categorii per pagina
+const ITEMS_PER_PAGE = 6;
 
 const getResourceIcon = (type: string) => {
     const lowerType = type.toLowerCase();
@@ -19,10 +21,35 @@ const getResourceIcon = (type: string) => {
 export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
     const [searchQuery, setSearchQuery] = useState("")
 
-    // Filtrăm resursele după tag în funcție de ce introduce utilizatorul în searchbar
-    const filteredResources = resources.filter((resource) =>
-        resource.category?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    // paginare
+    const [currentPage, setCurrentPage] = useState(1);
+
+    // Functie pentru actualizarea cautarii + resetarea paginii
+    const handleSearch = (value: string) => {
+        setSearchQuery(value);
+        setCurrentPage(1); // Reseteaza la pagina 1 la fiecare noua cautare
+    };
+
+    // Filtrăm resursele după categorie si titlu
+    // în funcție de ce introduce utilizatorul în searchbar
+    const filteredResources = useMemo(() => {
+        const query = searchQuery.toLowerCase().trim();
+        return resources.filter((resource) => {
+            const categoryMatch = resource.category?.toLowerCase().includes(query) ?? false;
+            const titleMatch = resource.title?.toLowerCase().includes(query) ?? false;
+            return categoryMatch || titleMatch;
+        });
+    }, [resources, searchQuery]);
+
+
+    const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE) || 1;
+
+    const paginatedCategories = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredResources.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredResources, currentPage]);
+
+
 
     return (
         <div className="space-y-6">
@@ -34,7 +61,10 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
             <div className="max-w-md">
                 <SearchBar
                     value={searchQuery}
-                    onChange={setSearchQuery}
+                    onChange={(e: any) => {
+                        const val = typeof e === 'string' ? e : e?.target?.value ?? '';
+                        handleSearch(val);
+                    }}
                     placeholder="Search by categoty (e.g., Frontend, Database)..."
                 />
             </div>
@@ -43,7 +73,7 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
                 <div className="text-sm text-muted-foreground">No resources available found.</div>
             ) : (
                 <div className="grid gap-4 lg:grid-cols-2">
-                    {filteredResources.map((resource) => {
+                    {paginatedCategories.map((resource) => {
                         const Icon = getResourceIcon(resource.type);
 
                         return (
@@ -74,9 +104,17 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
                                 </div>
                             </Card>
                         )
+
                     })}
                 </div>
             )}
+            <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={filteredResources.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={setCurrentPage}
+            />
         </div>
     )
 }

@@ -36,17 +36,17 @@ export async function deleteObjective(objectiveId: number) {
     revalidatePath("/profile");
 }
 
-export async function toggleInterestTag(userId: number, tagId: number, isSelected: boolean) {
+export async function toggleInterestTag(userId: number, categoryId: number, isSelected: boolean) {
     if (isSelected) {
         await supabase
             .from("user_interests")
             .delete()
             .eq("user_id", userId)
-            .eq("tag_id", tagId);
+            .eq("category_id", categoryId);
     } else {
         await supabase
             .from("user_interests")
-            .insert({ user_id: userId, tag_id: tagId });
+            .insert({ user_id: userId, category_id: categoryId });
     }
 
     revalidatePath("/profile");
