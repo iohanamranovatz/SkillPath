@@ -1,3 +1,5 @@
+"use client";
+
 import {Check, Plus, Search, Trash2} from "lucide-react"
 import { PageHeading } from "./page-heading"
 import { Card } from "@/frontend/user/common/card"

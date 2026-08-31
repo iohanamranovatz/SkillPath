@@ -23,8 +23,8 @@ export default async function DashboardPage(){
         .eq("auth_key", data.user.id)
         .single();
 
-
-    if (error || !userData || userData.role !== 'user') {
+    // orice cont care nu e admin este tratat ca user (student)
+    if (error || !userData || userData.role === 'admin') {
         redirect('/');
     }
     const { data: objectives } = await supabase
@@ -42,7 +42,7 @@ export default async function DashboardPage(){
     ) || [];
 
     const { data: allTags } = await supabase
-        .from("tags")
+        .from("categories")
         .select("id, name");
 
     const { data: userAssessments, error: assessmentErr } = await supabase

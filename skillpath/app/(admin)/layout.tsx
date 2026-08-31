@@ -1,0 +1,22 @@
+import AdminSidebar from "@/frontend/admin/components/Sidebar";
+import AdminHeader from "@/frontend/admin/components/Header";
+import AdminFooter from "@/frontend/admin/components/Footer";
+
+// Layout comun pentru toate rutele din grupul (admin).
+// Randeaza chrome-ul (sidebar + header + footer) o singura data in jurul paginilor.
+// Verificarea sesiunii se face server-side in fiecare pagina (supabase.auth.getUser()).
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <div className="flex min-h-screen bg-background text-foreground">
+            <AdminSidebar />
+
+            <div className="flex flex-1 flex-col">
+                <AdminHeader />
+
+                <main className="flex-1 p-6 md:p-8">{children}</main>
+
+                <AdminFooter />
+            </div>
+        </div>
+    );
+}

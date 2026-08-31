@@ -23,7 +23,7 @@ export default function Dashboard({
     weakestCategories,
 }: DashboardProps) {
     return (
-        <main className="flex-1 bg-background p-8 text-foreground">
+        <main className="flex-1 text-foreground">
             <div className="mx-auto max-w-7xl space-y-8">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>

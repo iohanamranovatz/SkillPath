@@ -45,13 +45,12 @@ export async function getCategoryTags(categoryId: number | string) {
     return { success: true, data: data ?? [] };
 }
 
-// --- Resursele unei categorii (prin taguri: learning_resources -> tags -> category) ---
+// --- Resursele unei categorii (direct prin category_id) ---
 export async function getResourcesFromCategory(categoryId: number | string) {
     const { data, error } = await supabase
         .from("learning_resources")
-        // tags!inner => face join si permite filtrarea dupa coloana din tags
-        .select("id, title, url, type, tag_id, tags!inner(category_id, name)")
-        .eq("tags.category_id", categoryId)
+        .select("id, title, url, type, category_id")
+        .eq("category_id", categoryId)
         .order("id", { ascending: false });
 
     if (error) return { success: false, message: error.message, data: [] };
@@ -61,28 +60,27 @@ export async function getResourcesFromCategory(categoryId: number | string) {
         title: r.title,
         url: r.url,
         type: r.type,
-        tagId: r.tag_id,
-        tagName: r.tags?.name ?? null,
+        categoryId: r.category_id,
     }));
     return { success: true, data: resources };
 }
 
-// --- Admin adauga o resursa
+// --- Admin adauga o resursa (direct in categorie) ---
 export async function addResource(input: {
-    tagId: number;          // OBLIGATORIU — resursa apartine unui tag
+    categoryId: number;     // OBLIGATORIU — resursa apartine unei categorii
     title: string;
     url?: string;
     type?: string;          // article | video | course
 }) {
     if (!input.title?.trim())
         return { success: false, message: "Please add title !" };
-    if (!input.tagId)
-        return { success: false, message: "Please choose resource tag!." };
+    if (!input.categoryId)
+        return { success: false, message: "Missing category!" };
 
     const { data, error } = await supabase
         .from("learning_resources")
         .insert({
-            tag_id: input.tagId,
+            category_id: input.categoryId,
             title: input.title.trim(),
             url: input.url ?? null,
             type: input.type ?? "article",

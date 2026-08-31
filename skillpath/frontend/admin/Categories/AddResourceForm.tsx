@@ -4,11 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addResource } from "@/backend/categories";
 
-type Tag = { id: number; name: string };
-
-export function AddResourceForm({ tags }: { tags: Tag[] }) {
+export function AddResourceForm({ categoryId }: { categoryId: number }) {
     const router = useRouter();
-    const [tagId, setTagId] = useState<number | "">("");
     const [title, setTitle] = useState("");
     const [url, setUrl] = useState("");
     const [type, setType] = useState("article");
@@ -17,30 +14,21 @@ export function AddResourceForm({ tags }: { tags: Tag[] }) {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (tagId === "") { setMsg("Alege un tag."); return; }
+        if (!title.trim()) { setMsg("Adaugă un titlu."); return; }
 
         setLoading(true);
-        const res = await addResource({ tagId: Number(tagId), title, url, type });
+        const res = await addResource({ categoryId, title, url, type });
         setLoading(false);
         setMsg(res.message ?? "");
 
         if (res.success) {
-            setTitle(""); setUrl(""); setTagId(""); setType("article");
+            setTitle(""); setUrl(""); setType("article");
             router.refresh(); // reîncarcă datele server-component-ului
         }
     }
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-wrap items-center gap-2 mb-4">
-            <select
-                value={tagId}
-                onChange={(e) => setTagId(e.target.value ? Number(e.target.value) : "")}
-                className="search-input-modern"
-            >
-                <option value="">Alege tag…</option>
-                {tags.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-            </select>
-
             <input value={title} onChange={(e) => setTitle(e.target.value)}
                    placeholder="Title" className="search-input-modern" />
 
