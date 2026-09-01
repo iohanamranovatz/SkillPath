@@ -1,17 +1,29 @@
-import { FileText, Video, Dumbbell, GraduationCap, Clock, ArrowUpRight } from "lucide-react"
-import {recommendedResources, ResourceType} from "@/frontend/user/lib/mock-data";
+import { FileText, Video, Dumbbell, GraduationCap, ArrowUpRight } from "lucide-react"
 import {Card, CardContent, CardHeader, CardTitle} from "@/frontend/user/common/card";
 import {Button} from "@/frontend/user/common/button";
 
-
-const typeIcon: Record<ResourceType, typeof FileText> = {
-    Article: FileText,
-    Video: Video,
-    Exercise: Dumbbell,
-    Course: GraduationCap,
+type RecommendedResource = {
+    id: number | string
+    title: string
+    type: string
+    url: string
+    reason: string
 }
 
-export function RecommendedResources() {
+const typeIcon: Record<string, typeof FileText> = {
+    article: FileText,
+    video: Video,
+    exercise: Dumbbell,
+    course: GraduationCap,
+}
+
+// Prima litera mare pentru afisare (ex: "article" -> "Article")
+function labelForType(type: string) {
+    if (!type) return "Resource"
+    return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
+}
+
+export function RecommendedResources({ resources = [] }: { resources?: RecommendedResource[] }) {
     return (
         <Card className="h-full">
             <CardHeader className="flex-row items-center justify-between">
@@ -21,11 +33,19 @@ export function RecommendedResources() {
                 </Button>
             </CardHeader>
             <CardContent className="grid gap-3">
-                {recommendedResources.map((resource) => {
-                    const Icon = typeIcon[resource.type as ResourceType]
+                {resources.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted-foreground">
+                        No recommendations yet. Take a test to get personalized resources.
+                    </p>
+                ) : (
+                    resources.map((resource) => {
+                    const Icon = typeIcon[(resource.type || "").toLowerCase()] ?? FileText
                     return (
-                        <button
+                        <a
                             key={resource.id}
+                            href={resource.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="group flex items-center gap-4 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-primary/40 hover:bg-accent/40"
                         >
                             <div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-accent text-accent-foreground">
@@ -34,20 +54,16 @@ export function RecommendedResources() {
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium">{resource.title}</p>
                                 <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                                    <span>{resource.type}</span>
-                                    <span aria-hidden>·</span>
-                                    <span className="inline-flex items-center gap-1">
-                    <Clock className="size-3" />
-                                        {resource.minutes} min
-                  </span>
+                                    <span>{labelForType(resource.type)}</span>
                                     <span aria-hidden>·</span>
                                     <span className="text-primary">{resource.reason}</span>
                                 </div>
                             </div>
                             <ArrowUpRight className="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
-                        </button>
+                        </a>
                     )
-                })}
+                })
+                )}
             </CardContent>
         </Card>
     )

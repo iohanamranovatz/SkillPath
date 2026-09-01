@@ -1,13 +1,8 @@
 import {
     getCategoryById,
-    getCategoryTags,
     getQuestionsByCategory, getResourcesFromCategory,
 } from "@/backend/categories";
 import { AddResourceForm } from "@/frontend/admin/Categories/AddResourceForm";
-import { TagsManager } from "@/frontend/admin/Categories/TagsManager";
-import AdminSidebar from "@/frontend/admin/components/Sidebar";
-import AdminHeader from "@/frontend/admin/components/Header";
-import AdminFooter from "@/frontend/admin/components/Footer";
 
 export default async function CategoryDetailPage({
     params,
@@ -16,25 +11,15 @@ export default async function CategoryDetailPage({
 }) {
     const { id } = await params;
 
-    const [cat, tags, resources, questions] = await Promise.all([
+    const [cat, resources, questions] = await Promise.all([
         getCategoryById(id),
-        getCategoryTags(id),
         getResourcesFromCategory(id),
         getQuestionsByCategory(id),
     ]);
 
     if (!cat.success || !cat.data) {
         return (
-            <div className="flex min-h-screen bg-background text-foreground">
-                <AdminSidebar />
-                <div className="flex flex-1 flex-col">
-                    <AdminHeader />
-                    <main className="flex-1 p-8">
-                        <p className="text-muted-foreground">Categoria nu a fost găsită.</p>
-                    </main>
-                    <AdminFooter />
-                </div>
-            </div>
+            <p className="text-muted-foreground">Categoria nu a fost găsită.</p>
         );
     }
 
@@ -48,17 +33,11 @@ export default async function CategoryDetailPage({
                 )}
             </div>
 
-            {/* TAGURI */}
-            <section className="bg-card rounded-2xl border border-white/10 p-6 shadow-sm">
-                <h2 className="text-lg font-semibold mb-3">Tags</h2>
-                <TagsManager categoryId={Number(id)} initialTags={tags.data as any} />
-            </section>
-
             {/* RESURSE */}
             <section className="bg-card rounded-2xl border border-white/10 p-6 shadow-sm">
                 <h2 className="text-lg font-semibold mb-3">Learning Resources</h2>
 
-                <AddResourceForm tags={tags.data} />
+                <AddResourceForm categoryId={Number(id)} />
 
                 {resources.data.length > 0 ? (
                     <ul className="divide-y divide-white/10">
@@ -67,7 +46,7 @@ export default async function CategoryDetailPage({
                                 <div>
                                     <p className="font-medium">{r.title}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {r.type} · {r.tagName}
+                                        {r.type}
                                     </p>
                                 </div>
                                 {r.url && (
