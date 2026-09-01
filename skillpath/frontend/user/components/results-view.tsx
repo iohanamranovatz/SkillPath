@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {getAssessmentAnalytics, toggleResourceCompletion} from "@/backend/user/actions/getAssessmentAnalytics";
 import {Award, CheckCircle2, AlertTriangle, BookOpen, ExternalLink, ChevronLeft, ChevronRight} from "lucide-react";
 
@@ -11,6 +11,8 @@ export function ResultsView() {
 
     // paginare
     const [currentPage, setCurrentPage] = useState(1);
+
+    const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
     useEffect(() => {
         async function loadAnalytics() {
@@ -61,16 +63,21 @@ export function ResultsView() {
     }
 
     const resourcesList = data.recommendedResources || [];
+
     const totalResourcesCount = resourcesList.length;
     const completedResourcesCount = resourcesList.filter((r: any) => r.isCompleted).length;
     const resourceProgressPercentage = totalResourcesCount > 0
         ? Math.round((completedResourcesCount / totalResourcesCount) * 100)
         : 0;
 
+    const filteredResources = selectedCategory === "All"
+        ? resourcesList
+        : resourcesList.filter((res: any) => res.categoryName === selectedCategory);
+
     // Calcule pentru paginarea resurselor
-    const totalPages = Math.ceil(totalResourcesCount / ITEMS_PER_PAGE);
+    const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const paginatedResources = resourcesList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+    const paginatedResources = filteredResources.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
     const handlePrevPage = () => {
         setCurrentPage((prev) => Math.max(prev - 1, 1));
@@ -87,6 +94,7 @@ export function ResultsView() {
                 <p className="text-muted-foreground">Track progress and areas that require attention.</p>
             </div>
 
+            {/* Carduri Scor si Nivel */}
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="p-6 border rounded-xl bg-card flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-xl text-primary">
@@ -109,6 +117,7 @@ export function ResultsView() {
                 </div>
             </div>
 
+            {/* Score per Category */}
             <div className="p-6 border rounded-xl bg-card space-y-4">
                 <h2 className="text-xl font-semibold">Score per Category</h2>
                 <div className="space-y-4">
@@ -133,6 +142,7 @@ export function ResultsView() {
                 </div>
             </div>
 
+            {/* Weak Areas */}
             {(data.weakAreas || []).length > 0 && (
                 <div className="p-6 border border-amber-500/30 rounded-xl bg-amber-500/5 space-y-3">
                     <div className="flex items-center gap-2 font-semibold text-amber-500 text-lg">
@@ -152,6 +162,7 @@ export function ResultsView() {
                 </div>
             )}
 
+            {/* Learning Recommendations cu Bara de Progres + Tab-uri */}
             {(data.recommendedResources || []).length > 0 && (
                 <div className="p-6 border rounded-xl bg-card space-y-4">
                     <div className="space-y-3">
@@ -177,7 +188,37 @@ export function ResultsView() {
                         </div>
                     </div>
 
-                    {/* Lista de resurse paginată */}
+                    {/* Tab-uri pentru filtrarea pe categorii */}
+                    <div className="flex gap-2 border-b border-border pb-3 overflow-x-auto">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedCategory("All")}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                                selectedCategory === "All"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                        >
+                            All ({totalResourcesCount})
+                        </button>
+
+                        {data.weakAreas?.map((area: any) => (
+                            <button
+                                type="button"
+                                key={area.id}
+                                onClick={() => setSelectedCategory(area.name)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap ${
+                                    selectedCategory === area.name
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                }`}
+                            >
+                                {area.name}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Lista de resurse filtrata */}
                     <div className="grid gap-3 sm:grid-cols-2">
                         {paginatedResources.map((res: any) => (
                             <div
@@ -199,9 +240,14 @@ export function ResultsView() {
                                         }`}>
                                             {res.title}
                                         </p>
-                                        <span className="text-xs text-muted-foreground uppercase tracking-wider block mt-0.5">
-                                            {res.type}
-                                        </span>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-[10px] bg-muted px-2 py-0.5 rounded font-medium text-muted-foreground uppercase">
+                                                {res.type}
+                                            </span>
+                                            <span className="text-[10px] text-amber-500 font-medium">
+                                                {res.categoryName}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -218,14 +264,16 @@ export function ResultsView() {
                         ))}
                     </div>
 
-                    {/* Controale de Paginare (se afișează doar dacă există mai mult de o pagină) */}
+                    {/* Controalele de Paginare (se afiseaza doar daca exista mai mult de o pagina) */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-4 border-t text-sm">
                             <span className="text-muted-foreground">
                                 Page {currentPage} of {totalPages}
                             </span>
+
                             <div className="flex items-center gap-2">
                                 <button
+                                    type="button"
                                     onClick={handlePrevPage}
                                     disabled={currentPage === 1}
                                     className="p-2 border rounded-lg bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -233,6 +281,7 @@ export function ResultsView() {
                                     <ChevronLeft className="size-4" />
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={handleNextPage}
                                     disabled={currentPage === totalPages}
                                     className="p-2 border rounded-lg bg-background hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
