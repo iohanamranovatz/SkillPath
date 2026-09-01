@@ -105,7 +105,7 @@ export async function getAssessmentAnalytics() {
     if (weakCategoryIds.length > 0) {
         const { data: resources } = await supabase
             .from("learning_resources")
-            .select("id, title, url, type, category_id")
+            .select("id, title, url, type, category_id, categories ( name )")
             .in("category_id", weakCategoryIds);
 
         recommendedResources = resources || [];
@@ -126,6 +126,7 @@ export async function getAssessmentAnalytics() {
         title: res.title,
         url: res.url,
         type: res.type,
+        categoryName: res.categories.name,
         isCompleted: completedResourceIds.has(res.id),
     }));
 
