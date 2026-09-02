@@ -117,28 +117,36 @@ export function ResultsView() {
                 </div>
             </div>
 
-            {/* Score per Category */}
+            {/* Score per Category - Grid pe 2 coloane + Sortare dupa scor */}
             <div className="p-6 border rounded-xl bg-card space-y-4">
-                <h2 className="text-xl font-semibold">Score per Category</h2>
-                <div className="space-y-4">
-                    {(data.categoryScores || []).map((cat: any) => (
-                        <div key={cat.id} className="space-y-1.5">
-                            <div className="flex justify-between text-sm font-medium">
-                                <span>{cat.name}</span>
-                                <span className={cat.percentage < 60 ? "text-amber-500 font-bold" : ""}>
-                                    {cat.percentage}%
-                                </span>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-semibold">Score per Category</h2>
+                    <span className="text-xs text-muted-foreground">
+                        Sorted by lowest score
+                    </span>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                    {[...(data.categoryScores || [])]
+                        .sort((a, b) => a.percentage - b.percentage)
+                        .map((cat: any) => (
+                            <div key={cat.id} className="space-y-1.5 p-3 rounded-lg border bg-muted/20">
+                                <div className="flex justify-between text-sm font-medium">
+                                    <span className="truncate pr-2">{cat.name}</span>
+                                    <span className={cat.percentage < 60 ? "text-amber-500 font-bold shrink-0" : "shrink-0"}>
+                                        {cat.percentage}%
+                                    </span>
+                                </div>
+                                <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all ${
+                                            cat.percentage < 60 ? "bg-amber-500" : "bg-primary"
+                                        }`}
+                                        style={{ width: `${cat.percentage}%` }}
+                                    />
+                                </div>
                             </div>
-                            <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full transition-all ${
-                                        cat.percentage < 60 ? "bg-amber-500" : "bg-primary"
-                                    }`}
-                                    style={{ width: `${cat.percentage}%` }}
-                                />
-                            </div>
-                        </div>
-                    ))}
+                        ))}
                 </div>
             </div>
 
