@@ -1,6 +1,9 @@
 "use server";
 
 import {supabase} from "@/helper/SupabaseClient";
+import {
+    INITIAL_ASSESSMENT_QUESTION_COUNT
+} from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export async function getTests(userId:number){
 
@@ -31,9 +34,22 @@ export async function getTests(userId:number){
             status: a.status,
             startedAt: a.started_at,
             completedAt: a.completed_at,
-            progress: notAnswered.toString() + "0%"
+            progress: notAnswered.toString() + "0%",
+            isInitial: answers.length === INITIAL_ASSESSMENT_QUESTION_COUNT,
         }
     });
 
-    return {succes: true, data: tests};
+
+    const initial = tests.some((test: any) => test.isInitial);
+
+    return {success: true, data: tests, hasInitial: initial};
+}
+
+
+export async function getCompletedTests(userId: number) {
+    const allTests = await getTests(userId);
+    if (!allTests.success) return {success: false, message: "error fetching tests", data: [] };
+
+    return {data: allTests.data.filter((test: any) => test.status === "completed"),
+        hasInitial: allTests.hasInitial, success: allTests.success, message: " completed_tests"};
 }

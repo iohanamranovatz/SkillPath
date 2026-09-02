@@ -22,6 +22,9 @@ import type { DashboardData } from "@/backend/user/getDashboardData";
 
 function DashboardView({initialData, tests, questions, objectives, dashboardData, onStart }: {initialData: UserProfileData, tests: UserTest[],
     questions: number, objectives: Objective[], dashboardData: DashboardData, onStart?: [() => void, () => void] }) {
+
+    const regularTests = tests.filter((test: any) => !test.isInitial);
+
     return (
         <>
             <GreetingHeader  name={initialData.name}
@@ -32,7 +35,7 @@ function DashboardView({initialData, tests, questions, objectives, dashboardData
                        problemsSolved={questions}
                        objectives={objectives}
             />
-            <ContinueCard test={tests.find(t => t.status == "in_progress")}/>
+            <ContinueCard test={regularTests.find(t => t.status == "in_progress")}/>
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <ScoreChart data={dashboardData.scoreHistory} />
@@ -55,7 +58,8 @@ export function UserDashboardUI({
     allTags,
     initialResources,
     questions,
-    dashboardData
+    dashboardData,
+    initialOnboardingState
 }: UserDashboardUIProps & { tests: UserTest[] } & {questions: number} & { dashboardData: DashboardData }) {
     const [view, setView] = useState<View>("Dashboard")
     const [mobileOpen, setMobileOpen] = useState(false)
@@ -95,7 +99,13 @@ export function UserDashboardUI({
                             dashboardData={dashboardData}
                             onStart={[viewProgress ,startTest]}
                     />}
-                    {view === "Tests" && <TestsView tests={tests} onStart={startTest} />}
+                    {view === "Tests" && (
+                        <TestsView
+                            tests={tests}
+                            id={initialData.id}
+                            initialOnboardingState={initialOnboardingState}
+                        />
+                    )}
                     {view === "Results" && <ResultsView />}
                     {view === "Resources" && <ResourcesView resources={initialResources} />}
                     {view === "Profile" && (
@@ -111,3 +121,5 @@ export function UserDashboardUI({
         </div>
     )
 }
+
+
