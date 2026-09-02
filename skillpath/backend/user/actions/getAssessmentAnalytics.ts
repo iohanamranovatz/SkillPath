@@ -2,6 +2,7 @@
 
 import supabase from "@/helper/SupabaseClient";
 import {redirect} from "next/navigation";
+import {getCompletedTests} from "@/backend/user/getTests";
 
 async function getAuthenticatedUser() {
     const { data: auth } = await supabase.auth.getUser();
@@ -20,12 +21,18 @@ async function getAuthenticatedUser() {
 export async function getAssessmentAnalytics() {
     const dbUser = await getAuthenticatedUser();
 
-    // 1. Preluăm TOATE testele completate ale userului
-    const { data: userAssessments } = await supabase
-        .from("assessments")
-        .select("id, score_total")
-        .eq("user_id", dbUser.id)
-        .eq("status", "completed");
+    // // 1. Preluăm TOATE testele completate ale userului
+    // const { data: userAssessments } = await supabase
+    //     .from("assessments")
+    //     .select("id, score_total")
+    //     .eq("user_id", dbUser.id)
+    //     .eq("status", "completed");
+    //
+
+
+    const userAssessments_res = await getCompletedTests(dbUser.id);
+
+    const userAssessments = userAssessments_res.data.filter((test: any) => !test.isInitial)
 
     if (!userAssessments || userAssessments.length === 0) {
         return {
@@ -38,7 +45,7 @@ export async function getAssessmentAnalytics() {
     }
 
     // Calculăm media scorului total pe toate testele
-    const totalSum = userAssessments.reduce((acc, curr) => acc + (curr.score_total || 0), 0);
+    const totalSum = userAssessments.reduce((acc, curr) => acc + (curr.score || 0), 0);
     const overallScore = Math.round(totalSum / userAssessments.length);
 
     const assessmentIds = userAssessments.map(a => a.id);

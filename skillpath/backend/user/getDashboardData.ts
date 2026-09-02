@@ -1,6 +1,7 @@
 "use server";
 
 import { supabase } from "@/helper/SupabaseClient";
+import {getCompletedTests} from "@/backend/user/getTests";
 
 export interface SkillPoint {
     skill: string;
@@ -75,19 +76,23 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
         recommendedResources: [],
     };
 
-    // 1. Toate testele completate ale userului, cronologic
-    const { data: assessments } = await supabase
-        .from("assessments")
-        .select("id, score_total, completed_at")
-        .eq("user_id", userId)
-        .eq("status", "completed")
-        .order("completed_at", { ascending: true });
+    // // 1. Toate testele completate ale userului, cronologic
+    // const { data: assessments } = await supabase
+    //     .from("assessments")
+    //     .select("id, score_total, completed_at")
+    //     .eq("user_id", userId)
+    //     .eq("status", "completed")
+    //     .order("completed_at", { ascending: true });
+    //
 
-    if (!assessments || assessments.length === 0) {
+    const assessments = await getCompletedTests(userId);
+    const regularTests = assessments.data.filter((test: any) => !test.isInitial);
+
+    if (!assessments || assessments.data.length === 0) {
         return empty;
     }
 
-    const assessmentIds = assessments.map((a) => a.id);
+    const assessmentIds = regularTests.map((a) => a.id);
 
     // 2. Toate raspunsurile din aceste teste, cu categorie + dificultate
     const { data: answers } = await supabase
@@ -141,14 +146,14 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
 
     // 4. SCORE CHART — media score_total grupata pe luna
     const monthBuckets: Record<string, { label: string; sum: number; count: number }> = {};
-    for (const a of assessments) {
-        if (a.completed_at == null || a.score_total == null) continue;
-        const d = new Date(a.completed_at);
+    for (const a of regularTests) {
+        if (a.completedAt == null || a.score == null) continue;
+        const d = new Date(a.completedAt);
         const key = `${d.getFullYear()}-${d.getMonth()}`;
         if (!monthBuckets[key]) {
             monthBuckets[key] = { label: MONTHS[d.getMonth()], sum: 0, count: 0 };
         }
-        monthBuckets[key].sum += a.score_total;
+        monthBuckets[key].sum += a.score;
         monthBuckets[key].count += 1;
     }
 
@@ -165,21 +170,21 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
         }));
 
     // 5. RECENT RESULTS — ultimele 5 teste completate
-    const recentResults: RecentResult[] = [...assessments]
-        .filter((a) => a.completed_at != null)
-        .sort((x, y) => new Date(y.completed_at).getTime() - new Date(x.completed_at).getTime())
+    const recentResults: RecentResult[] = [...regularTests]
+        .filter((a) => a.completedAt != null)
+        .sort((x, y) => new Date(y.completedAt).getTime() - new Date(x.completedAt).getTime())
         .slice(0, 5)
         .map((a) => {
             const agg = perAssessment[a.id] || { categories: [], difficulties: [] };
             const topic = mostFrequent(agg.categories) || "General";
             const difficulty = normalizeDifficulty(mostFrequent(agg.difficulties) as string);
-            const d = new Date(a.completed_at);
+            const d = new Date(a.completedAt);
             return {
                 id: a.id,
                 title: topic,
                 topic,
                 difficulty,
-                score: a.score_total ?? 0,
+                score: a.score ?? 0,
                 date: `${MONTHS[d.getMonth()]} ${d.getDate()}`,
             };
         });

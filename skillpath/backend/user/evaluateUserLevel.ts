@@ -4,12 +4,18 @@ import { supabase } from "@/helper/SupabaseClient";
 
 const PASS_SCORE = 75; // scorul minim ca un test sa "conteze"
 
+const rankOrder: Record<string, number> = {
+    "Beginner": 1,
+    "Intermediate": 2,
+    "Advanced": 3
+};
+
 // Reevalueaza nivelul userului pe baza testelor trecute (>= 75%) si a
 // numarului de categorii distincte acoperite. Consistenta pe latime, nu un varf.
 export async function evaluateUserLevel(userId: number) {
     const { data, error } = await supabase
         .from("assessments")
-        .select("id, score_total, assessment_answers ( questions ( category_id ) )")
+        .select("id, score_total, estimated_level, assessment_answers ( questions ( category_id ) )")
         .eq("user_id", userId)
         .eq("status", "completed");
 
@@ -29,11 +35,23 @@ export async function evaluateUserLevel(userId: number) {
 
     const distinctCats = categories.size;
 
+    const { data: here} = await supabase
+        .from("users")
+        .select("estimated_level")
+        .eq("id", userId)
+        .single();
+
+    const estimatedLevel = here?.estimated_level;
+
     // nivelul calculat din tot istoricul (praguri ajustabile)
     // trebuie trecute teste (>=75%) in mai multe categorii DISTINCTE
     let level = "Beginner";
     if (qualified >= 6 && distinctCats >= 6) level = "Advanced";
     else if (qualified >= 4 && distinctCats >= 4) level = "Intermediate";
+
+    if( rankOrder[level] < rankOrder[estimatedLevel]) {
+        level = estimatedLevel;
+    }
 
     await supabase.from("users").update({ estimated_level: level }).eq("id", userId);
 

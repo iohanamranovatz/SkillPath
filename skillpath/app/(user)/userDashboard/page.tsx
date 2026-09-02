@@ -4,8 +4,9 @@ import {supabase} from '@/helper/SupabaseClient';
 
 import { UserDashboardUI } from '@/frontend/user/dashboard/UserDashboardUI';
 import {fetchAllResourcesWrapper} from "@/backend/categories";
-import { getTests } from '@/backend/user/getTests';
+import {getCompletedTests, getTests} from '@/backend/user/getTests';
 import { getDashboardData } from '@/backend/user/getDashboardData';
+import { getInitialAssessmentOnboardingState } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -46,17 +47,14 @@ export default async function DashboardPage(){
         .from("categories")
         .select("id, name");
 
-    const { data: userAssessments, error: assessmentErr } = await supabase
-        .from('assessments')
-        .select('id')
-        .eq('user_id', userData.id);
+    const userAssessments = await getCompletedTests(userData.id);
 
-    if (assessmentErr) {
-        console.error("Error fetching assessments:", assessmentErr.message);
+    if (!userAssessments.success) {
+        console.error("Error fetching assessments:", userAssessments.message);
     }
 
     // Extract just the IDs into a simple array [1, 2, 3...]
-    const assessmentIds = userAssessments?.map(a => a.id) || [];
+    const assessmentIds = userAssessments?.data.map(a => a.id) || [];
 
     // 2. Fetch only the correct answers that belong to those assessments
     const { data: correctAnswers, error: errorQ } = await supabase
@@ -76,6 +74,7 @@ export default async function DashboardPage(){
     const testsRes = await getTests(userData.id);
 
     const dashboardData = await getDashboardData(userData.id);
+    const initialOnboardingState = await getInitialAssessmentOnboardingState(userData.id);
 
     return (
         <main>
@@ -88,9 +87,9 @@ export default async function DashboardPage(){
                 initialResources={initialResources}
                 questions={totalCorrectAnswers}
                 dashboardData={dashboardData}
+                initialOnboardingState={initialOnboardingState}
             />
         </main>
     );
 }
-
 
