@@ -177,7 +177,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                 </div>
             </div>
 
-            {/* Weak Categories */}
+             {/*Weak Categories*/}
             <div className="rounded-2xl border border-white/10 bg-card p-6 shadow-xl space-y-4">
                 <div className="flex items-center gap-2">
                     <AlertTriangle className="size-5 text-amber-400" />
