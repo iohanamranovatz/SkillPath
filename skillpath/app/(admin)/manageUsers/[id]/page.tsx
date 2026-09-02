@@ -283,82 +283,6 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                 )}
             </div>
 
-
-
-
-
-
-
-            {/* Progresul Resurselor de Invatare */}
-            {/*<div className="rounded-2xl border border-white/10 bg-card p-6 shadow-xl space-y-4">*/}
-            {/*    <div className="flex items-center justify-between">*/}
-            {/*        <div className="flex items-center gap-2">*/}
-            {/*            <BookOpen className="size-5 text-blue-400" />*/}
-            {/*            <h2 className="text-lg font-semibold">Learning Resources Progress</h2>*/}
-            {/*        </div>*/}
-            {/*        <span className="text-xs font-semibold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">*/}
-            {/*            {completedResourcesCount}/{totalResourcesCount} Completed ({resourceProgressPercentage}%)*/}
-            {/*        </span>*/}
-            {/*    </div>*/}
-
-            {/*    {resourcesWithStatus.length === 0 ? (*/}
-            {/*        <p className="text-sm text-muted-foreground py-2">*/}
-            {/*            No learning resources recommended yet.*/}
-            {/*        </p>*/}
-            {/*    ) : (*/}
-            {/*        <div className="grid gap-3 sm:grid-cols-2">*/}
-            {/*            {resourcesWithStatus.map((res) => (*/}
-            {/*                <div*/}
-            {/*                    key={res.id}*/}
-            {/*                    className={`p-4 border rounded-xl flex items-center justify-between gap-3 transition-colors ${*/}
-            {/*                        res.isCompleted*/}
-            {/*                            ? "bg-emerald-500/5 border-emerald-500/20"*/}
-            {/*                            : "bg-white/5 border-white/5"*/}
-            {/*                    }`}*/}
-            {/*                >*/}
-            {/*                    <div className="min-w-0 flex-1">*/}
-            {/*                        <div className="flex items-center gap-2">*/}
-            {/*                            <p className={`font-medium text-sm truncate ${*/}
-            {/*                                res.isCompleted ? "line-through text-muted-foreground" : "text-foreground"*/}
-            {/*                            }`}>*/}
-            {/*                                {res.title}*/}
-            {/*                            </p>*/}
-            {/*                        </div>*/}
-            {/*                        <div className="flex items-center gap-2 mt-1">*/}
-            {/*                            <span className="text-[10px] bg-white/10 px-2 py-0.5 rounded font-medium text-muted-foreground uppercase">*/}
-            {/*                                {res.type}*/}
-            {/*                            </span>*/}
-            {/*                            <span className="text-[10px] text-amber-400 font-medium">*/}
-            {/*                                {res.categoryName}*/}
-            {/*                            </span>*/}
-            {/*                        </div>*/}
-            {/*                    </div>*/}
-
-            {/*                    <div className="flex items-center gap-2 shrink-0">*/}
-            {/*                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${*/}
-            {/*                            res.isCompleted*/}
-            {/*                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"*/}
-            {/*                                : "bg-amber-500/20 text-amber-400 border border-amber-500/30"*/}
-            {/*                        }`}>*/}
-            {/*                            {res.isCompleted ? "Completed" : "Pending"}*/}
-            {/*                        </span>*/}
-
-            {/*                        <a*/}
-            {/*                            href={res.url}*/}
-            {/*                            target="_blank"*/}
-            {/*                            rel="noreferrer"*/}
-            {/*                            className="p-1.5 border border-white/10 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"*/}
-            {/*                            title="Open resource URL"*/}
-            {/*                        >*/}
-            {/*                            <ExternalLink className="size-3.5" />*/}
-            {/*                        </a>*/}
-            {/*                    </div>*/}
-            {/*                </div>*/}
-            {/*            ))}*/}
-            {/*        </div>*/}
-            {/*    )}*/}
-            {/*</div>*/}
-
             {/* Istoric Teste (Tabel) */}
             <div className="rounded-2xl border border-white/10 bg-card p-6 shadow-xl space-y-4">
                 <h2 className="text-lg font-semibold">Assessment History & Progress</h2>
@@ -373,14 +297,16 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-sm">
                             <thead className="border-b border-white/10 text-xs text-muted-foreground uppercase">
-                            <tr>
-                                <th className="py-3 px-4">ID Assessment</th>
-                                <th className="py-3 px-4">Status</th>
-                                <th className="py-3 px-4">Obtained score</th>
-                                <th className="py-3 px-4">Start time</th>
-                                <th className="py-3 px-4">End time</th>
-                            </tr>
+                                <tr>
+                                    <th className="py-3 px-4">ID Assessment</th>
+                                    <th className="py-3 px-4">Status</th>
+                                    <th className="py-3 px-4">Obtained score</th>
+                                    <th className="py-3 px-4">Start time</th>
+                                    <th className="py-3 px-4">End time</th>
+                                    <th className="py-3 px-4 text-right">Actions</th>
+                                </tr>
                             </thead>
+
                             <tbody className="divide-y divide-white/5">
                             {assessments.map((item) => (
                                 <tr key={item.id} className="hover:bg-white/5 transition-colors">
@@ -388,22 +314,37 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                                     <td className="py-3 px-4">
                                         {item.status === "completed" ? (
                                             <span className="inline-flex items-center gap-1.5 text-xs text-green-400">
-                                              <CheckCircle className="size-3.5" /> Completed
+                                                <CheckCircle className="size-3.5" /> Completed
                                             </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1.5 text-xs text-yellow-400">
-                                                  <Clock className="size-3.5" /> In Progress
-                                                </span>
-                                            )}
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 text-xs text-yellow-400">
+                                              <Clock className="size-3.5" /> In Progress
+                                            </span>
+                                        )}
                                     </td>
+
                                     <td className="py-3 px-4 font-semibold text-foreground">
                                         {item.score_total !== null ? `${item.score_total} pct` : "-"}
                                     </td>
+
                                     <td className="py-3 px-4 text-muted-foreground">
                                         {item.started_at ? new Date(item.started_at).toLocaleDateString("ro-RO") : "-"}
                                     </td>
+
                                     <td className="py-3 px-4 text-muted-foreground">
                                         {item.completed_at ? new Date(item.completed_at).toLocaleDateString("ro-RO") : "-"}
+                                    </td>
+
+                                    <td className="py-3 px-4 text-right">
+                                        {item.status === "completed" && (
+                                            <Link
+                                                href={`/manageUsers/${userId}/assessment/${item.id}`}
+                                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                                            >
+                                                <span>View Answers</span>
+                                                <ExternalLink className="size-3" />
+                                            </Link>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
