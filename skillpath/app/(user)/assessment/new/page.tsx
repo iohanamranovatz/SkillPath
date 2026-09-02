@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { supabase } from "@/helper/SupabaseClient";
 import { NewTestForm } from "@/frontend/user/components/new-test-form";
+import { getInitialAssessmentOnboardingState } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export default async function NewTestPage() {
     const { data } = await supabase.auth.getUser();
@@ -15,6 +16,14 @@ export default async function NewTestPage() {
 
     if (!dbUser) redirect("/");
 
+    const onboardingState = await getInitialAssessmentOnboardingState(dbUser.id);
+    if (onboardingState.requiresInitialAssessment) {
+        if (onboardingState.activeInitialAssessmentId) {
+            redirect(`/assessment/${onboardingState.activeInitialAssessmentId}`);
+        }
+        redirect("/userDashboard");
+    }
+
     // nivelul userului (userii noi -> Beginner)
     const userLevel = (dbUser.estimated_level ?? "Beginner").toLowerCase();
 
@@ -24,7 +33,7 @@ export default async function NewTestPage() {
         .select("id, name, difficulty");
 
     const categories = (allCategories ?? []).filter(
-        (c: any) => (c.difficulty ?? "").toLowerCase() === userLevel
+        (c: { difficulty: string | null }) => (c.difficulty ?? "").toLowerCase() === userLevel
     );
 
     return (

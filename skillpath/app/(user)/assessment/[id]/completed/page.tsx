@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { supabase } from "@/helper/SupabaseClient";
 import { AssessmentViewer} from "@/frontend/user/components/assessmen-viewer";
+import { isInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export default async function AssessmentResultsPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -30,7 +31,6 @@ export default async function AssessmentResultsPage({ params }: { params: Promis
         redirect(`/assessment/${assessmentId}`);
     }
 
-    // 1. ONE QUERY TO RULE THEM ALL: Join answers -> questions -> categories
     const { data: rows } = await supabase
         .from("assessment_answers")
         .select(`
@@ -60,7 +60,7 @@ export default async function AssessmentResultsPage({ params }: { params: Promis
         correctAnswer: r.questions?.correct_answer
     }));
 
-    // 2. Extract category from the first question's joined data
+    //  Extract category from the first question's joined data
     // Supabase returns nested objects, so it looks like: r.questions.categories.name
     const categoryName = (rows?.[0] as any)?.questions?.categories?.name || "General";
 

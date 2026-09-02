@@ -2,23 +2,41 @@
 
 import { supabase } from "@/helper/SupabaseClient";
 import { evaluateUserLevel } from "@/backend/user/evaluateUserLevel";
+import { isInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export async function submitAssessment(
     assessmentId: number,
     answers: { questionId: number; optionId: string }[]
 ) {
     if (!assessmentId || answers.length === 0) {
-        return { success: false, message: "Test invalid.", data: null };
+        return {success: false, message: "Test invalid.", data: null};
     }
+
+    const initialAssessment = await isInitialAssessment(assessmentId);
+    if (initialAssessment) {
+        return {
+            success: false,
+            message: "Initial onboarding assessments are submitted through the onboarding flow.",
+            data: null,
+        };
+    }
+
+    const {data: owner} = await supabase
+        .from("assessments")
+        .select("user_id")
+        .eq("id", assessmentId)
+        .single();
+
+    let level: string | null = "Beginner";
 
     // 1. luam raspunsurile corecte + categoria intrebarilor (DOAR pe server!)
     const questionIds = answers.map((a) => a.questionId);
-    const { data: questions, error: qErr } = await supabase
+    const {data: questions, error: qErr} = await supabase
         .from("questions")
         .select("id, correct_answer, category_id, categories ( name )")
         .in("id", questionIds);
 
-    if (qErr) return { success: false, message: qErr.message, data: null };
+    if (qErr) return {success: false, message: qErr.message, data: null};
 
     const qById = new Map<number, any>();
     (questions ?? []).forEach((q: any) => qById.set(q.id, q));
@@ -33,14 +51,14 @@ export async function submitAssessment(
         if (isCorrect) correct++;
 
         const catName = q?.categories?.name ?? "Necunoscut";
-        const bucket = perCat.get(catName) ?? { correct: 0, total: 0 };
+        const bucket = perCat.get(catName) ?? {correct: 0, total: 0};
         bucket.total++;
         if (isCorrect) bucket.correct++;
         perCat.set(catName, bucket);
 
         await supabase
             .from("assessment_answers")
-            .update({ selected_option_id: a.optionId, is_correct: isCorrect })
+            .update({selected_option_id: a.optionId, is_correct: isCorrect})
             .eq("assessment_id", assessmentId)
             .eq("question_id", a.questionId);
     }
@@ -67,17 +85,10 @@ export async function submitAssessment(
         .eq("id", assessmentId);
 
     // 4. reevaluam nivelul userului (dupa ce scorul e salvat in DB)
-    const { data: owner } = await supabase
-        .from("assessments")
-        .select("user_id")
-        .eq("id", assessmentId)
-        .single();
-
-    let level: string | null = null;
     if (owner?.user_id) {
         const lvl = await evaluateUserLevel(owner.user_id);
         level = lvl?.data?.level ?? null;
     }
 
-    return { success: true, data: { correct, total, scorePct, perCategory, level } };
+    return {success: true, data: {correct, total, scorePct, perCategory, level}};
 }

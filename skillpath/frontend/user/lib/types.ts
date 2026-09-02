@@ -39,4 +39,11 @@ export interface UserDashboardUIProps {
     userInterestTagIds: number[];
     allTags: Tag[];
     initialResources: Resource[];
+    initialOnboardingState: InitialAssessmentOnboardingState;
+}
+
+export interface InitialAssessmentOnboardingState {
+    requiresInitialAssessment: boolean;
+    activeInitialAssessmentId: number | null;
+    completedInitialAssessmentId: number | null;
 }
