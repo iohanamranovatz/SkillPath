@@ -1,11 +1,12 @@
-
 "use client"
-import {useState} from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import {ChevronLeft, ChevronRight, Sparkles} from "lucide-react"
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react"
 import { PageHeading } from "./page-heading"
 import { Card } from "@/frontend/user/common/card"
 import { Button } from "@/frontend/user/common/button"
+import { startInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentActions";
+import type { InitialAssessmentOnboardingState } from "@/frontend/user/lib/types";
 
 export type UserTest = {
     id: number
@@ -16,24 +17,92 @@ export type UserTest = {
     startedAt: string | null
     completedAt: string | null
     progress?: string | null, // "20%"
+    isInitial?: boolean
 }
 
 // paginare -> numarul de categorii per pagina
 const ITEMS_PER_PAGE = 4;
 
-export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () => void }) {
-    const [activeFilter,setActiveFilter]=useState<string>("All tests")
-    const router=useRouter();
-    const categories = Array.from(new Set(tests.flatMap((t) => t.categories))) 
-    const filters=["All tests", ...categories, "Completed"]
+export function TestsView({
+                              tests,
+                              id,
+                              initialOnboardingState,
+                          }: {
+    tests: UserTest[],
+    id: number,
+    initialOnboardingState: InitialAssessmentOnboardingState
+} ) {
+    const [activeFilter, setActiveFilter] = useState<string>("All tests")
+    const router = useRouter();
+    const [isStartingInitialTest, setIsStartingInitialTest] = useState(false);
+    const [initialTestError, setInitialTestError] = useState<string | null>(null);
+    const needsInitialAssessment = initialOnboardingState.requiresInitialAssessment;
 
     // paginare
     const [currentPage, setCurrentPage] = useState(1);
 
-    const visibleTests=tests.filter((test) =>
-    {
-        if(activeFilter=="All tests") return true
-        if(activeFilter=="Completed") return test.score!=null
+    async function handleInitialTest() {
+        setIsStartingInitialTest(true);
+        setInitialTestError(null);
+
+        try {
+            if (initialOnboardingState.activeInitialAssessmentId) {
+                router.push(`/assessment/${initialOnboardingState.activeInitialAssessmentId}`);
+                return;
+            }
+
+            const test = await startInitialAssessment(id);
+            if (test.success && test.data?.assessmentId) {
+                router.push(`/assessment/${test.data.assessmentId}`);
+                return;
+            }
+
+            setInitialTestError(test.message ?? "Unable to start the initial assessment.");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : "Unable to start the initial assessment.";
+            setInitialTestError(message);
+        } finally {
+            setIsStartingInitialTest(false);
+        }
+    }
+
+    if (needsInitialAssessment) {
+        return (
+            <div className="space-y-6">
+                <PageHeading
+                    title="Tests"
+                    description="Sharpen your skills with focused coding and algorithm challenges."
+                />
+                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4 rounded-lg border border-dashed p-8 text-center">
+                    <p className="text-muted-foreground">
+                        Complete your one-time initial test to unlock your personalized learning path and establish your developer profile.
+                    </p>
+                    {initialTestError && (
+                        <p className="text-sm text-destructive">{initialTestError}</p>
+                    )}
+                    <Button
+                        type="button"
+                        onClick={handleInitialTest}
+                        disabled={isStartingInitialTest}
+                    >
+                        <Sparkles className="size-4 mr-2" />
+                        {isStartingInitialTest
+                            ? "Starting..."
+                            : initialOnboardingState.activeInitialAssessmentId
+                                ? "Resume your initial test"
+                                : "Take your first test"}
+                    </Button>
+                </div>
+            </div>
+        )
+    }
+    const regularTests = tests.filter((test) => !test.isInitial);
+    const categories = Array.from(new Set(regularTests.flatMap((t) => t.categories)))
+    const filters = ["All tests", ...categories, "Completed"]
+
+    const visibleTests = tests.filter((test) => {
+        if(activeFilter == "All tests") return true
+        if(activeFilter == "Completed") return test.score != null
         return test.categories.includes(activeFilter)
     })
 
@@ -63,7 +132,7 @@ export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () =>
                 description="Sharpen your skills with focused coding and algorithm challenges."
                 action={
                     <Button onClick={() => router.push("/assessment/new")}>
-                        <Sparkles className="size-4" />
+                        <Sparkles className="size-4 mr-2" />
                         Start a test
                     </Button>
                 }
@@ -93,11 +162,20 @@ export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () =>
                     {/* Lista paginata */}
                     <div className="grid gap-4 lg:grid-cols-2">
                         {paginatedTests.map((test) => (
-                            <Card key={test.id} className="flex flex-col justify-between p-6">
+                            <Card
+                                key={test.id}
+                                className={`flex flex-col justify-between p-6 ${
+                                    test.isInitial
+                                        ? "border-primary/50 bg-primary/5 shadow-md"
+                                        : ""
+                                }`}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div className="space-y-3">
                                         <h2 className="text-lg font-semibold">
-                                            {test.categories.join(", ") || `Test #${test.id}`}
+                                            {test.isInitial
+                                                ? "Test Initial"
+                                                : (test.categories.join(", ") || `Test #${test.id}`)}
                                         </h2>
                                         <p className="text-sm text-muted-foreground">
                                             {test.questions} questions
@@ -112,7 +190,7 @@ export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () =>
                                         {test.score === null ? "Not started yet" : "Completed"}
                                     </span>
                                     <Button
-                                        variant="outline"
+                                        variant={test.isInitial ? "default" : "outline"}
                                         size="sm"
                                         onClick={() => router.push(
                                             test.score === null
@@ -157,5 +235,5 @@ export function TestsView({ tests ,onStart }: { tests: UserTest[],onStart: () =>
                 </div>
             )}
         </div>
-    )      
+    )
 }

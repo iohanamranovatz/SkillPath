@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { supabase } from "@/helper/SupabaseClient";
 import { AssessmentRunner } from "@/frontend/user/components/assessment-runner";
+import { InitialAssessmentRunner } from "@/frontend/user/components/initial-assessment-runner";
+import { isInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export default async function AssessmentPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
@@ -43,10 +45,15 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
         options: Array.isArray(r.questions?.options) ? r.questions.options : [],
         selectedOptionId: r.selected_option_id, // pt reluare (null pana la submit)
     }));
+    const initialAssessment = await isInitialAssessment(assessmentId);
 
     return (
         <main className="mx-auto max-w-2xl p-4 md:p-6">
-            <AssessmentRunner assessmentId={assessmentId} questions={questions} />
+            {initialAssessment ? (
+                <InitialAssessmentRunner assessmentId={assessmentId} questions={questions} />
+            ) : (
+                <AssessmentRunner assessmentId={assessmentId} questions={questions} />
+            )}
         </main>
     );
 }
