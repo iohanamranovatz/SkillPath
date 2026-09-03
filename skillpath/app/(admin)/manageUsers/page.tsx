@@ -1,7 +1,6 @@
 "use client";
 
 import { User} from "@/frontend/admin/lib/types";
-import { MOCK_USERS } from "@/frontend/admin/lib/mock-data";
 import UserToolbar from "@/frontend/admin/ManageUsers/toolbar";
 import UserTable from "@/frontend/admin/ManageUsers/table";
 import {useEffect, useMemo, useState} from "react";
@@ -28,7 +27,7 @@ export default function UserManagementPage() {
     const fetchUsers = async () => {
         const { data, error } = await supabase
             .from("users")
-            .select("*")
+            .select("id, name, email, role, estimated_level, assessments (id)")
             // .ilike("role", "user");
 
         if (error) {

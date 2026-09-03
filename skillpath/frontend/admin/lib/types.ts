@@ -29,16 +29,19 @@ export type User = {
     email: string;
     role: string;
     estimated_level: string;
+    auth_key?: string;
     assessments?: Assessment[];
     readonly profile?: string;
 }
 
 export type Assessment = {
     id: number;
-    category: Category;
-    questions: Question[];
-    score: string;
-}
+    user_id?: number;
+    status?: string;
+    score_total?: number | null;
+    started_at?: string | null;
+    completed_at?: string | null;
+};
 
 export interface AddUserModalProps {
     isOpen: boolean;
