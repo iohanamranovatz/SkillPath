@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import {AssessmentViewer} from "@/frontend/admin/ManageUsers/assessment-viewer";
 import {Button} from "@/frontend/user/common/button";
 import {router} from "next/client";
+import {isInitialAssessment} from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export const dynamic = "force-dynamic";
 
@@ -60,8 +61,11 @@ export default async function AdminAssessmentResultsPage({ params }: AdminAssess
         isCorrect: r.is_correct,
         correctAnswer: r.questions?.correct_answer
     }));
+    const isInitial = await isInitialAssessment(assessmentId);
 
-    const categoryName = (rows?.[0] as any)?.questions?.categories?.name || "General";
+    //  Extract category from the first question's joined data
+    // Supabase returns nested objects, so it looks like: r.questions.categories.name
+    const categoryName =  isInitial ? "Initial Assessment" : ((rows?.[0] as any)?.questions?.categories?.name || "General") ;
 
     return (
         <main className="mx-auto max-w-4xl p-4 md:p-6 space-y-6">

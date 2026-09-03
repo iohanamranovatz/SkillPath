@@ -65,5 +65,7 @@ export async function getWeakCategories(userId?: number): Promise<WeakCategory[]
         };
     });
 
-    return result.sort((a, b) => b.errorPercentage - a.errorPercentage);
+    return result
+        .filter(category => category.totalAnswersCount > 5)
+        .sort((a, b) => b.errorPercentage - a.errorPercentage);
 }
