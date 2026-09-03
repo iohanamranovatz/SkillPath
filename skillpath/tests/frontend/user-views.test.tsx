@@ -47,6 +47,12 @@ beforeEach(() => {
 })
 
 describe('TestsView', () => {
+    const onboardingState = {
+        requiresInitialAssessment: false,
+        activeInitialAssessmentId: null,
+        completedInitialAssessmentId: null,
+    }
+
     function makeTests(count: number): UserTest[] {
         return Array.from({ length: count }, (_, i) => ({
             id: i + 1,
@@ -60,7 +66,7 @@ describe('TestsView', () => {
     }
 
     it('afiseaza filtrele derivate din categoriile testelor', () => {
-        render(<TestsView tests={makeTests(2)} onStart={vi.fn()} />)
+        render(<TestsView tests={makeTests(2)} id={1} initialOnboardingState={onboardingState} />)
 
         expect(screen.getByRole('button', { name: 'All tests' })).toBeTruthy()
         expect(screen.getByRole('button', { name: 'Frontend' })).toBeTruthy()
@@ -68,7 +74,7 @@ describe('TestsView', () => {
     })
 
     it('filtreaza dupa categorie si dupa teste finalizate', () => {
-        render(<TestsView tests={makeTests(4)} onStart={vi.fn()} />)
+        render(<TestsView tests={makeTests(4)} id={1} initialOnboardingState={onboardingState} />)
 
         fireEvent.click(screen.getByRole('button', { name: 'Backend' }))
         expect(screen.getAllByRole('heading', { name: 'Backend' })).toHaveLength(2)
@@ -81,7 +87,7 @@ describe('TestsView', () => {
         render(
             <TestsView
                 tests={[{ ...makeTests(1)[0], score: null, status: 'in_progress' }]}
-                onStart={vi.fn()}
+                id={1} initialOnboardingState={onboardingState}
             />
         )
 
@@ -91,7 +97,7 @@ describe('TestsView', () => {
     })
 
     it('pagineaza cate 4 teste', () => {
-        render(<TestsView tests={makeTests(6)} onStart={vi.fn()} />)
+        render(<TestsView tests={makeTests(6)} id={1} initialOnboardingState={onboardingState} />)
 
         expect(screen.getByText('Page 1 of 2')).toBeTruthy()
 
@@ -106,7 +112,7 @@ describe('TestsView', () => {
     })
 
     it('reseteaza pagina la schimbarea filtrului', () => {
-        render(<TestsView tests={makeTests(6)} onStart={vi.fn()} />)
+        render(<TestsView tests={makeTests(6)} id={1} initialOnboardingState={onboardingState} />)
 
         fireEvent.click(screen.getAllByRole('button').slice(-1)[0])
         expect(screen.getByText('Page 2 of 2')).toBeTruthy()
@@ -116,7 +122,7 @@ describe('TestsView', () => {
     })
 
     it('navigheaza la test sau la rezultat, dupa caz', () => {
-        render(<TestsView tests={makeTests(2)} onStart={vi.fn()} />)
+        render(<TestsView tests={makeTests(2)} id={1} initialOnboardingState={onboardingState} />)
 
         fireEvent.click(screen.getByRole('button', { name: /Review/ }))
         expect(router.push).toHaveBeenCalledWith('/assessment/1/completed')
