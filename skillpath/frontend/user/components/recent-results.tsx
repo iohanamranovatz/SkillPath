@@ -5,7 +5,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/frontend/user/common/c
 import {Button} from "@/frontend/user/common/button";
 
 import {cn} from "@/frontend/user/lib/utils";
-import {Difficulty} from "@/frontend/user/lib/mock-data";
+import {Difficulty, View} from "@/frontend/user/lib/mock-data";
 
 type RecentResult = {
     id: number | string
@@ -16,18 +16,29 @@ type RecentResult = {
     date: string
 }
 
+interface RecentResultsProps {
+    results?: RecentResult[]
+    onViewChange?: (view: View) => void
+}
+
 function scoreColor(score: number) {
     if (score >= 85) return "text-chart-3"
     if (score >= 70) return "text-chart-4"
     return "text-chart-5"
 }
 
-function RecentResults({ results = [] }: { results?: RecentResult[] }) {
+
+function RecentResults({ results = [], onViewChange }: RecentResultsProps) {
     return (
         <Card className="h-full">
             <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Recent results</CardTitle>
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => onViewChange?.("Results")}
+                >
                     View all
                     <ChevronRight className="size-4" />
                 </Button>

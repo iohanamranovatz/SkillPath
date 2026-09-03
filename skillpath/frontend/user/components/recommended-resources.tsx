@@ -1,6 +1,7 @@
 import { FileText, Video, Dumbbell, GraduationCap, ArrowUpRight } from "lucide-react"
 import {Card, CardContent, CardHeader, CardTitle} from "@/frontend/user/common/card";
 import {Button} from "@/frontend/user/common/button";
+import {View} from "@/frontend/user/lib/mock-data";
 
 type RecommendedResource = {
     id: number | string
@@ -17,18 +18,28 @@ const typeIcon: Record<string, typeof FileText> = {
     course: GraduationCap,
 }
 
+interface RecommendedResourcesProps {
+    resources?: RecommendedResource[]
+    onViewChange?: (view: View) => void
+}
+
 // Prima litera mare pentru afisare (ex: "article" -> "Article")
 function labelForType(type: string) {
     if (!type) return "Resource"
     return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()
 }
 
-export function RecommendedResources({ resources = [] }: { resources?: RecommendedResource[] }) {
+export function RecommendedResources({ resources = [], onViewChange }: RecommendedResourcesProps ) {
     return (
         <Card className="h-full">
             <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Recommended for you</CardTitle>
-                <Button variant="ghost" size="sm" className="text-muted-foreground">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => onViewChange?.("Resources")}
+                >
                     Browse library
                 </Button>
             </CardHeader>

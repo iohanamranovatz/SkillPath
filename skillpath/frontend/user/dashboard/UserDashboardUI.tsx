@@ -20,8 +20,8 @@ import type { DashboardData } from "@/backend/user/getDashboardData";
 
 
 
-function DashboardView({initialData, tests, questions, objectives, dashboardData, onStart }: {initialData: UserProfileData, tests: UserTest[],
-    questions: number, objectives: Objective[], dashboardData: DashboardData, onStart?: [() => void, () => void] }) {
+function DashboardView({initialData, tests, questions, objectives, dashboardData, onStart, onViewChange }: {initialData: UserProfileData, tests: UserTest[],
+    questions: number, objectives: Objective[], dashboardData: DashboardData, onStart?: [() => void, () => void], onViewChange?: (view: View) => void}) {
 
     const regularTests = tests.filter((test: any) => !test.isInitial);
 
@@ -43,8 +43,14 @@ function DashboardView({initialData, tests, questions, objectives, dashboardData
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <RecentResults results={dashboardData.recentResults} />
-                <RecommendedResources resources={dashboardData.recommendedResources} />
+                <RecentResults
+                    results={dashboardData.recentResults}
+                    onViewChange={onViewChange}
+                />
+                <RecommendedResources
+                    resources={dashboardData.recommendedResources}
+                    onViewChange={onViewChange}
+                />
             </div>
         </>
     )
@@ -98,6 +104,7 @@ export function UserDashboardUI({
                             questions={questions}
                             dashboardData={dashboardData}
                             onStart={[viewProgress ,startTest]}
+                            onViewChange={handleViewChange}
                     />}
                     {view === "Tests" && (
                         <TestsView
@@ -106,7 +113,7 @@ export function UserDashboardUI({
                             initialOnboardingState={initialOnboardingState}
                         />
                     )}
-                    {view === "Results" && <ResultsView />}
+                    {view === "Results" && <ResultsView/>}
                     {view === "Resources" && <ResourcesView resources={initialResources} />}
                     {view === "Profile" && (
                         <ProfileView
