@@ -26,7 +26,7 @@ export async function getQuestions(): Promise<ActionResponse<Question[]>> {
                 categories (
                     name
                 )
-            `);
+            `).order("id", { ascending: true });
 
         if (error) throw new Error(error.message);
 

@@ -60,9 +60,11 @@ export default async function AssessmentResultsPage({ params }: { params: Promis
         correctAnswer: r.questions?.correct_answer
     }));
 
+    const isInitial = await isInitialAssessment(assessmentId);
+
     //  Extract category from the first question's joined data
     // Supabase returns nested objects, so it looks like: r.questions.categories.name
-    const categoryName = (rows?.[0] as any)?.questions?.categories?.name || "General";
+    const categoryName =  isInitial ? "Initial Assessment" : ((rows?.[0] as any)?.questions?.categories?.name || "General") ;
 
     return (
         <main className="mx-auto max-w-2xl p-4 md:p-6">
