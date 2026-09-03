@@ -9,7 +9,7 @@ import { SearchBar } from "@/frontend/admin/Questions/search-bar"
 import Pagination from "@/frontend/components/pagination";
 
 // paginare -> numarul de categorii per pagina
-const ITEMS_PER_PAGE = 6;
+const ITEMS_PER_PAGE = 4;
 
 const getResourceIcon = (type: string) => {
     const lowerType = type.toLowerCase();
@@ -65,7 +65,7 @@ export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
                         const val = typeof e === 'string' ? e : e?.target?.value ?? '';
                         handleSearch(val);
                     }}
-                    placeholder="Search by categoty (e.g., Frontend, Database)..."
+                    placeholder="Search by category (e.g., Frontend, Database)..."
                 />
             </div>
 

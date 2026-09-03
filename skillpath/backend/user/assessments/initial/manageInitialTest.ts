@@ -25,22 +25,23 @@ async function pickQuestion(
     categoryId: number,
     excludeIds: number[]
 ) {
-    let query = supabase
-        .from('questions')
-        .select('*', { count: 'exact' })
-        .eq('category_id', categoryId)
-        .eq('is_active', true)
-        .order('id', { ascending: true }); // required for .range() to be meaningful
+    // Construim query-ul de fiecare data de la zero: optiunile de count/head
+    // se dau DOAR la primul .select(), nu se pot re-aplica pe builder-ul deja transformat.
+    const buildQuery = (options?: { count: 'exact'; head?: boolean }) => {
+        const query = supabase
+            .from('questions')
+            .select('*', options)
+            .eq('category_id', categoryId)
+            .eq('is_active', true)
+            .order('id', { ascending: true }); // required for .range() to be meaningful
 
-    if (excludeIds.length > 0) {
-        query = query.not('id', 'in', `(${excludeIds.join(',')})`);
-    }
+        return excludeIds.length > 0
+            ? query.not('id', 'in', `(${excludeIds.join(',')})`)
+            : query;
+    };
 
     // 1. Get the count only, no rows.
-    const { count, error: countError } = await query.select('*', {
-        count: 'exact',
-        head: true,
-    });
+    const { count, error: countError } = await buildQuery({ count: 'exact', head: true });
 
     if (countError) {
         throw new Error(`Failed to count questions: ${countError.message}`);
@@ -54,7 +55,7 @@ async function pickQuestion(
     const randomIndex = Math.floor(Math.random() * count);
 
     // 3. Fetch just that one row via range (offset randomIndex, single row).
-    const { data, error } = await query.range(randomIndex, randomIndex);
+    const { data, error } = await buildQuery().range(randomIndex, randomIndex);
 
     if (error) throw new Error(`Failed to fetch question: ${error.message}`);
     return data?.[0] ?? null;
