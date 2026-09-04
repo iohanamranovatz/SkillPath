@@ -1,4 +1,4 @@
-import {SignUpForm} from "@/frontend/SignUpForm";
+import {SignUpForm} from "@/frontend/auth/SignUpForm";
 
 export default function SignupPage() {
     return (
