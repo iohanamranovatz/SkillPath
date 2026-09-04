@@ -45,11 +45,12 @@ export default function QuestionForm({
         fetchCategories();
     }, []);
 
-    // Support multiple correct answer IDs (handling single or multiple arrays safely)
+    // O intrebare are exact UN raspuns corect. Intrebarile vechi pot avea mai multe
+    // salvate ("a,b") -> pastram doar primul, ca adminul sa fie fortat sa aleaga unul.
     const initialCorrect = Array.isArray(question.correctAnswersId)
-        ? question.correctAnswersId
-        : (question.correctAnswersId ? [question.correctAnswersId] : []);
-    const [correctAnswerIds, setCorrectAnswerIds] = useState<string[]>(initialCorrect);
+        ? (question.correctAnswersId[0] ?? "")
+        : (question.correctAnswersId ?? "").split(",")[0].trim();
+    const [correctAnswerId, setCorrectAnswerId] = useState<string>(initialCorrect);
 
     // Form submission states
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,16 +60,20 @@ export default function QuestionForm({
         setOptions(options.map(opt => opt.id === id ? { ...opt, text: newText } : opt));
     };
 
-    const toggleCorrectAnswer = (id: string) => {
-        if (correctAnswerIds.includes(id)) {
-            setCorrectAnswerIds(correctAnswerIds.filter(item => item !== id));
-        } else {
-            setCorrectAnswerIds([...correctAnswerIds, id]);
-        }
+    // selectie exclusiva -> alegerea unei optiuni o inlocuieste pe cea anterioara
+    const selectCorrectAnswer = (id: string) => {
+        setCorrectAnswerId(id);
+        setErrorMsg("");
     };
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!correctAnswerId) {
+            setErrorMsg("You must select the correct answer.");
+            return;
+        }
+
         setIsSubmitting(true);
         setErrorMsg("");
 
@@ -79,7 +84,7 @@ export default function QuestionForm({
             difficulty: difficulty.toUpperCase() as any,
             isActive,
             options,
-            correctAnswersId: correctAnswerIds.join(","),
+            correctAnswersId: correctAnswerId,
         };
 
         let response;
@@ -166,14 +171,14 @@ export default function QuestionForm({
                 </div>
             </div>
 
-            {/* Editable Options & Multiple Circular Green Selection Buttons */}
+            {/* Optiuni editabile + un singur raspuns corect (comportament de radio) */}
             <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Options & Correct Answers (Click green circles to toggle multiple)
+                    Options & Correct Answer (click a circle to pick the single correct one)
                 </label>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3" role="radiogroup" aria-label="Correct answer">
                     {options.map((opt) => {
-                        const isCorrect = correctAnswerIds.includes(opt.id);
+                        const isCorrect = correctAnswerId === opt.id;
                         return (
                             <div
                                 key={opt.id}
@@ -192,7 +197,9 @@ export default function QuestionForm({
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => toggleCorrectAnswer(opt.id)}
+                                    role="radio"
+                                    aria-checked={isCorrect}
+                                    onClick={() => selectCorrectAnswer(opt.id)}
                                     title={isCorrect ? "Correct Answer (Selected)" : "Mark as correct"}
                                     className={`w-6 h-6 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer ${
                                         isCorrect

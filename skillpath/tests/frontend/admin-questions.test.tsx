@@ -103,30 +103,37 @@ describe('QuestionTable', () => {
     })
 
     it('sterge intrebarea doar dupa confirmare', async () => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
         render(<QuestionTable questions={QUESTIONS} />)
 
+        // click pe cos -> doar deschide modalul, nu sterge
         fireEvent.click(screen.getByRole('button', { name: 'Delete question 1' }))
+        expect(screen.getByText('Delete question?')).toBeTruthy()
         expect(deleteQuestion).not.toHaveBeenCalled()
 
-        confirmSpy.mockReturnValue(true)
+        // Cancel inchide modalul fara sa stearga
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+        await waitFor(() => expect(screen.queryByText('Delete question?')).toBeNull())
+        expect(deleteQuestion).not.toHaveBeenCalled()
+
+        // confirmarea din modal declanseaza stergerea
         vi.mocked(deleteQuestion).mockResolvedValue({ success: true } as any)
         fireEvent.click(screen.getByRole('button', { name: 'Delete question 1' }))
+        fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
         await waitFor(() => expect(deleteQuestion).toHaveBeenCalledWith('1'))
-        confirmSpy.mockRestore()
+        await waitFor(() => expect(screen.queryByText('Delete question?')).toBeNull())
     })
 
     it('avertizeaza cand stergerea esueaza', async () => {
-        vi.spyOn(window, 'confirm').mockReturnValue(true)
-        const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {})
         vi.mocked(deleteQuestion).mockResolvedValue({ success: false, error: 'Delete failed' } as any)
         render(<QuestionTable questions={QUESTIONS} />)
 
         fireEvent.click(screen.getByRole('button', { name: 'Delete question 1' }))
+        fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
-        await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('Delete failed'))
-        alertSpy.mockRestore()
+        // eroarea ramane vizibila in modal, modalul nu se inchide
+        await waitFor(() => expect(screen.getByText('Delete failed')).toBeTruthy())
+        expect(screen.getByText('Delete question?')).toBeTruthy()
     })
 })
 
@@ -230,14 +237,18 @@ describe('QuestionForm', () => {
         )
     })
 
-    it('comuta raspunsurile corecte', async () => {
+    it('permite un singur raspuns corect', async () => {
         vi.mocked(updateQuestion).mockResolvedValue({ success: true } as any)
         render(<QuestionForm question={question} onClose={vi.fn()} onCancel={vi.fn()} />)
         await screen.findByRole('option', { name: 'Databases' })
 
-        // deselecteaza optiunea 1 si selecteaza optiunea 2
-        fireEvent.click(screen.getByTitle('Correct Answer (Selected)'))
-        fireEvent.click(screen.getAllByTitle('Mark as correct')[1])
+        // initial e selectata prima optiune
+        expect(screen.getAllByRole('radio', { checked: true })).toHaveLength(1)
+
+        // alegerea altei optiuni o inlocuieste pe cea anterioara, nu se aduna
+        fireEvent.click(screen.getAllByTitle('Mark as correct')[0])
+        expect(screen.getAllByRole('radio', { checked: true })).toHaveLength(1)
+
         fireEvent.submit(screen.getByRole('button', { name: 'Save Changes' }).closest('form')!)
 
         await waitFor(() =>
@@ -246,6 +257,22 @@ describe('QuestionForm', () => {
                 expect.objectContaining({ correctAnswersId: 'opt_2' })
             )
         )
+    })
+
+    it('nu trimite formularul fara raspuns corect ales', async () => {
+        render(
+            <QuestionForm
+                question={{ ...question, correctAnswersId: '' }}
+                onClose={vi.fn()}
+                onCancel={vi.fn()}
+            />
+        )
+        await screen.findByRole('option', { name: 'Databases' })
+
+        fireEvent.submit(screen.getByRole('button', { name: 'Save Changes' }).closest('form')!)
+
+        expect(await screen.findByText('You must select the correct answer.')).toBeTruthy()
+        expect(updateQuestion).not.toHaveBeenCalled()
     })
 
     it('creeaza o intrebare noua', async () => {

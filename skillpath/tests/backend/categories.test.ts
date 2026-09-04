@@ -280,7 +280,7 @@ describe('backend/categories', () => {
 
             expect(result).toEqual({
                 success: false,
-                message: "You can't delete this category, questions and tags are tied to it.",
+                message: "Categoria mai are date asociate care nu au putut fi șterse.",
             })
         })
 

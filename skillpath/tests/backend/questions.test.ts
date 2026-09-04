@@ -57,7 +57,7 @@ describe('Questions Server Actions', () => {
                     category: 'Frontend',
                     difficulty: 'EASY',
                     options: [{ id: 'a', text: 'Framework' }, { id: 'b', text: 'Library' }],
-                    correctAnswersId: ['a', 'b'],
+                    correctAnswersId: 'a',
                     isActive: true
                 }
             ])
@@ -91,7 +91,7 @@ describe('Questions Server Actions', () => {
             const result = await createQuestion(invalidPayload)
 
             expect(result.success).toBe(false)
-            expect(result.error).toBe('You must select at least one correct answer.')
+            expect(result.error).toBe('You must select the correct answer.')
         })
 
         it('ar trebui să eșueze dacă categoria nu este găsită', async () => {

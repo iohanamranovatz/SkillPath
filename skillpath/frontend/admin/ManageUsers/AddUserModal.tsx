@@ -75,12 +75,12 @@ export default function AddUserModal({ isOpen, onClose, onUserAdded }: AddUserMo
                         <label className="block text-sm text-muted-foreground mb-1">Estimated Level</label>
                         <select
                             name="estimated_level"
-                            defaultValue="JUNIOR"
+                            defaultValue="Beginner"
                             className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-blue-500"
                         >
-                            <option value="JUNIOR">JUNIOR</option>
-                            <option value="MID">MID</option>
-                            <option value="SENIOR">SENIOR</option>
+                            <option value="Beginner">Beginner</option>
+                            <option value="Intermediate">Intermediate</option>
+                            <option value="Advanced">Advanced</option>
                         </select>
                     </div>
 

@@ -45,6 +45,8 @@ export async function submitAssessment(
 
     // 2. corectam fiecare raspuns + tinem scor pe categorie
     const perCat = new Map<string, { correct: number; total: number }>();
+    // raspunsurile corecte se trimit inapoi DOAR aici, dupa ce testul e predat
+    const review: { questionId: number; selectedOptionId: string; correctOptionId: string | null; isCorrect: boolean }[] = [];
     let correct = 0;
 
     for (const a of answers) {
@@ -52,7 +54,14 @@ export async function submitAssessment(
         const isCorrect = q?.correct_answer === a.optionId;
         if (isCorrect) correct++;
 
-        const catName = q?.categories?.name ?? "Necunoscut";
+        review.push({
+            questionId: a.questionId,
+            selectedOptionId: a.optionId,
+            correctOptionId: q?.correct_answer ?? null,
+            isCorrect,
+        });
+
+        const catName = q?.categories?.name ?? "Unknown";
         const bucket = perCat.get(catName) ?? {correct: 0, total: 0};
         bucket.total++;
         if (isCorrect) bucket.correct++;
@@ -92,5 +101,5 @@ export async function submitAssessment(
         level = lvl?.data?.level ?? null;
     }
 
-    return {success: true, data: {correct, total, scorePct, perCategory, level}};
+    return {success: true, data: {correct, total, scorePct, perCategory, level, review}};
 }

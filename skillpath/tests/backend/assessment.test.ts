@@ -228,7 +228,7 @@ describe('backend/user/submitAssessment', () => {
         expect(evaluateUserLevel).toHaveBeenCalledWith(7)
     })
 
-    it('grupeaza sub "Necunoscut" intrebarile care nu mai exista', async () => {
+    it('grupeaza sub "Unknown" intrebarile care nu mai exista', async () => {
         mockFrom(supabase.from, {
             questions: { data: [], error: null },
             assessment_answers: { error: null },
@@ -238,7 +238,7 @@ describe('backend/user/submitAssessment', () => {
         const result = await submitAssessment(77, [{ questionId: 999, optionId: 'a' }])
 
         expect(result.data!.perCategory).toEqual([
-            { category: 'Necunoscut', score: 0, correct: 0, total: 1 },
+            { category: 'Unknown', score: 0, correct: 0, total: 1 },
         ])
         // fara proprietar identificat, nivelul nu este reevaluat
         expect(result.data!.level).toBeNull()

@@ -19,9 +19,9 @@ export default function UserToolbar({
 
     const levelOptions = [
         { label: "All Levels", value: "all" },
-        { label: "Junior", value: "Junior" },
-        { label: "Mid", value: "Mid" },
-        { label: "Senior", value: "Senior" },
+        { label: "Beginner", value: "Beginner" },
+        { label: "Intermediate", value: "Intermediate" },
+        { label: "Advanced", value: "Advanced" },
     ];
 
     return (

@@ -268,7 +268,7 @@ describe('AssessmentRunner', () => {
 
         expect(screen.getByText('1. Ce este JSX?')).toBeTruthy()
         expect(screen.getByText('2. Ce este un hook?')).toBeTruthy()
-        expect(screen.getByText('2 întrebări · răspunde la toate.')).toBeTruthy()
+        expect(screen.getByText('2 questions · answer them all.')).toBeTruthy()
     })
 
     it('salveaza automat raspunsul dupa 1,5 secunde', async () => {
@@ -303,6 +303,12 @@ describe('AssessmentRunner', () => {
                     { category: 'Backend', score: 80, correct: 4, total: 5 },
                 ],
                 level: 'Intermediate',
+                review: [
+                    // q1: a ales 'a', corect era 'b'
+                    { questionId: 1, selectedOptionId: 'a', correctOptionId: 'b', isCorrect: false },
+                    // q2: a ales 'a', corect
+                    { questionId: 2, selectedOptionId: 'a', correctOptionId: 'a', isCorrect: true },
+                ],
             },
         } as any)
         window.scrollTo = vi.fn()
@@ -311,14 +317,19 @@ describe('AssessmentRunner', () => {
         fireEvent.click(screen.getByText('Sintaxa'))
         fireEvent.click(screen.getByRole('button', { name: /Trimite|Finalizeaza|Submit/i }))
 
-        expect(await screen.findByText('Test finalizat!')).toBeTruthy()
+        expect(await screen.findByText('Test completed!')).toBeTruthy()
         expect(screen.getByText('50%')).toBeTruthy()
-        expect(screen.getByText('1 din 2 corecte')).toBeTruthy()
+        expect(screen.getByText('1 out of 2 correct')).toBeTruthy()
         expect(screen.getByText('Intermediate')).toBeTruthy()
         // categoria sub 50% este marcata ca zona slaba
-        expect(screen.getByText('40% · zona slaba')).toBeTruthy()
+        expect(screen.getByText('40% · weak area')).toBeTruthy()
 
-        fireEvent.click(screen.getByRole('button', { name: 'Inapoi la dashboard' }))
+        // rezultatul arata si intrebarile cu raspunsul corect
+        expect(screen.getByText('Your answers')).toBeTruthy()
+        expect(screen.getByText('Correct answer')).toBeTruthy()
+        expect(screen.getByText('Your answer')).toBeTruthy()
+
+        fireEvent.click(screen.getByRole('button', { name: 'Back to dashboard' }))
         expect(router.push).toHaveBeenCalledWith('/userDashboard')
     })
 
@@ -538,21 +549,24 @@ describe('ProfileView', () => {
     })
 
     it('sterge obiectivul doar dupa confirmare', async () => {
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
         const { container } = renderProfile()
         const trashButtons = Array.from(container.querySelectorAll('button')).filter((b) =>
             b.className.includes('hover:text-red-400')
         )
 
+        // clickul pe cos doar deschide dialogul
         fireEvent.click(trashButtons[0])
-        await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
+        expect(screen.getByText('Delete objective?')).toBeTruthy()
         expect(deleteObjective).not.toHaveBeenCalled()
 
-        confirmSpy.mockReturnValue(true)
-        fireEvent.click(trashButtons[0])
-        await waitFor(() => expect(deleteObjective).toHaveBeenCalledWith(1))
+        // Cancel inchide dialogul fara sa stearga
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+        await waitFor(() => expect(screen.queryByText('Delete objective?')).toBeNull())
+        expect(deleteObjective).not.toHaveBeenCalled()
 
-        confirmSpy.mockRestore()
+        fireEvent.click(trashButtons[0])
+        fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+        await waitFor(() => expect(deleteObjective).toHaveBeenCalledWith(1))
     })
 
     it('afiseaza doar 8 taguri si le extinde la cerere', () => {

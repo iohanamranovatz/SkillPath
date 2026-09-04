@@ -125,18 +125,95 @@ export async function updateCategory(input: {
     return { success: true, data, message: "Updated category!" };
 }
 
-// --- Admin sterge o categorie ---
+// --- Admin sterge o categorie (cu tot ce atarna de ea) ---
+// Stergerea e in cascada pentru ca FK-urile din DB sunt NO ACTION: fara pasii
+// de mai jos, Postgres respinge stergerea cu 23503.
 export async function deleteCategory(id: number) {
     const supabase = await createClient();
 
+    // Intrebarile si resursele pot atarna de categorie fie direct (category_id),
+    // fie doar prin tag (tag_id) -> le strangem pe amandoua caile.
+    const { data: tags } = await supabase
+        .from("tags")
+        .select("id")
+        .eq("category_id", id);
+
+    const tagIds = (tags ?? []).map((t) => t.id);
+
+    // colecteaza id-urile dintr-un tabel copil, pe ambele cai
+    async function childIds(table: string) {
+        const ids = new Set<number>();
+
+        const { data: byCategory } = await supabase
+            .from(table)
+            .select("id")
+            .eq("category_id", id);
+        (byCategory ?? []).forEach((r: any) => ids.add(r.id));
+
+        if (tagIds.length) {
+            const { data: byTag } = await supabase
+                .from(table)
+                .select("id")
+                .in("tag_id", tagIds);
+            (byTag ?? []).forEach((r: any) => ids.add(r.id));
+        }
+
+        return [...ids];
+    }
+
+    const questionIds = await childIds("questions");
+    const resourceIds = await childIds("learning_resources");
+
+    // 1. raspunsurile date la intrebarile categoriei
+    if (questionIds.length) {
+        const { error } = await supabase
+            .from("assessment_answers")
+            .delete()
+            .in("question_id", questionIds);
+        if (error) return { success: false, message: error.message };
+    }
+
+    // 2. progresul userilor pe resursele categoriei
+    if (resourceIds.length) {
+        const { error } = await supabase
+            .from("user_progress")
+            .delete()
+            .in("resource_id", resourceIds);
+        if (error) return { success: false, message: error.message };
+    }
+
+    // 3. copiii, in ordinea dependentelor
+    //    (questions/learning_resources inainte de tags -> amandoua refera tags)
+    if (questionIds.length) {
+        const { error } = await supabase.from("questions").delete().in("id", questionIds);
+        if (error) return { success: false, message: `questions: ${error.message}` };
+    }
+
+    if (resourceIds.length) {
+        const { error } = await supabase.from("learning_resources").delete().in("id", resourceIds);
+        if (error) return { success: false, message: `learning_resources: ${error.message}` };
+    }
+
+    if (tagIds.length) {
+        const { error } = await supabase.from("tags").delete().in("id", tagIds);
+        if (error) return { success: false, message: `tags: ${error.message}` };
+    }
+
+    const { error: interestsError } = await supabase
+        .from("user_interests")
+        .delete()
+        .eq("category_id", id);
+    if (interestsError) return { success: false, message: `user_interests: ${interestsError.message}` };
+
+    // 4. categoria
     const { error } = await supabase.from("categories").delete().eq("id", id);
 
     if (error) {
-        // 23503 = foreign key violation (are taguri/întrebari asociate)
+        // 23503 = foreign key violation (a mai ramas ceva legat de categorie)
         if (error.code === "23503")
             return {
                 success: false,
-                message: "You can't delete this category, questions and tags are tied to it.",
+                message: "Categoria mai are date asociate care nu au putut fi șterse.",
             };
         return { success: false, message: error.message };
     }

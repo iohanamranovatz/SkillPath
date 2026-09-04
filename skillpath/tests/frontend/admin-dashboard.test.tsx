@@ -185,9 +185,9 @@ describe('AdminSidebar', () => {
 
 describe('UserTable', () => {
     const users = [
-        { id: 1, name: 'Ana', email: 'ana@test.com', role: 'user', estimated_level: 'Junior', assessments: [{}, {}] },
-        { id: 2, name: 'Bogdan', email: 'b@test.com', role: 'admin', estimated_level: 'Senior' },
-        { id: 3, name: 'Cristi', email: 'c@test.com', role: 'user', estimated_level: 'Mid' },
+        { id: 1, name: 'Ana', email: 'ana@test.com', role: 'user', estimated_level: 'Beginner', assessments: [{}, {}] },
+        { id: 2, name: 'Bogdan', email: 'b@test.com', role: 'admin', estimated_level: 'Advanced' },
+        { id: 3, name: 'Cristi', email: 'c@test.com', role: 'user', estimated_level: 'Intermediate' },
         { id: 4, name: 'Dana', email: 'd@test.com', role: 'user', estimated_level: 'Necunoscut' },
     ] as any[]
 
@@ -208,28 +208,35 @@ describe('UserTable', () => {
 
     it('schimba rolul doar dupa confirmare', async () => {
         const onRoleChange = vi.fn()
-        const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
         render(<UserTable users={users} onRoleChange={onRoleChange} />)
 
         const selects = screen.getAllByRole('combobox')
+
+        // schimbarea din dropdown doar deschide dialogul
         fireEvent.change(selects[0], { target: { value: 'admin' } })
-        await waitFor(() => expect(confirmSpy).toHaveBeenCalled())
+        expect(screen.getByText('Change role?')).toBeTruthy()
         expect(onRoleChange).not.toHaveBeenCalled()
 
-        confirmSpy.mockReturnValue(true)
-        fireEvent.change(selects[0], { target: { value: 'admin' } })
-        await waitFor(() => expect(onRoleChange).toHaveBeenCalledWith(1, 'admin'))
+        // Cancel inchide dialogul fara sa schimbe nimic
+        fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+        await waitFor(() => expect(screen.queryByText('Change role?')).toBeNull())
+        expect(onRoleChange).not.toHaveBeenCalled()
 
-        confirmSpy.mockRestore()
+        fireEvent.change(selects[0], { target: { value: 'admin' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Change role' }))
+        await waitFor(() => expect(onRoleChange).toHaveBeenCalledWith(1, 'admin'))
     })
 
-    it('sterge utilizatorul', () => {
+    it('sterge utilizatorul doar dupa confirmare', async () => {
         const onDelete = vi.fn()
         render(<UserTable users={users} onDelete={onDelete} />)
 
         fireEvent.click(screen.getByRole('button', { name: 'Delete user 2' }))
+        expect(screen.getByText('Delete user?')).toBeTruthy()
+        expect(onDelete).not.toHaveBeenCalled()
 
-        expect(onDelete).toHaveBeenCalledWith(2)
+        fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+        await waitFor(() => expect(onDelete).toHaveBeenCalledWith(2))
     })
 })
 
@@ -251,8 +258,8 @@ describe('UserToolbar si FilterSelect', () => {
         })
         expect(onSearchChange).toHaveBeenCalledWith('ana')
 
-        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Senior' } })
-        expect(onLevelChange).toHaveBeenCalledWith('Senior')
+        fireEvent.change(screen.getByRole('combobox'), { target: { value: 'Advanced' } })
+        expect(onLevelChange).toHaveBeenCalledWith('Advanced')
     })
 
     it('FilterSelect afiseaza placeholder-ul si optiunile', () => {

@@ -19,7 +19,7 @@ export default async function CategoryDetailPage({
 
     if (!cat.success || !cat.data) {
         return (
-            <p className="text-muted-foreground">Categoria nu a fost găsită.</p>
+            <p className="text-muted-foreground">Category not found.</p>
         );
     }
 
@@ -59,7 +59,7 @@ export default async function CategoryDetailPage({
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-sm text-muted-foreground">Nicio resursă adăugată încă.</p>
+                    <p className="text-sm text-muted-foreground">No resources available yet.</p>
                 )}
             </section>
 
@@ -78,7 +78,7 @@ export default async function CategoryDetailPage({
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-sm text-muted-foreground">Nicio întrebare în această categorie.</p>
+                    <p className="text-sm text-muted-foreground">No questions belong to this category.</p>
                 )}
             </section>
         </div>

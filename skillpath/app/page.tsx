@@ -48,7 +48,7 @@ const features = [
     {
         icon: Trophy,
         title: "Prove your level",
-        desc: "Earn a verified estimated level — from Beginner to Senior — you can actually show off.",
+        desc: "Earn a verified estimated level — from Beginner to Advanced — you can actually show off.",
     },
 ];
 
@@ -226,7 +226,7 @@ export default function LandingPage() {
                                 <Trophy className="h-5 w-5 text-amber-400" />
                                 <div>
                                     <p className="text-xs font-semibold text-white">Level up!</p>
-                                    <p className="text-[11px] text-slate-500">Junior → Mid</p>
+                                    <p className="text-[11px] text-slate-500">Beginner → Intermediate</p>
                                 </div>
                             </div>
                         </div>
