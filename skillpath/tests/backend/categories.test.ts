@@ -35,7 +35,7 @@ describe('backend/categories', () => {
     })
 
     describe('getCategories', () => {
-        it('returneaza categoriile cu numarul de intrebari calculat', async () => {
+        it('returns the categories with the computed question count', async () => {
             mockFrom(supabase.from, {
                 categories: {
                     data: [
@@ -55,7 +55,7 @@ describe('backend/categories', () => {
             ])
         })
 
-        it('returneaza lista goala si mesajul erorii cand query-ul esueaza', async () => {
+        it('returns an empty list and the error message when the query fails', async () => {
             mockFrom(supabase.from, {
                 categories: { data: null, error: { message: 'DB down' } },
             })
@@ -65,7 +65,7 @@ describe('backend/categories', () => {
             expect(result).toEqual({ success: false, message: 'DB down', data: [] })
         })
 
-        it('trateaza data null ca lista goala', async () => {
+        it('treats null data as an empty list', async () => {
             mockFrom(supabase.from, { categories: { data: null, error: null } })
 
             const result = await getCategories()
@@ -75,7 +75,7 @@ describe('backend/categories', () => {
     })
 
     describe('getCategoryById', () => {
-        it('returneaza categoria gasita', async () => {
+        it('returns the category that was found', async () => {
             const category = { id: 1, name: 'Frontend', description: 'React' }
             const queries = mockFrom(supabase.from, { categories: { data: category, error: null } })
 
@@ -85,7 +85,7 @@ describe('backend/categories', () => {
             expect(queries.categories[0].eq).toHaveBeenCalledWith('id', 1)
         })
 
-        it('returneaza eroare cand categoria nu exista', async () => {
+        it('returns an error when the category does not exist', async () => {
             mockFrom(supabase.from, { categories: { data: null, error: { message: 'Not found' } } })
 
             const result = await getCategoryById(99)
@@ -95,7 +95,7 @@ describe('backend/categories', () => {
     })
 
     describe('getCategoryTags', () => {
-        it('returneaza tagurile categoriei ordonate alfabetic', async () => {
+        it('returns the category tags ordered alphabetically', async () => {
             const tags = [{ id: 1, name: 'React' }, { id: 2, name: 'Next.js' }]
             const queries = mockFrom(supabase.from, { tags: { data: tags, error: null } })
 
@@ -106,7 +106,7 @@ describe('backend/categories', () => {
             expect(queries.tags[0].order).toHaveBeenCalledWith('name', { ascending: true })
         })
 
-        it('returneaza array gol cand data lipseste', async () => {
+        it('returns an empty array when data is missing', async () => {
             mockFrom(supabase.from, { tags: { data: null, error: null } })
 
             const result = await getCategoryTags(1)
@@ -114,7 +114,7 @@ describe('backend/categories', () => {
             expect(result.data).toEqual([])
         })
 
-        it('propaga eroarea de la baza de date', async () => {
+        it('propagates the database error', async () => {
             mockFrom(supabase.from, { tags: { data: null, error: { message: 'Eroare taguri' } } })
 
             const result = await getCategoryTags(1)
@@ -124,7 +124,7 @@ describe('backend/categories', () => {
     })
 
     describe('getResourcesFromCategory', () => {
-        it('mapeaza resursele in forma folosita de UI', async () => {
+        it('maps the resources into the shape used by the UI', async () => {
             mockFrom(supabase.from, {
                 learning_resources: {
                     data: [
@@ -142,7 +142,7 @@ describe('backend/categories', () => {
             ])
         })
 
-        it('returneaza eroare cand query-ul esueaza', async () => {
+        it('returns an error when the query fails', async () => {
             mockFrom(supabase.from, {
                 learning_resources: { data: null, error: { message: 'boom' } },
             })
@@ -154,20 +154,20 @@ describe('backend/categories', () => {
     })
 
     describe('addResource', () => {
-        it('valideaza titlul obligatoriu', async () => {
+        it('validates the required title', async () => {
             const result = await addResource({ categoryId: 1, title: '   ' })
 
             expect(result).toEqual({ success: false, message: 'Please add title !' })
             expect(supabase.from).not.toHaveBeenCalled()
         })
 
-        it('valideaza categoria obligatorie', async () => {
+        it('validates the required category', async () => {
             const result = await addResource({ categoryId: 0, title: 'Ghid React' })
 
             expect(result).toEqual({ success: false, message: 'Missing category!' })
         })
 
-        it('insereaza resursa cu valorile implicite pentru url si type', async () => {
+        it('inserts the resource with default values for url and type', async () => {
             const created = { id: 3, title: 'Ghid React' }
             const queries = mockFrom(supabase.from, {
                 learning_resources: { data: created, error: null },
@@ -184,7 +184,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('pastreaza url-ul si tipul primite', async () => {
+        it('keeps the received url and type', async () => {
             const queries = mockFrom(supabase.from, {
                 learning_resources: { data: { id: 4 }, error: null },
             })
@@ -199,7 +199,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('returneaza eroarea din baza de date', async () => {
+        it('returns the database error', async () => {
             mockFrom(supabase.from, {
                 learning_resources: { data: null, error: { message: 'insert failed' } },
             })
@@ -211,7 +211,7 @@ describe('backend/categories', () => {
     })
 
     describe('updateCategory', () => {
-        it('actualizeaza categoria si face trim la nume', async () => {
+        it('updates the category and trims the name', async () => {
             const updated = { id: 1, name: 'Frontend Avansat' }
             const queries = mockFrom(supabase.from, { categories: { data: updated, error: null } })
 
@@ -231,7 +231,7 @@ describe('backend/categories', () => {
             expect(queries.categories[0].eq).toHaveBeenCalledWith('id', 1)
         })
 
-        it('foloseste null cand descrierea lipseste', async () => {
+        it('uses null when the description is missing', async () => {
             const queries = mockFrom(supabase.from, { categories: { data: {}, error: null } })
 
             await updateCategory({ id: 1, name: 'X', difficulty: 'EASY' })
@@ -243,7 +243,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('respinge numele gol', async () => {
+        it('rejects an empty name', async () => {
             const result = await updateCategory({ id: 1, name: '   ', difficulty: 'EASY' })
 
             expect(result).toEqual({
@@ -252,7 +252,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('propaga eroarea de update', async () => {
+        it('propagates the update error', async () => {
             mockFrom(supabase.from, { categories: { data: null, error: { message: 'update failed' } } })
 
             const result = await updateCategory({ id: 1, name: 'X', difficulty: 'EASY' })
@@ -262,16 +262,16 @@ describe('backend/categories', () => {
     })
 
     describe('deleteCategory', () => {
-        it('sterge categoria', async () => {
+        it('deletes the category', async () => {
             const queries = mockFrom(supabase.from, { categories: { error: null } })
 
             const result = await deleteCategory(1)
 
-            expect(result).toEqual({ success: true, message: 'Categorie ștearsă!' })
+            expect(result).toEqual({ success: true, message: 'Category deleted!' })
             expect(queries.categories[0].eq).toHaveBeenCalledWith('id', 1)
         })
 
-        it('trateaza violarea de cheie straina (23503) cu mesaj dedicat', async () => {
+        it('handles the foreign key violation (23503) with a dedicated message', async () => {
             mockFrom(supabase.from, {
                 categories: { error: { code: '23503', message: 'fk violation' } },
             })
@@ -280,11 +280,11 @@ describe('backend/categories', () => {
 
             expect(result).toEqual({
                 success: false,
-                message: "Categoria mai are date asociate care nu au putut fi șterse.",
+                message: "The category still has associated data that could not be deleted.",
             })
         })
 
-        it('returneaza mesajul brut pentru alte erori', async () => {
+        it('returns the raw message for other errors', async () => {
             mockFrom(supabase.from, {
                 categories: { error: { code: '500', message: 'server error' } },
             })
@@ -296,7 +296,7 @@ describe('backend/categories', () => {
     })
 
     describe('addTag', () => {
-        it('adauga tagul cu numele curatat de spatii', async () => {
+        it('adds the tag with the name trimmed of whitespace', async () => {
             const tag = { id: 10, category_id: 1, name: 'TypeScript' }
             const queries = mockFrom(supabase.from, { tags: { data: tag, error: null } })
 
@@ -306,13 +306,13 @@ describe('backend/categories', () => {
             expect(queries.tags[0].insert).toHaveBeenCalledWith({ category_id: 1, name: 'TypeScript' })
         })
 
-        it('respinge numele gol', async () => {
+        it('rejects an empty name', async () => {
             const result = await addTag({ categoryId: 1, name: '   ' })
 
             expect(result).toEqual({ success: false, message: 'Tag Name is obligatory!' })
         })
 
-        it('propaga eroarea de insert', async () => {
+        it('propagates the insert error', async () => {
             mockFrom(supabase.from, { tags: { data: null, error: { message: 'duplicate' } } })
 
             const result = await addTag({ categoryId: 1, name: 'React' })
@@ -322,7 +322,7 @@ describe('backend/categories', () => {
     })
 
     describe('updateTag', () => {
-        it('actualizeaza tagul', async () => {
+        it('updates the tag', async () => {
             const tag = { id: 3, name: 'Hooks' }
             const queries = mockFrom(supabase.from, { tags: { data: tag, error: null } })
 
@@ -333,13 +333,13 @@ describe('backend/categories', () => {
             expect(queries.tags[0].eq).toHaveBeenCalledWith('id', 3)
         })
 
-        it('respinge numele gol', async () => {
+        it('rejects an empty name', async () => {
             const result = await updateTag({ id: 3, name: '' })
 
             expect(result).toEqual({ success: false, message: 'Tag name is obligatory.' })
         })
 
-        it('propaga eroarea de update', async () => {
+        it('propagates the update error', async () => {
             mockFrom(supabase.from, { tags: { data: null, error: { message: 'nope' } } })
 
             const result = await updateTag({ id: 3, name: 'Hooks' })
@@ -349,7 +349,7 @@ describe('backend/categories', () => {
     })
 
     describe('deleteTag', () => {
-        it('sterge tagul', async () => {
+        it('deletes the tag', async () => {
             const queries = mockFrom(supabase.from, { tags: { error: null } })
 
             const result = await deleteTag(5)
@@ -358,7 +358,7 @@ describe('backend/categories', () => {
             expect(queries.tags[0].eq).toHaveBeenCalledWith('id', 5)
         })
 
-        it('trateaza violarea de cheie straina (23503)', async () => {
+        it('handles the foreign key violation (23503)', async () => {
             mockFrom(supabase.from, { tags: { error: { code: '23503', message: 'fk' } } })
 
             const result = await deleteTag(5)
@@ -369,7 +369,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('returneaza mesajul brut pentru alte erori', async () => {
+        it('returns the raw message for other errors', async () => {
             mockFrom(supabase.from, { tags: { error: { code: '42', message: 'other' } } })
 
             const result = await deleteTag(5)
@@ -379,7 +379,7 @@ describe('backend/categories', () => {
     })
 
     describe('addCategory', () => {
-        it('adauga o categorie noua', async () => {
+        it('adds a new category', async () => {
             const created = { id: 2, name: 'Backend' }
             const queries = mockFrom(supabase.from, { categories: { data: created, error: null } })
 
@@ -393,7 +393,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('foloseste null cand descrierea lipseste', async () => {
+        it('uses null when the description is missing', async () => {
             const queries = mockFrom(supabase.from, { categories: { data: {}, error: null } })
 
             await addCategory({ name: 'Backend', difficulty: 'EASY' })
@@ -405,7 +405,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('respinge numele gol', async () => {
+        it('rejects an empty name', async () => {
             const result = await addCategory({ name: '', difficulty: 'EASY' })
 
             expect(result).toEqual({
@@ -414,7 +414,7 @@ describe('backend/categories', () => {
             })
         })
 
-        it('propaga eroarea de insert', async () => {
+        it('propagates the insert error', async () => {
             mockFrom(supabase.from, { categories: { data: null, error: { message: 'exists' } } })
 
             const result = await addCategory({ name: 'Backend', difficulty: 'EASY' })
@@ -424,7 +424,7 @@ describe('backend/categories', () => {
     })
 
     describe('getQuestionsByCategory', () => {
-        it('returneaza intrebarile categoriei', async () => {
+        it('returns the questions of the category', async () => {
             const questions = [{ id: 1, question_text: 'Ce este JSX?' }]
             const queries = mockFrom(supabase.from, { questions: { data: questions, error: null } })
 
@@ -434,7 +434,7 @@ describe('backend/categories', () => {
             expect(queries.questions[0].eq).toHaveBeenCalledWith('category_id', 1)
         })
 
-        it('returneaza array gol cand data este null', async () => {
+        it('returns an empty array when data is null', async () => {
             mockFrom(supabase.from, { questions: { data: null, error: null } })
 
             const result = await getQuestionsByCategory(1)
@@ -442,7 +442,7 @@ describe('backend/categories', () => {
             expect(result.data).toEqual([])
         })
 
-        it('propaga eroarea', async () => {
+        it('propagates the error', async () => {
             mockFrom(supabase.from, { questions: { data: null, error: { message: 'err' } } })
 
             const result = await getQuestionsByCategory(1)
@@ -452,7 +452,7 @@ describe('backend/categories', () => {
     })
 
     describe('getAllResources', () => {
-        it('mapeaza resursele impreuna cu numele categoriei', async () => {
+        it('maps the resources together with the category name', async () => {
             mockFrom(supabase.from, {
                 learning_resources: {
                     data: [
@@ -477,7 +477,7 @@ describe('backend/categories', () => {
             ])
         })
 
-        it('aplica valori implicite pentru campurile lipsa', async () => {
+        it('applies default values for the missing fields', async () => {
             mockFrom(supabase.from, {
                 learning_resources: {
                     data: [{ id: 2, title: null, url: null, type: null, categories: null }],
@@ -492,7 +492,7 @@ describe('backend/categories', () => {
             ])
         })
 
-        it('filtreaza dupa categorie cand primeste categoryId', async () => {
+        it('filters by category when a categoryId is provided', async () => {
             const queries = mockFrom(supabase.from, {
                 learning_resources: { data: [], error: null },
             })
@@ -502,7 +502,7 @@ describe('backend/categories', () => {
             expect(queries.learning_resources[0].eq).toHaveBeenCalledWith('category_id', 7)
         })
 
-        it('propaga eroarea', async () => {
+        it('propagates the error', async () => {
             mockFrom(supabase.from, {
                 learning_resources: { data: null, error: { message: 'fail' } },
             })
@@ -514,7 +514,7 @@ describe('backend/categories', () => {
     })
 
     describe('fetchAllResourcesWrapper', () => {
-        it('returneaza doar array-ul de resurse', async () => {
+        it('returns only the resources array', async () => {
             mockFrom(supabase.from, {
                 learning_resources: {
                     data: [{ id: 1, title: 'A', url: 'u', type: 'article', categories: { name: 'C' } }],
@@ -529,7 +529,7 @@ describe('backend/categories', () => {
             ])
         })
 
-        it('returneaza array gol si logheaza eroarea cand fetch-ul esueaza', async () => {
+        it('returns an empty array and logs the error when the fetch fails', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             mockFrom(supabase.from, {
                 learning_resources: { data: null, error: { message: 'fail' } },

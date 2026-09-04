@@ -88,7 +88,7 @@ export function AssessmentRunner({
     };
 
     if (result) {
-        // imperechem intrebarile din test cu corectura primita de la server
+        // pair the test questions with the grading received from the server
         const reviewById = new Map<number, any>(
             (result.review ?? []).map((r: any) => [r.questionId, r])
         );

@@ -3,7 +3,7 @@ import { hasUserCredentials } from './credentials'
 import { signOutEveryone } from './session'
 
 /**
- * Suita publica: nu are nevoie de cont si nu scrie nimic in baza de date.
+ * Public suite: it needs no account and writes nothing to the database.
  */
 
 test.describe('landing page', () => {
@@ -11,34 +11,34 @@ test.describe('landing page', () => {
         await page.goto('/')
     })
 
-    test('afiseaza mesajul principal si sectiunile de prezentare', async ({ page }) => {
+    test('shows the main message and the presentation sections', async ({ page }) => {
         await expect(page.getByRole('heading', { name: /Master your skills/ })).toBeVisible()
         await expect(page.getByRole('heading', { name: 'Adaptive assessments' })).toBeVisible()
         await expect(page.getByRole('heading', { name: 'Skill radar' })).toBeVisible()
     })
 
-    test('duce catre pagina de autentificare', async ({ page }) => {
+    test('leads to the login page', async ({ page }) => {
         await page.getByRole('link', { name: 'I already have an account' }).click()
 
         await expect(page).toHaveURL(/\/login/)
         await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible()
     })
 
-    test('duce catre pagina de inregistrare', async ({ page }) => {
+    test('leads to the sign up page', async ({ page }) => {
         await page.getByRole('link', { name: /Start for free/ }).click()
 
         await expect(page).toHaveURL(/\/signup/)
     })
 
-    test('ancorele din meniu navigheaza in pagina', async ({ page }) => {
+    test('the menu anchors navigate within the page', async ({ page }) => {
         await page.getByRole('link', { name: 'How it works' }).click()
 
         await expect(page).toHaveURL(/#how/)
     })
 })
 
-test.describe('autentificare', () => {
-    test('respinge credentialele gresite', async ({ page }) => {
+test.describe('login', () => {
+    test('rejects wrong credentials', async ({ page }) => {
         await page.goto('/login')
 
         await page.getByPlaceholder('alex.rivera@example.com').fill('inexistent@skillpath.test')
@@ -49,7 +49,7 @@ test.describe('autentificare', () => {
         await expect(page).toHaveURL(/\/login/)
     })
 
-    test('nu trimite formularul cu campuri goale', async ({ page }) => {
+    test('does not submit the form with empty fields', async ({ page }) => {
         await page.goto('/login')
 
         await page.getByRole('button', { name: /Log In/ }).click()
@@ -60,7 +60,7 @@ test.describe('autentificare', () => {
         await expect(emailInput).toHaveJSProperty('validity.valid', false)
     })
 
-    test('are legatura catre inregistrare', async ({ page }) => {
+    test('has a link to sign up', async ({ page }) => {
         await page.goto('/login')
 
         await page.getByRole('link', { name: 'Sign up' }).click()
@@ -69,9 +69,9 @@ test.describe('autentificare', () => {
     })
 })
 
-test.describe('inregistrare', () => {
-    // Formularul se valideaza client-side inainte de a atinge Supabase,
-    // deci testele de mai jos nu creeaza conturi.
+test.describe('sign up', () => {
+    // The form is validated client-side before reaching Supabase,
+    // so the tests below do not create accounts.
     test.beforeEach(async ({ page }) => {
         await page.goto('/signup')
     })
@@ -88,25 +88,25 @@ test.describe('inregistrare', () => {
         await page.getByRole('button', { name: /Sign Up|Create|Register/i }).click()
     }
 
-    test('semnaleaza parolele care nu se potrivesc', async ({ page }) => {
+    test('reports passwords that do not match', async ({ page }) => {
         await fillSignUp(page, { password: 'parola123', confirm: 'altceva123' })
 
         await expect(page.getByText('Passwords do not match!')).toBeVisible()
     })
 
-    test('cere minimum 6 caractere', async ({ page }) => {
+    test('requires at least 6 characters', async ({ page }) => {
         await fillSignUp(page, { password: '123', confirm: '123' })
 
         await expect(page.getByText('Password must be at least 6 characters long!')).toBeVisible()
     })
 })
 
-test.describe('protectia rutelor', () => {
+test.describe('route protection', () => {
     test.use({ storageState: { cookies: [], origins: [] } })
 
-    // Sesiunea traieste in procesul serverului, nu in browser (vezi e2e/session.ts),
-    // deci un login anterior ar face aceste rute accesibile. Ne asiguram ca
-    // nimeni nu e logat inainte de a verifica protectia.
+    // The session lives in the server process, not in the browser (see e2e/session.ts),
+    // so an earlier login would make these routes accessible. We make sure
+    // nobody is logged in before checking the protection.
     test.beforeAll(async ({ browser }) => {
         if (!hasUserCredentials()) return
         const page = await browser.newPage()

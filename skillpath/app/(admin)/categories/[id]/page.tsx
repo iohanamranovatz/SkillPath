@@ -7,7 +7,7 @@ import { AddResourceForm } from "@/frontend/admin/Categories/AddResourceForm";
 export default async function CategoryDetailPage({
     params,
 }: {
-    params: Promise<{ id: string }>; // în Next 16 params e un Promise
+    params: Promise<{ id: string }>; // in Next 16 params is a Promise
 }) {
     const { id } = await params;
 
@@ -33,7 +33,7 @@ export default async function CategoryDetailPage({
                 )}
             </div>
 
-            {/* RESURSE */}
+            {/* RESOURCES */}
             <section className="bg-card rounded-2xl border border-white/10 p-6 shadow-sm">
                 <h2 className="text-lg font-semibold mb-3">Learning Resources</h2>
 
@@ -63,7 +63,7 @@ export default async function CategoryDetailPage({
                 )}
             </section>
 
-            {/* ÎNTREBĂRI */}
+            {/* QUESTIONS */}
             <section className="bg-card rounded-2xl border border-white/10 p-6 shadow-sm">
                 <h2 className="text-lg font-semibold mb-3">
                     Questions ({questions.data.length})

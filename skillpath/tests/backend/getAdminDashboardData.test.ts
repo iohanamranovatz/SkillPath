@@ -10,10 +10,10 @@ vi.mock('@/helper/supabase/server', () => {
 
 
 const supabase = createClient() as any
-// data de referinta: miercuri, 2 septembrie 2026
+// reference date: Wednesday, 2 September 2026
 const TODAY = new Date(2026, 8, 2, 12, 0, 0)
 
-// helper: ISO pentru "acum minus N zile", in ora locala
+// helper: ISO for "now minus N days", in local time
 function daysAgo(n: number) {
     const d = new Date(TODAY)
     d.setDate(TODAY.getDate() - n)
@@ -46,13 +46,13 @@ describe('backend/admin/getAdminDashboardData', () => {
                     { id: 10, user_id: 1, status: 'completed', completed_at: daysAgo(0) },
                     { id: 11, user_id: 1, status: 'completed', completed_at: daysAgo(2) },
                     { id: 12, user_id: 2, status: 'completed', completed_at: daysAgo(1) },
-                    // in afara ferestrei de 7 zile -> nu intra in activitate
+                    // outside the 7-day window -> not counted in the activity
                     { id: 13, user_id: 2, status: 'completed', completed_at: daysAgo(30) },
-                    // fara data de finalizare -> ignorat la activitate
+                    // without a completion date -> ignored in the activity
                     { id: 14, user_id: 1, status: 'completed', completed_at: null },
-                    // in curs -> nu e numarat deloc
+                    // in progress -> not counted at all
                     { id: 15, user_id: 2, status: 'in_progress', completed_at: null },
-                    // user care nu exista in tabela users -> exclus din top
+                    // user that does not exist in the users table -> excluded from the top
                     { id: 16, user_id: 99, status: 'completed', completed_at: daysAgo(1) },
                 ],
                 error: null,
@@ -89,7 +89,7 @@ describe('backend/admin/getAdminDashboardData', () => {
         })
     }
 
-    it('construieste cele patru carduri de statistici', async () => {
+    it('builds the four stat cards', async () => {
         seed()
 
         const { stats } = await getAdminDashboardData()
@@ -102,20 +102,20 @@ describe('backend/admin/getAdminDashboardData', () => {
         ])
     })
 
-    it('grupeaza activitatea pe ultimele 7 zile', async () => {
+    it('groups the activity over the last 7 days', async () => {
         seed()
 
         const { assessmentActivity } = await getAdminDashboardData()
 
         expect(assessmentActivity).toHaveLength(7)
-        // ultima zi = azi (miercuri) cu un singur test finalizat
+        // last day = today (Wednesday) with a single completed test
         expect(assessmentActivity[6]).toEqual({ day: 'Wed', fullDay: 'Wednesday', count: 1 })
         // ieri: 2 teste finalizate (unul al unui user inexistent)
         expect(assessmentActivity[5].count).toBe(2)
         expect(assessmentActivity.reduce((s, b) => s + b.count, 0)).toBe(4)
     })
 
-    it('ordoneaza top users dupa numarul de teste si exclude adminii', async () => {
+    it('orders top users by the number of tests and excludes admins', async () => {
         seed()
 
         const { topUsers } = await getAdminDashboardData()
@@ -126,7 +126,7 @@ describe('backend/admin/getAdminDashboardData', () => {
         ])
     })
 
-    it('sorteaza categoriile slabe dupa rata de greseala', async () => {
+    it('sorts the weak categories by error rate', async () => {
         seed()
 
         const { weakestCategories } = await getAdminDashboardData()
@@ -137,7 +137,7 @@ describe('backend/admin/getAdminDashboardData', () => {
         ])
     })
 
-    it('returneaza o structura goala cand nu exista date', async () => {
+    it('returns an empty structure when there is no data', async () => {
         mockFrom(supabase.from, {
             users: { data: null, error: { message: 'x' } },
             assessments: { data: null, error: null },

@@ -3,13 +3,13 @@ import { vi } from 'vitest'
 export type QueryResult = { data?: any; error?: any; count?: number }
 
 /**
- * Construieste un obiect care imita un query builder Supabase.
+ * Builds an object that mimics a Supabase query builder.
  *
- * Orice metoda apelata pe el (.select, .eq, .in, .order, .single, .limit ...)
- * returneaza acelasi obiect, deci lantul poate avea orice lungime si orice
- * ordine. Cand este asteptat cu `await`, se rezolva cu `result`.
+ * Any method called on it (.select, .eq, .in, .order, .single, .limit ...)
+ * returns the same object, so the chain can have any length and any order.
+ * When awaited, it resolves with `result`.
  *
- * Fiecare metoda este un spy, asa ca se poate verifica:
+ * Every method is a spy, so assertions like this work:
  *   expect(query.eq).toHaveBeenCalledWith('id', 5)
  */
 export function createQuery(result: QueryResult = { data: null, error: null }) {
@@ -32,13 +32,13 @@ export function createQuery(result: QueryResult = { data: null, error: null }) {
 }
 
 /**
- * Configureaza `supabase.from` astfel incat fiecare tabel sa raspunda cu un
- * rezultat prestabilit.
+ * Configures `supabase.from` so that every table answers with a predefined
+ * result.
  *
- * - o valoare simpla  -> se returneaza la fiecare apel pe acel tabel
- * - un array          -> coada de raspunsuri, in ordinea apelurilor
+ * - a plain value -> returned on every call for that table
+ * - an array      -> a queue of responses, in call order
  *
- * Returneaza un dictionar tabel -> lista de query-uri create, pentru assert-uri.
+ * Returns a table -> list of created queries dictionary, for assertions.
  */
 export function mockFrom(
     from: any,

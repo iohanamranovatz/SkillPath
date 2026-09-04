@@ -27,7 +27,7 @@ describe('backend/user/profile/profileActions', () => {
     })
 
     describe('addObjective', () => {
-        it('insereaza obiectivul si invalideaza pagina de profil', async () => {
+        it('inserts the objective and invalidates the profile page', async () => {
             const queries = mockFrom(supabase.from, { user_objectives: { error: null } })
 
             await addObjective(5, 'Invat TypeScript')
@@ -40,14 +40,14 @@ describe('backend/user/profile/profileActions', () => {
             expect(revalidatePath).toHaveBeenCalledWith('/profile')
         })
 
-        it('ignora titlurile goale', async () => {
+        it('ignores empty titles', async () => {
             await addObjective(5, '   ')
 
             expect(supabase.from).not.toHaveBeenCalled()
             expect(revalidatePath).not.toHaveBeenCalled()
         })
 
-        it('nu invalideaza pagina daca insert-ul esueaza', async () => {
+        it('does not invalidate the page if the insert fails', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             mockFrom(supabase.from, { user_objectives: { error: { message: 'nope' } } })
 
@@ -75,7 +75,7 @@ describe('backend/user/profile/profileActions', () => {
     })
 
     describe('deleteObjective', () => {
-        it('sterge obiectivul', async () => {
+        it('deletes the objective', async () => {
             const queries = mockFrom(supabase.from, { user_objectives: { error: null } })
 
             await deleteObjective(9)
@@ -86,7 +86,7 @@ describe('backend/user/profile/profileActions', () => {
     })
 
     describe('toggleInterestTag', () => {
-        it('sterge interesul cand era deja selectat', async () => {
+        it('removes the interest when it was already selected', async () => {
             const queries = mockFrom(supabase.from, { user_interests: { error: null } })
 
             await toggleInterestTag(5, 2, true)
@@ -96,7 +96,7 @@ describe('backend/user/profile/profileActions', () => {
             expect(queries.user_interests[0].eq).toHaveBeenCalledWith('category_id', 2)
         })
 
-        it('adauga interesul cand nu era selectat', async () => {
+        it('adds the interest when it was not selected', async () => {
             const queries = mockFrom(supabase.from, { user_interests: { error: null } })
 
             await toggleInterestTag(5, 2, false)
@@ -127,7 +127,7 @@ describe('backend/user/profile/updateProfile', () => {
         } as any)
     }
 
-    it('actualizeaza numele utilizatorului autentificat', async () => {
+    it('updates the name of the authenticated user', async () => {
         authAs('auth-1')
         const queries = mockFrom(supabase.from, {
             users: [{ data: { id: 5 }, error: null }, { error: null }],
@@ -142,7 +142,7 @@ describe('backend/user/profile/updateProfile', () => {
         expect(revalidatePath).toHaveBeenCalledWith('/profile')
     })
 
-    it('respinge cererea cand nu exista sesiune', async () => {
+    it('rejects the request when there is no session', async () => {
         authAs(null)
 
         const result = await updateProfile(form('Ana'))
@@ -151,7 +151,7 @@ describe('backend/user/profile/updateProfile', () => {
         expect(supabase.from).not.toHaveBeenCalled()
     })
 
-    it('respinge cererea cand userul nu exista in baza de date', async () => {
+    it('rejects the request when the user does not exist in the database', async () => {
         authAs('auth-1')
         mockFrom(supabase.from, { users: { data: null, error: { message: 'not found' } } })
 
@@ -160,7 +160,7 @@ describe('backend/user/profile/updateProfile', () => {
         expect(result).toEqual({ success: false, message: 'User not found in database.' })
     })
 
-    it('raporteaza esecul update-ului', async () => {
+    it('reports the update failure', async () => {
         authAs('auth-1')
         mockFrom(supabase.from, {
             users: [{ data: { id: 5 }, error: null }, { error: { message: 'denied' } }],

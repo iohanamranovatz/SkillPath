@@ -54,7 +54,7 @@ beforeEach(() => {
 })
 
 describe('CategoriesManager', () => {
-    it('afiseaza starea de incarcare, apoi primele 6 categorii', async () => {
+    it('shows the loading state, then the first 6 categories', async () => {
         render(<CategoriesManager />)
 
         expect(screen.getByText('Loading…')).toBeTruthy()
@@ -67,7 +67,7 @@ describe('CategoriesManager', () => {
         expect(screen.getByText('Categoria 7')).toBeTruthy()
     })
 
-    it('cauta dupa nume si afiseaza mesajul gol', async () => {
+    it('searches by name and shows the empty message', async () => {
         render(<CategoriesManager />)
         await screen.findByText('Categoria 1')
 
@@ -83,7 +83,7 @@ describe('CategoriesManager', () => {
         expect(screen.getByText('No categories found.')).toBeTruthy()
     })
 
-    it('navigheaza la pagina categoriei', async () => {
+    it('navigates to the category page', async () => {
         render(<CategoriesManager />)
         await screen.findByText('Categoria 1')
 
@@ -92,7 +92,7 @@ describe('CategoriesManager', () => {
         expect(nav.router.push).toHaveBeenCalledWith('/categories/1')
     })
 
-    it('creeaza o categorie noua', async () => {
+    it('creates a new category', async () => {
         vi.mocked(addCategory).mockResolvedValue({ success: true } as any)
         render(<CategoriesManager />)
         await screen.findByText('Categoria 1')
@@ -116,7 +116,7 @@ describe('CategoriesManager', () => {
         await waitFor(() => expect(screen.queryByText('New Category')).toBeNull())
     })
 
-    it('editeaza o categorie existenta', async () => {
+    it('edits an existing category', async () => {
         vi.mocked(updateCategory).mockResolvedValue({ success: true } as any)
         const { container } = render(<CategoriesManager />)
         await screen.findByText('Categoria 1')
@@ -139,7 +139,7 @@ describe('CategoriesManager', () => {
         )
     })
 
-    it('afiseaza eroarea la salvare', async () => {
+    it('shows the error on save', async () => {
         vi.mocked(addCategory).mockResolvedValue({
             success: false,
             message: 'Name of the category is obligatory.',
@@ -153,7 +153,7 @@ describe('CategoriesManager', () => {
         expect(await screen.findByText('Name of the category is obligatory.')).toBeTruthy()
     })
 
-    it('inchide modalul din butonul Cancel', async () => {
+    it('closes the modal from the Cancel button', async () => {
         render(<CategoriesManager />)
         await screen.findByText('Categoria 1')
 
@@ -163,7 +163,7 @@ describe('CategoriesManager', () => {
         expect(screen.queryByText('New Category')).toBeNull()
     })
 
-    it('sterge o categorie dupa confirmare', async () => {
+    it('deletes a category after confirmation', async () => {
         vi.mocked(deleteCategory).mockResolvedValue({ success: true } as any)
         const { container } = render(<CategoriesManager />)
         await screen.findByText('Categoria 1')
@@ -176,7 +176,7 @@ describe('CategoriesManager', () => {
         await waitFor(() => expect(deleteCategory).toHaveBeenCalledWith(1))
     })
 
-    it('afiseaza eroarea cand stergerea esueaza', async () => {
+    it('shows the error when the delete fails', async () => {
         vi.mocked(deleteCategory).mockResolvedValue({
             success: false,
             message: "You can't delete this category, questions and tags are tied to it.",
@@ -190,7 +190,7 @@ describe('CategoriesManager', () => {
         await waitFor(() => expect(screen.queryByText('Delete category?')).toBeNull())
     })
 
-    it('nu cade cand incarcarea categoriilor esueaza', async () => {
+    it('does not crash when loading the categories fails', async () => {
         vi.mocked(getCategories).mockResolvedValue({ success: false, message: 'boom', data: [] } as any)
         render(<CategoriesManager />)
 
@@ -208,32 +208,32 @@ describe('TagsManager', () => {
         vi.mocked(getCategoryTags).mockResolvedValue({ success: true, data: tags } as any)
     })
 
-    it('afiseaza tagurile primite', () => {
+    it('shows the tags it receives', () => {
         render(<TagsManager categoryId={1} initialTags={tags} />)
 
         expect(screen.getByText('React')).toBeTruthy()
         expect(screen.getByText('Hooks')).toBeTruthy()
     })
 
-    it('afiseaza mesajul gol fara taguri', () => {
+    it('shows the empty message when there are no tags', () => {
         render(<TagsManager categoryId={1} initialTags={[]} />)
 
-        expect(screen.getByText('Nicio etichetă încă.')).toBeTruthy()
+        expect(screen.getByText('No tags yet.')).toBeTruthy()
     })
 
-    it('adauga un tag si reincarca lista', async () => {
+    it('adds a tag and reloads the list', async () => {
         const onChange = vi.fn()
         vi.mocked(addTag).mockResolvedValue({ success: true } as any)
         render(<TagsManager categoryId={1} initialTags={[]} onChange={onChange} />)
 
-        fireEvent.change(screen.getByPlaceholderText('Nume tag…'), { target: { value: 'Next.js' } })
+        fireEvent.change(screen.getByPlaceholderText('Tag name…'), { target: { value: 'Next.js' } })
         fireEvent.submit(screen.getByRole('button', { name: /Add Tag/ }).closest('form')!)
 
         await waitFor(() => expect(addTag).toHaveBeenCalledWith({ categoryId: 1, name: 'Next.js' }))
         await waitFor(() => expect(onChange).toHaveBeenCalledWith(tags))
     })
 
-    it('ignora numele gol', () => {
+    it('ignores an empty name', () => {
         render(<TagsManager categoryId={1} initialTags={[]} />)
 
         fireEvent.submit(screen.getByRole('button', { name: /Add Tag/ }).closest('form')!)
@@ -241,17 +241,17 @@ describe('TagsManager', () => {
         expect(addTag).not.toHaveBeenCalled()
     })
 
-    it('afiseaza eroarea la adaugare', async () => {
+    it('shows the error on add', async () => {
         vi.mocked(addTag).mockResolvedValue({ success: false, message: 'Tag Name is obligatory!' } as any)
         render(<TagsManager categoryId={1} initialTags={[]} />)
 
-        fireEvent.change(screen.getByPlaceholderText('Nume tag…'), { target: { value: 'X' } })
+        fireEvent.change(screen.getByPlaceholderText('Tag name…'), { target: { value: 'X' } })
         fireEvent.submit(screen.getByRole('button', { name: /Add Tag/ }).closest('form')!)
 
         expect(await screen.findByText('Tag Name is obligatory!')).toBeTruthy()
     })
 
-    it('editeaza un tag si salveaza cu Enter', async () => {
+    it('edits a tag and saves with Enter', async () => {
         vi.mocked(updateTag).mockResolvedValue({ success: true } as any)
         render(<TagsManager categoryId={1} initialTags={tags} />)
 
@@ -264,7 +264,7 @@ describe('TagsManager', () => {
         await waitFor(() => expect(updateTag).toHaveBeenCalledWith({ id: 1, name: 'React 19' }))
     })
 
-    it('anuleaza editarea cu Escape si cu butonul dedicat', () => {
+    it('cancels editing with Escape and with the dedicated button', () => {
         render(<TagsManager categoryId={1} initialTags={tags} />)
 
         fireEvent.click(screen.getAllByTitle('Edit')[0])
@@ -276,7 +276,7 @@ describe('TagsManager', () => {
         expect(screen.queryByDisplayValue('React')).toBeNull()
     })
 
-    it('salveaza editarea din buton', async () => {
+    it('saves the edit from the button', async () => {
         vi.mocked(updateTag).mockResolvedValue({ success: true } as any)
         render(<TagsManager categoryId={1} initialTags={tags} />)
 
@@ -286,7 +286,7 @@ describe('TagsManager', () => {
         await waitFor(() => expect(updateTag).toHaveBeenCalledWith({ id: 2, name: 'Hooks' }))
     })
 
-    it('sterge un tag', async () => {
+    it('deletes a tag', async () => {
         vi.mocked(deleteTag).mockResolvedValue({ success: true } as any)
         render(<TagsManager categoryId={1} initialTags={tags} />)
 
@@ -295,7 +295,7 @@ describe('TagsManager', () => {
         await waitFor(() => expect(deleteTag).toHaveBeenCalledWith(1))
     })
 
-    it('afiseaza eroarea la stergere', async () => {
+    it('shows the error on delete', async () => {
         vi.mocked(deleteTag).mockResolvedValue({
             success: false,
             message: 'This tag cannot be deleted, questions are tied to it.',
@@ -311,16 +311,16 @@ describe('TagsManager', () => {
 })
 
 describe('AddResourceForm', () => {
-    it('cere un titlu inainte de trimitere', () => {
+    it('requires a title before submitting', () => {
         render(<AddResourceForm categoryId={1} />)
 
         fireEvent.submit(screen.getByRole('button', { name: /Add Resource/ }).closest('form')!)
 
-        expect(screen.getByText('Adaugă un titlu.')).toBeTruthy()
+        expect(screen.getByText('Please add a title.')).toBeTruthy()
         expect(addResource).not.toHaveBeenCalled()
     })
 
-    it('adauga resursa si reseteaza formularul', async () => {
+    it('adds the resource and resets the form', async () => {
         vi.mocked(addResource).mockResolvedValue({
             success: true,
             message: 'Resource was added!!',
@@ -345,7 +345,7 @@ describe('AddResourceForm', () => {
         expect(nav.router.refresh).toHaveBeenCalled()
     })
 
-    it('pastreaza datele cand serverul respinge cererea', async () => {
+    it('keeps the data when the server rejects the request', async () => {
         vi.mocked(addResource).mockResolvedValue({ success: false, message: 'Missing category!' } as any)
         render(<AddResourceForm categoryId={0} />)
 

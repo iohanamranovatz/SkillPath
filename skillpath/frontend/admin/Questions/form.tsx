@@ -45,8 +45,8 @@ export default function QuestionForm({
         fetchCategories();
     }, []);
 
-    // O intrebare are exact UN raspuns corect. Intrebarile vechi pot avea mai multe
-    // salvate ("a,b") -> pastram doar primul, ca adminul sa fie fortat sa aleaga unul.
+    // A question has exactly ONE correct answer. Legacy questions may have several
+    // saved ("a,b") -> keep only the first, so the admin is forced to pick one.
     const initialCorrect = Array.isArray(question.correctAnswersId)
         ? (question.correctAnswersId[0] ?? "")
         : (question.correctAnswersId ?? "").split(",")[0].trim();
@@ -60,7 +60,7 @@ export default function QuestionForm({
         setOptions(options.map(opt => opt.id === id ? { ...opt, text: newText } : opt));
     };
 
-    // selectie exclusiva -> alegerea unei optiuni o inlocuieste pe cea anterioara
+    // exclusive selection -> picking an option replaces the previous one
     const selectCorrectAnswer = (id: string) => {
         setCorrectAnswerId(id);
         setErrorMsg("");
@@ -171,7 +171,7 @@ export default function QuestionForm({
                 </div>
             </div>
 
-            {/* Optiuni editabile + un singur raspuns corect (comportament de radio) */}
+            {/* Editable options + a single correct answer (radio behaviour) */}
             <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Options & Correct Answer (click a circle to pick the single correct one)

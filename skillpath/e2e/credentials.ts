@@ -1,9 +1,9 @@
 /**
- * Credentialele conturilor de test.
+ * Credentials for the test accounts.
  *
- * NU se scriu in cod si nu se comit: se pun in e2e/.env.test.local, care este
- * ignorat de git. Daca lipsesc, suitele care au nevoie de login se marcheaza
- * ca "skipped" in loc sa pice.
+ * They are NOT written in code and NOT committed: put them in
+ * e2e/.env.test.local, which is git-ignored. If they are missing, the suites
+ * that need a login are marked as "skipped" instead of failing.
  */
 
 export const userCredentials = {

@@ -39,7 +39,7 @@ export function NewTestForm({
             setError(res.message ?? "Sorry, error at generating test.");
             return;
         }
-        // mergem la pagina de rulare a testului
+        // navigate to the test runner page
         router.push(`/assessment/${res.data.assessmentId}`);
     };
 
@@ -54,7 +54,7 @@ export function NewTestForm({
 
             {categories.length === 0 ? (
                 <p className="text-sm text-muted-foreground">
-                    Nu exista categorii pentru nivelul tau inca.
+                    There are no categories for your level yet.
                 </p>
             ) : (
                 <>

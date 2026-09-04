@@ -76,7 +76,7 @@ export default function AdminSidebar() {
             </nav>
 
 
-            {/* Logout Button (Poziționat jos în sidebar, stilizat identic cu restul elementelor) */}
+            {/* Logout button (pinned to the bottom of the sidebar, styled like the other items) */}
             <div className="p-3 border-t border-sidebar-border">
 
             </div>

@@ -22,7 +22,7 @@ export async function getWeakCategories(userId?: number): Promise<WeakCategory[]
       )
     `);
 
-    // Daca primim un userId, filtram raspunsurile doar pentru acel student
+    // If a userId is provided, filter the answers to that student only
     if (userId) {
         query = query.eq("assessments.user_id", userId);
     }

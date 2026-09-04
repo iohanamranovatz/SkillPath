@@ -9,7 +9,7 @@ export default async function NewTestPage() {
     const { data } = await supabase.auth.getUser();
     if (!data.user) redirect("/");
 
-    // auth.getUser() da uuid-ul; luam id-ul bigint + nivelul userului
+    // auth.getUser() gives the uuid; take the bigint id + the user level
     const { data: dbUser } = await supabase
         .from("users")
         .select("id, estimated_level")
@@ -26,10 +26,10 @@ export default async function NewTestPage() {
         redirect("/userDashboard");
     }
 
-    // nivelul userului (userii noi -> Beginner)
+    // the user level (new users -> Beginner)
     const userLevel = (dbUser.estimated_level ?? "Beginner").toLowerCase();
 
-    // afisam DOAR categoriile de nivelul userului (categories.difficulty == nivelul lui)
+    // show ONLY the categories matching the user level (categories.difficulty == their level)
     const { data: allCategories } = await supabase
         .from("categories")
         .select("id, name, difficulty");

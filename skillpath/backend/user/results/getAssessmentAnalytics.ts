@@ -5,7 +5,7 @@ import { createClient } from "@/helper/supabase/server";
 export async function getAssessmentAnalytics(assessmentId: number) {
     const supabase = await createClient();
 
-    // iau raspunsurile salvate impreuna cu tag-ul intrebarii
+    // load the saved answers together with the question tag
     // !inner = inner join
     const { data: answers, error } = await supabase
         .from("assessment_answers")
@@ -24,7 +24,7 @@ export async function getAssessmentAnalytics(assessmentId: number) {
     if (error || !answers) return { success: false, message: error?.message };
 
     /**
-     STRUCTURA pentru calculul pe tag-uri
+     STRUCTURE used for the per-tag computation
      Record = dictionar (cheie - valoare)
      cheia: number ( id-ul tag-ului )
      valoarea: { name, total, correct }
@@ -32,12 +32,12 @@ export async function getAssessmentAnalytics(assessmentId: number) {
     const tagStats: Record<number, { name: string, total: number, correct: number }> = {};
 
     answers.forEach((ans: any) => {
-       // verificam daca intrebarea si tag-ul exista
+       // check that the question and the tag exist
        const question = ans.questions;
 
-       // datorita raspunsurilor luate din supabase de mai sus - rand 8
-       // .questions este generat din ans.questions (relatia question_id)
-        // .tags este generat din question.tags (relatia tag_id -> tabela tags)
+       // thanks to the answers fetched from Supabase above - line 8
+       // .questions comes from ans.questions (the question_id relation)
+        // .tags comes from question.tags (the tag_id relation -> tags table)
 
        if (!question || !question.tags) return;
 
@@ -55,10 +55,10 @@ export async function getAssessmentAnalytics(assessmentId: number) {
        }
     });
 
-    // identific Weak Areas -> scorul pe tag este < 60%
+    // identify Weak Areas -> the per-tag score is < 60%
     const weakTagIds: number[] = [];
 
-    // tablou de obiecte cu detalii trimis catre front pt a fi afisat
+    // array of detail objects sent to the frontend to be displayed
     const weakAreasList: { id: number; name: string; percentage: number }[] = [];
 
     Object.entries(tagStats).forEach(([tagIdStr, stat]) => {
@@ -75,7 +75,7 @@ export async function getAssessmentAnalytics(assessmentId: number) {
         }
     });
 
-    // preiau resursele recomandate din BD pentru tag-urile slabe
+    // fetch the recommended resources from the DB for the weak tags
     let recommendedResources = [];
 
     if (weakTagIds.length > 0) {
@@ -96,14 +96,14 @@ export async function getAssessmentAnalytics(assessmentId: number) {
 export async function getLatestAssessmentAnalytics() {
     const supabase = await createClient();
 
-    // preiau sesiunea utilizatorului logat direct din Supabase
+    // get the logged-in user session directly from Supabase
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
         return { weakAreas: [], recommendedResources: [], stats: null };
     }
 
-    // gasesc ultimul test completat al acestui utilizator
+    // find the latest completed test for this user
     const { data: latestAssessment } = await supabase
         .from('assessments')
         .select('id')
@@ -113,11 +113,11 @@ export async function getLatestAssessmentAnalytics() {
         .limit(1)
         .single();
 
-    // daca nu are niciun test completat, returnam date goale
+    // if there is no completed test, return empty data
     if (!latestAssessment) {
         return { weakAreas: [], recommendedResources: [], stats: null };
     }
 
-    // 3. Rulăm codul tău existent folosind ID-ul găsit
+    // 3. Run the existing logic using the id we found
     return await getAssessmentAnalytics(latestAssessment.id);
 }

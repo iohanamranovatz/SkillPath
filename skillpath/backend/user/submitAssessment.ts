@@ -31,7 +31,7 @@ export async function submitAssessment(
 
     let level: string | null = "Beginner";
 
-    // 1. luam raspunsurile corecte + categoria intrebarilor (DOAR pe server!)
+    // 1. load the correct answers + the question category (SERVER ONLY!)
     const questionIds = answers.map((a) => a.questionId);
     const {data: questions, error: qErr} = await supabase
         .from("questions")
@@ -43,9 +43,9 @@ export async function submitAssessment(
     const qById = new Map<number, any>();
     (questions ?? []).forEach((q: any) => qById.set(q.id, q));
 
-    // 2. corectam fiecare raspuns + tinem scor pe categorie
+    // 2. grade every answer + keep the score per category
     const perCat = new Map<string, { correct: number; total: number }>();
-    // raspunsurile corecte se trimit inapoi DOAR aici, dupa ce testul e predat
+    // the correct answers are sent back ONLY here, after the test is submitted
     const review: { questionId: number; selectedOptionId: string; correctOptionId: string | null; isCorrect: boolean }[] = [];
     let correct = 0;
 
@@ -77,7 +77,7 @@ export async function submitAssessment(
     const total = answers.length;
     const scorePct = Math.round((correct / total) * 100);
 
-    // scor procentual pe fiecare categorie
+    // percentage score for each category
     const perCategory = Array.from(perCat.entries()).map(([category, v]) => ({
         category,
         score: Math.round((v.correct / v.total) * 100),
@@ -85,7 +85,7 @@ export async function submitAssessment(
         total: v.total,
     }));
 
-    // 3. salvam scorul total + marcam finalizat
+    // 3. save the total score + mark the test as completed
     await supabase
         .from("assessments")
         .update({
@@ -95,7 +95,7 @@ export async function submitAssessment(
         })
         .eq("id", assessmentId);
 
-    // 4. reevaluam nivelul userului (dupa ce scorul e salvat in DB)
+    // 4. re-evaluate the user level (after the score is saved in the DB)
     if (owner?.user_id) {
         const lvl = await evaluateUserLevel(owner.user_id);
         level = lvl?.data?.level ?? null;

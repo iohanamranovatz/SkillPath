@@ -2,20 +2,20 @@ import { expect, type Page } from '@playwright/test'
 import { userCredentials, adminCredentials } from './credentials'
 
 /**
- * Autentificare prin interfata.
+ * Logging in through the UI.
  *
- * ATENTIE — de ce nu folosim `storageState` (sesiuni salvate pe disc):
- * aplicatia nu tine sesiunea in cookie-uri. `loginUser` este o server action
- * care apeleaza `supabase.auth.signInWithPassword` pe clientul singleton din
- * `helper/SupabaseClient.js`, deci sesiunea ajunge in memoria procesului Node
- * si este COMUNA tuturor vizitatorilor. Vezi nota din e2e/README.md.
+ * NOTE - why we do not use `storageState` (sessions saved on disk):
+ * the app does not keep the session in cookies. `loginUser` is a server action
+ * that calls `supabase.auth.signInWithPassword` on the singleton client from
+ * `helper/SupabaseClient.js`, so the session ends up in the Node process memory
+ * and is SHARED by all visitors. See the note in e2e/README.md.
  *
- * Consecinta pentru teste: nu conteaza ce cookie-uri are browserul, ci cine
- * s-a logat ultimul pe server. De aceea fiecare suita se logheaza explicit
- * inainte de teste, iar rularea este secventiala (`workers: 1`).
+ * Consequence for the tests: what matters is not the browser cookies, but who
+ * logged in last on the server. That is why every suite logs in explicitly
+ * before its tests, and the run is sequential (`workers: 1`).
  *
- * Cand sesiunile vor fi mutate pe cookie-uri, acest helper poate fi inlocuit
- * cu `storageState`, iar `workers: 1` poate disparea.
+ * Once sessions move to cookies, this helper can be replaced with
+ * `storageState`, and `workers: 1` can go away.
  */
 
 export async function logInAs(page: Page, role: 'user' | 'admin') {
@@ -31,8 +31,8 @@ export async function logInAs(page: Page, role: 'user' | 'admin') {
 }
 
 /**
- * Inchide orice sesiune activa pe server, ca testele de protectie a rutelor
- * sa porneasca de la zero chiar daca serverul de dev a fost deja folosit.
+ * Closes any active session on the server, so the route-protection tests start
+ * from a clean slate even if the dev server has already been used.
  */
 export async function signOutEveryone(page: Page) {
     await logInAs(page, 'user')

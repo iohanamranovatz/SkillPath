@@ -8,7 +8,7 @@ import { Resource } from "@/frontend/user/lib/types"
 import { SearchBar } from "@/frontend/admin/Questions/search-bar"
 import Pagination from "@/frontend/components/pagination";
 
-// paginare -> numarul de categorii per pagina
+// pagination -> number of items per page
 const ITEMS_PER_PAGE = 4;
 
 const getResourceIcon = (type: string) => {
@@ -21,17 +21,17 @@ const getResourceIcon = (type: string) => {
 export function ResourcesView({ resources = [] }: { resources?: Resource[] }) {
     const [searchQuery, setSearchQuery] = useState("")
 
-    // paginare
+    // pagination
     const [currentPage, setCurrentPage] = useState(1);
 
-    // Functie pentru actualizarea cautarii + resetarea paginii
+    // Updates the search term and resets the page
     const handleSearch = (value: string) => {
         setSearchQuery(value);
-        setCurrentPage(1); // Reseteaza la pagina 1 la fiecare noua cautare
+        setCurrentPage(1); // Reset to page 1 on every new search
     };
 
-    // Filtrăm resursele după categorie si titlu
-    // în funcție de ce introduce utilizatorul în searchbar
+    // Filter the resources by category and title
+    // based on what the user types in the search bar
     const filteredResources = useMemo(() => {
         const query = searchQuery.toLowerCase().trim();
         return resources.filter((resource) => {

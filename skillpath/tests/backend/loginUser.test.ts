@@ -20,8 +20,8 @@ describe('loginUser Server Action', () => {
         vi.clearAllMocks()
     })
 
-    it('ar trebui sa returneze mesaj de confirmare email daca email-ul nu este confirmat', async () => {
-        // Simulam raspuns de eroare "Email not confirmed" de la Supabase Auth
+    it('should return the email confirmation message when the email is not confirmed', async () => {
+        // Simulate the "Email not confirmed" error response from Supabase Auth
         vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
             data: { user: null, session: null },
             error: { message: 'Email not confirmed' } as any,
@@ -30,13 +30,13 @@ describe('loginUser Server Action', () => {
         const result = await loginUser('test@email.com', 'parola123')
 
         expect(result).toEqual({
-            succes: false,
-            message: 'Va rugam sa va confirmati email-ul inainte de a va loga!',
+            success: false,
+            message: 'Please confirm your email before logging in!',
         })
     })
 
-    it('ar trebui sa returneze eroare pentru credentiale incorecte', async () => {
-        // Simulam eroare generica (ex: Invalid login credentials)
+    it('should return an error for incorrect credentials', async () => {
+        // Simulate a generic error (e.g. Invalid login credentials)
         vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
             data: { user: null, session: null },
             error: { message: 'Invalid credentials' } as any,
@@ -45,19 +45,19 @@ describe('loginUser Server Action', () => {
         const result = await loginUser('test@email.com', 'parolagresita')
 
         expect(result).toEqual({
-            succes: false,
-            message: 'Email sau parola incorecta!',
+            success: false,
+            message: 'Incorrect email or password!',
         })
     })
 
-    it('ar trebui sa redirectioneze către /userDashboard dacă utilizatorul este normal', async () => {
-        // 1. Mock pe login reusit
+    it('should redirect to /userDashboard when the user is a regular user', async () => {
+        // 1. Mock a successful login
         vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
             data: { user: { id: 'user-123' } } as any,
             error: null,
         })
 
-        // 2. Mock pe interogarea în tabelul 'users'
+        // 2. Mock the query on the 'users' table
         const mockSingle = vi.fn().mockResolvedValueOnce({
             data: { role: 'user' },
             error: null,
@@ -69,23 +69,23 @@ describe('loginUser Server Action', () => {
 
         await loginUser('user@email.com', 'parolaCorecta')
 
-        // Verificăm că s-a verificat rolul pentru ID-ul corect
+        // Check that the role was looked up for the correct id
         expect(supabase.from).toHaveBeenCalledWith('users')
         expect(mockSelect).toHaveBeenCalledWith('role')
         expect(mockEq).toHaveBeenCalledWith('auth_key', 'user-123')
 
-        // Verificăm redirecționarea
+        // Check the redirect
         expect(redirect).toHaveBeenCalledWith('/userDashboard')
     })
 
-    it('ar trebui să redirecționeze către /adminDashboard dacă utilizatorul este admin', async () => {
-        // 1. Mock pe login reuşit
+    it('should redirect to /adminDashboard when the user is an admin', async () => {
+        // 1. Mock a successful login
         vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
             data: { user: { id: 'admin-123' } } as any,
             error: null,
         })
 
-        // 2. Mock pe tabelul 'users' pentru rolul de admin
+        // 2. Mock the 'users' table for the admin role
         const mockSingle = vi.fn().mockResolvedValueOnce({
             data: { role: 'admin' },
             error: null,
@@ -97,7 +97,7 @@ describe('loginUser Server Action', () => {
 
         await loginUser('admin@email.com', 'parolaAdmin')
 
-        // Verificăm redirecționarea către adminDashboard
+        // Check the redirect to adminDashboard
         expect(redirect).toHaveBeenCalledWith('/adminDashboard')
     })
 })

@@ -10,16 +10,27 @@ vi.mock('@/helper/supabase/server', () => {
 
 
 const supabase = createClient() as any
-// 15 ianuarie 2026 si 10 februarie 2026, in ora locala
+// 15 January 2026 and 10 February 2026, in local time
 const JAN = new Date(2026, 0, 15, 12).toISOString()
 const FEB = new Date(2026, 1, 10, 12).toISOString()
+
+// getDashboardData reads the tests through getCompletedTests(), so the rows
+// mocked on the `assessments` table must have the shape getTests() expects.
+function completedTest(row: { id: number; score_total: number | null; completed_at: string | null }) {
+    return {
+        ...row,
+        status: 'completed',
+        started_at: row.completed_at,
+        assessment_answers: [],
+    }
+}
 
 describe('backend/user/getDashboardData', () => {
     beforeEach(() => {
         vi.clearAllMocks()
     })
 
-    it('returneaza structura goala cand userul nu are teste finalizate', async () => {
+    it('returns an empty structure when the user has no completed tests', async () => {
         mockFrom(supabase.from, { assessments: { data: [], error: null } })
 
         const data = await getDashboardData(5)
@@ -30,11 +41,11 @@ describe('backend/user/getDashboardData', () => {
             recentResults: [],
             recommendedResources: [],
         })
-        // fara teste nu se mai interogheaza raspunsurile
+        // without tests the answers are no longer queried
         expect(supabase.from).toHaveBeenCalledTimes(1)
     })
 
-    it('returneaza structura goala cand interogarea nu intoarce date', async () => {
+    it('returns an empty structure when the query returns no data', async () => {
         mockFrom(supabase.from, { assessments: { data: null, error: { message: 'x' } } })
 
         const data = await getDashboardData(5)
@@ -42,30 +53,30 @@ describe('backend/user/getDashboardData', () => {
         expect(data.skills).toEqual([])
     })
 
-    describe('cu istoric de teste', () => {
+    describe('with a test history', () => {
         function seed() {
             return mockFrom(supabase.from, {
                 assessments: {
                     data: [
-                        { id: 1, score_total: 80, completed_at: JAN },
-                        { id: 2, score_total: 60, completed_at: JAN },
-                        { id: 3, score_total: 40, completed_at: FEB },
-                        // fara scor -> ignorat la graficul lunar
-                        { id: 4, score_total: null, completed_at: FEB },
-                        // fara data -> ignorat peste tot
-                        { id: 5, score_total: 90, completed_at: null },
+                        completedTest({ id: 1, score_total: 80, completed_at: JAN }),
+                        completedTest({ id: 2, score_total: 60, completed_at: JAN }),
+                        completedTest({ id: 3, score_total: 40, completed_at: FEB }),
+                        // without a score -> ignored in the monthly chart
+                        completedTest({ id: 4, score_total: null, completed_at: FEB }),
+                        // without a date -> ignored everywhere
+                        completedTest({ id: 5, score_total: 90, completed_at: null }),
                     ],
                     error: null,
                 },
                 assessment_answers: {
                     data: [
-                        // testul 1 -> Frontend, 2 din 2 corecte
+                        // test 1 -> Frontend, 2 out of 2 correct
                         { assessment_id: 1, is_correct: true, questions: { difficulty: 'EASY', category_id: 1, categories: { id: 1, name: 'Frontend' } } },
                         { assessment_id: 1, is_correct: true, questions: { difficulty: 'EASY', category_id: 1, categories: { id: 1, name: 'Frontend' } } },
-                        // testul 3 -> Backend, 0 din 2 corecte (categorie slaba)
+                        // test 3 -> Backend, 0 out of 2 correct (weak category)
                         { assessment_id: 3, is_correct: false, questions: { difficulty: 'HARD', category_id: 2, categories: { id: 2, name: 'Backend' } } },
                         { assessment_id: 3, is_correct: false, questions: { difficulty: 'HARD', category_id: 2, categories: { id: 2, name: 'Backend' } } },
-                        // randuri incomplete -> ignorate
+                        // incomplete rows -> ignored
                         { assessment_id: 2, is_correct: true, questions: null },
                         { assessment_id: 2, is_correct: true, questions: { difficulty: 'EASY', category_id: 3, categories: null } },
                     ],
@@ -80,7 +91,7 @@ describe('backend/user/getDashboardData', () => {
             })
         }
 
-        it('calculeaza procentul de raspunsuri corecte pe categorie', async () => {
+        it('computes the percentage of correct answers per category', async () => {
             seed()
 
             const { skills } = await getDashboardData(5)
@@ -91,7 +102,7 @@ describe('backend/user/getDashboardData', () => {
             ])
         })
 
-        it('face media scorurilor pe luna, cronologic', async () => {
+        it('averages the scores per month, chronologically', async () => {
             seed()
 
             const { scoreHistory } = await getDashboardData(5)
@@ -102,13 +113,13 @@ describe('backend/user/getDashboardData', () => {
             ])
         })
 
-        it('listeaza ultimele teste cu tema si dificultatea dominanta', async () => {
+        it('lists the latest tests with their dominant topic and difficulty', async () => {
             seed()
 
             const { recentResults } = await getDashboardData(5)
 
             expect(recentResults).toHaveLength(4)
-            // cel mai recent primul
+            // the most recent one first
             expect(recentResults[0]).toEqual({
                 id: 3,
                 title: 'Backend',
@@ -122,19 +133,19 @@ describe('backend/user/getDashboardData', () => {
                 topic: 'Frontend',
                 difficulty: 'Easy',
             })
-            // test ale carui raspunsuri nu au categorie -> valori implicite
+            // a test whose answers have no category -> default values
             expect(recentResults[3]).toMatchObject({
                 id: 2,
                 topic: 'General',
                 difficulty: 'Medium',
             })
-            // testul fara score_total primeste 0
+            // the test without score_total gets 0
             expect(recentResults.find((r) => r.id === 4)!.score).toBe(0)
-            // testul fara data de finalizare este exclus
+            // the test without a completion date is excluded
             expect(recentResults.some((r) => r.id === 5)).toBe(false)
         })
 
-        it('recomanda resurse doar pentru categoriile sub 60%', async () => {
+        it('recommends resources only for the categories below 60%', async () => {
             const queries = seed()
 
             const { recommendedResources } = await getDashboardData(5)
@@ -152,9 +163,9 @@ describe('backend/user/getDashboardData', () => {
         })
     })
 
-    it('nu cauta resurse cand nu exista categorii slabe', async () => {
+    it('does not look for resources when there are no weak categories', async () => {
         const queries = mockFrom(supabase.from, {
-            assessments: { data: [{ id: 1, score_total: 90, completed_at: JAN }], error: null },
+            assessments: { data: [completedTest({ id: 1, score_total: 90, completed_at: JAN })], error: null },
             assessment_answers: {
                 data: [
                     { assessment_id: 1, is_correct: true, questions: { difficulty: 'MEDIUM', category_id: 1, categories: { id: 1, name: 'Frontend' } } },
@@ -170,9 +181,9 @@ describe('backend/user/getDashboardData', () => {
         expect(recentResults[0].difficulty).toBe('Medium')
     })
 
-    it('trateaza lipsa raspunsurilor fara sa arunce', async () => {
+    it('handles missing answers without throwing', async () => {
         mockFrom(supabase.from, {
-            assessments: { data: [{ id: 1, score_total: 50, completed_at: JAN }], error: null },
+            assessments: { data: [completedTest({ id: 1, score_total: 50, completed_at: JAN })], error: null },
             assessment_answers: { data: null, error: null },
         })
 

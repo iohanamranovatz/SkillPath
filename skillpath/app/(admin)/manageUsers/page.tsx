@@ -20,13 +20,13 @@ export default function UserManagementPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // filtru de rol ('all', 'user', 'admin')
+    // role filter ('all', 'user', 'admin')
     const [roleFilter, setRoleFilter] = useState<string>("all");
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // erori afisate in pagina (in locul lui alert() nativ)
+    // errors shown in the page (instead of the native alert())
     const [error, setError] = useState("");
 
     const fetchUsers = async () => {
@@ -127,7 +127,7 @@ export default function UserManagementPage() {
                     </button>
                 </div>
 
-                {/* Eroare la nivel de pagina (in locul lui alert() nativ) */}
+                {/* Page-level error (instead of the native alert()) */}
                 {error && (
                     <div className="mb-6 flex items-start justify-between gap-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
                         <p className="text-sm text-red-400">{error}</p>

@@ -23,20 +23,21 @@ describe('backend/user/evaluateUserLevel', () => {
         }))
     }
 
-    it('mentine Beginner cand nu sunt destule teste trecute', async () => {
+    it('keeps Beginner when there are not enough passed tests', async () => {
         const queries = mockFrom(supabase.from, {
+            // 1st call = reading the stored level, 2nd = the update
+            users: [{ data: { estimated_level: 'Beginner' }, error: null }, { error: null }],
             assessments: { data: passedAssessments(2, 2), error: null },
-            users: { error: null },
         })
 
         const result = await evaluateUserLevel(5)
 
         expect(result.data).toEqual({ level: 'Beginner', qualified: 2, distinctCats: 2 })
-        expect(queries.users[0].update).toHaveBeenCalledWith({ estimated_level: 'Beginner' })
-        expect(queries.users[0].eq).toHaveBeenCalledWith('id', 5)
+        expect(queries.users[1].update).toHaveBeenCalledWith({ estimated_level: 'Beginner' })
+        expect(queries.users[1].eq).toHaveBeenCalledWith('id', 5)
     })
 
-    it('promoveaza la Intermediate la 4 teste in 4 categorii distincte', async () => {
+    it('promotes to Intermediate at 4 tests in 4 distinct categories', async () => {
         mockFrom(supabase.from, {
             assessments: { data: passedAssessments(4, 4), error: null },
             users: { error: null },
@@ -47,7 +48,7 @@ describe('backend/user/evaluateUserLevel', () => {
         expect(result.data!.level).toBe('Intermediate')
     })
 
-    it('promoveaza la Advanced la 6 teste in 6 categorii distincte', async () => {
+    it('promotes to Advanced at 6 tests in 6 distinct categories', async () => {
         mockFrom(supabase.from, {
             assessments: { data: passedAssessments(6, 6), error: null },
             users: { error: null },
@@ -58,7 +59,7 @@ describe('backend/user/evaluateUserLevel', () => {
         expect(result.data).toEqual({ level: 'Advanced', qualified: 6, distinctCats: 6 })
     })
 
-    it('ignora testele sub pragul de 75% si pe cele fara categorie', async () => {
+    it('ignores tests below the 75% threshold and those without a category', async () => {
         mockFrom(supabase.from, {
             assessments: {
                 data: [
@@ -76,7 +77,18 @@ describe('backend/user/evaluateUserLevel', () => {
         expect(result.data).toEqual({ level: 'Beginner', qualified: 1, distinctCats: 0 })
     })
 
-    it('returneaza eroare cand interogarea esueaza', async () => {
+    it('never demotes a user below the level already stored', async () => {
+        mockFrom(supabase.from, {
+            users: [{ data: { estimated_level: 'Advanced' }, error: null }, { error: null }],
+            assessments: { data: passedAssessments(2, 2), error: null },
+        })
+
+        const result = await evaluateUserLevel(5)
+
+        expect(result.data!.level).toBe('Advanced')
+    })
+
+    it('returns an error when the query fails', async () => {
         mockFrom(supabase.from, { assessments: { data: null, error: { message: 'db off' } } })
 
         const result = await evaluateUserLevel(5)

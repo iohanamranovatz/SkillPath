@@ -2,14 +2,14 @@ import {useEffect, useMemo, useState} from "react";
 import {getAssessmentAnalytics, toggleResourceCompletion} from "@/backend/user/actions/getAssessmentAnalytics";
 import {Award, CheckCircle2, AlertTriangle, BookOpen, ExternalLink, ChevronLeft, ChevronRight} from "lucide-react";
 
-// paginare -> numarul de categorii per pagina
+// pagination -> number of items per page
 const ITEMS_PER_PAGE = 6;
 
 export function ResultsView() {
     const [data, setData] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
-    // paginare
+    // pagination
     const [currentPage, setCurrentPage] = useState(1);
 
     const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -74,7 +74,7 @@ export function ResultsView() {
         ? resourcesList
         : resourcesList.filter((res: any) => res.categoryName === selectedCategory);
 
-    // Calcule pentru paginarea resurselor
+    // Pagination computations for the resources
     const totalPages = Math.ceil(filteredResources.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedResources = filteredResources.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -94,7 +94,7 @@ export function ResultsView() {
                 <p className="text-muted-foreground">Track progress and areas that require attention.</p>
             </div>
 
-            {/* Carduri Scor si Nivel */}
+            {/* Score and level cards */}
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="p-6 border rounded-xl bg-card flex items-center gap-4">
                     <div className="p-3 bg-primary/10 rounded-xl text-primary">
@@ -117,7 +117,7 @@ export function ResultsView() {
                 </div>
             </div>
 
-            {/* Score per Category - Grid pe 2 coloane + Sortare dupa scor */}
+            {/* Score per category - 2-column grid + sorted by score */}
             <div className="p-6 border rounded-xl bg-card space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-xl font-semibold">Score per Category</h2>
@@ -170,7 +170,7 @@ export function ResultsView() {
                 </div>
             )}
 
-            {/* Learning Recommendations cu Bara de Progres + Tab-uri */}
+            {/* Learning recommendations with progress bar + tabs */}
             {(data.recommendedResources || []).length > 0 && (
                 <div className="p-6 border rounded-xl bg-card space-y-4">
                     <div className="space-y-3">
@@ -179,7 +179,7 @@ export function ResultsView() {
                             <h2>Learning Recommendations for Weak Areas</h2>
                         </div>
 
-                        {/* Bara de progres resurse */}
+                        {/* Resource progress bar */}
                         <div className="space-y-1.5 bg-muted/30 p-4 rounded-xl border">
                             <div className="flex justify-between items-center text-sm font-medium">
                                 <span className="text-muted-foreground">
@@ -196,7 +196,7 @@ export function ResultsView() {
                         </div>
                     </div>
 
-                    {/* Tab-uri pentru filtrarea pe categorii */}
+                    {/* Tabs for filtering by category */}
                     <div className="flex gap-2 border-b border-border pb-3 overflow-x-auto">
                         <button
                             type="button"
@@ -226,7 +226,7 @@ export function ResultsView() {
                         ))}
                     </div>
 
-                    {/* Lista de resurse filtrata */}
+                    {/* Filtered resource list */}
                     <div className="grid gap-3 sm:grid-cols-2">
                         {paginatedResources.map((res: any) => (
                             <div
@@ -272,7 +272,7 @@ export function ResultsView() {
                         ))}
                     </div>
 
-                    {/* Controalele de Paginare (se afiseaza doar daca exista mai mult de o pagina) */}
+                    {/* Pagination controls (shown only when there is more than one page) */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-4 border-t text-sm">
                             <span className="text-muted-foreground">

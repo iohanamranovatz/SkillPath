@@ -14,22 +14,22 @@ import AssessmentPage from '@/app/(user)/assessment/[id]/page'
 import AssessmentResultsPage from '@/app/(user)/assessment/[id]/completed/page'
 
 import { fetchAllResourcesWrapper } from '@/backend/categories'
-import { getTests } from '@/backend/user/getTests'
+import { getTests, getCompletedTests } from '@/backend/user/getTests'
 import { getDashboardData } from '@/backend/user/getDashboardData'
 
 vi.mock('next/navigation', () => ({
     useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
     usePathname: () => '/userDashboard',
     useSearchParams: () => new URLSearchParams(),
-    // in Next.js redirect() opreste executia aruncand; il imitam ca sa nu
-    // continue codul paginii dupa redirectionare
+    // in Next.js redirect() stops execution by throwing; we mimic that so the
+    // page code does not continue after the redirect
     redirect: vi.fn((url: string) => {
         throw new Error(`NEXT_REDIRECT:${url}`)
     }),
     notFound: vi.fn(),
 }))
 
-// Verifica faptul ca pagina s-a oprit printr-o redirectionare catre `to`.
+// Checks that the page stopped through a redirect to `to`.
 async function expectRedirect(run: () => Promise<unknown>, to: string) {
     await expect(run()).rejects.toThrow(`NEXT_REDIRECT:${to}`)
     expect(redirect).toHaveBeenCalledWith(to)
@@ -43,7 +43,18 @@ vi.mock('@/helper/supabase/server', () => {
 
 const supabase = createClient() as any
 vi.mock('@/backend/categories', () => ({ fetchAllResourcesWrapper: vi.fn(async () => []) }))
-vi.mock('@/backend/user/getTests', () => ({ getTests: vi.fn() }))
+vi.mock('@/backend/user/getTests', () => ({ getTests: vi.fn(), getCompletedTests: vi.fn() }))
+// The onboarding gate is exercised in its own suite; here it is always satisfied
+// so the pages under test render their normal content.
+vi.mock('@/backend/user/assessments/initial/initialAssessmentLifecycle', () => ({
+    INITIAL_ASSESSMENT_QUESTION_COUNT: 30,
+    isInitialAssessment: vi.fn(async () => false),
+    getInitialAssessmentOnboardingState: vi.fn(async () => ({
+        requiresInitialAssessment: false,
+        activeInitialAssessmentId: null,
+        completedInitialAssessmentId: null,
+    })),
+}))
 vi.mock('@/backend/user/getDashboardData', () => ({ getDashboardData: vi.fn() }))
 vi.mock('@/backend/user/profile/updateProfile', () => ({ updateProfile: vi.fn() }))
 vi.mock('@/backend/user/profile/profileActions', () => ({
@@ -77,31 +88,37 @@ beforeEach(() => {
     vi.clearAllMocks()
 })
 
-describe('pagini publice', () => {
-    it('landing page prezinta produsul', () => {
+describe('public pages', () => {
+    it('the landing page presents the product', () => {
         render(<Home />)
 
         expect(screen.getAllByText(/SkillPath/).length).toBeGreaterThan(0)
         expect(screen.getByText('Adaptive assessments')).toBeTruthy()
     })
 
-    it('/login randeaza formularul de autentificare', () => {
+    it('/login renders the login form', () => {
         render(<LoginPage />)
 
         expect(screen.getByText('Welcome back')).toBeTruthy()
     })
 
-    it('/signup randeaza formularul de inregistrare', () => {
+    it('/signup renders the sign up form', () => {
         render(<SignupPage />)
 
         expect(screen.getByText('Sign up to continue your progress.')).toBeTruthy()
     })
 })
 
-describe('pagina /userDashboard', () => {
+describe('/userDashboard page', () => {
     function seedDashboard(overrides: Record<string, any> = {}) {
+        vi.mocked(getCompletedTests).mockResolvedValue({
+            success: true,
+            hasInitial: false,
+            message: '',
+            data: [{ id: 2, status: 'completed' }],
+        } as any)
         vi.mocked(getTests).mockResolvedValue({
-            succes: true,
+            success: true,
             data: [
                 {
                     id: 1,
@@ -152,35 +169,35 @@ describe('pagina /userDashboard', () => {
         })
     }
 
-    it('redirectioneaza vizitatorii neautentificati', async () => {
+    it('redirects unauthenticated visitors', async () => {
         authAs(null)
 
         await expectRedirect(UserDashboardPage, '/')
     })
 
-    it('redirectioneaza adminii spre pagina publica', async () => {
+    it('redirects admins to the public page', async () => {
         authAs({ id: 'auth-1' })
         seedDashboard({ users: { data: { ...USER, role: 'admin' }, error: null } })
 
         await expectRedirect(UserDashboardPage, '/')
     })
 
-    it('randeaza dashboard-ul cu datele userului', async () => {
+    it('renders the dashboard with the user data', async () => {
         authAs({ id: 'auth-1' })
         seedDashboard()
 
         render(await UserDashboardPage())
 
         expect(screen.getByText('Welcome back, Ana')).toBeTruthy()
-        // un test finalizat, 3 raspunsuri corecte
+        // one completed test, 3 correct answers
         expect(screen.getByText('1')).toBeTruthy()
         expect(screen.getByText('3')).toBeTruthy()
         expect(screen.getByText('Invat React')).toBeTruthy()
-        // testul in desfasurare apare in cardul de continuare
+        // the test in progress shows up in the continue card
         expect(screen.getByText('30%')).toBeTruthy()
     })
 
-    it('permite navigarea intre vizualizari', async () => {
+    it('allows navigating between views', async () => {
         authAs({ id: 'auth-1' })
         seedDashboard()
 
@@ -203,7 +220,7 @@ describe('pagina /userDashboard', () => {
         expect(screen.getByText('Welcome back, Ana')).toBeTruthy()
     })
 
-    it('trece prin butoanele din antet catre teste si rezultate', async () => {
+    it('goes through the header buttons to tests and results', async () => {
         authAs({ id: 'auth-1' })
         seedDashboard()
 
@@ -217,13 +234,18 @@ describe('pagina /userDashboard', () => {
         expect(screen.getByText('Loading analytics...')).toBeTruthy()
     })
 
-    it('logheaza erorile de la interogarile secundare', async () => {
+    it('logs the errors from the secondary queries', async () => {
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         authAs({ id: 'auth-1' })
         seedDashboard({
-            assessments: { data: null, error: { message: 'assessments down' } },
             assessment_answers: { data: null, error: { message: 'answers down' } },
         })
+        // the completed tests come from getCompletedTests(), not from a direct query
+        vi.mocked(getCompletedTests).mockResolvedValue({
+            success: false,
+            message: 'assessments down',
+            data: [],
+        } as any)
 
         render(await UserDashboardPage())
 
@@ -233,15 +255,15 @@ describe('pagina /userDashboard', () => {
     })
 })
 
-describe('pagina /profile', () => {
-    it('redirectioneaza vizitatorii neautentificati', async () => {
+describe('/profile page', () => {
+    it('redirects unauthenticated visitors', async () => {
         authAs(null)
         mockFrom(supabase.from, { users: { data: null, error: null } })
 
         await expectRedirect(ProfilePage, '/')
     })
 
-    it('anunta cand profilul nu exista in baza de date', async () => {
+    it('announces when the profile does not exist in the database', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, { users: { data: null, error: null } })
 
@@ -250,7 +272,7 @@ describe('pagina /profile', () => {
         expect(screen.getByText('User not found!')).toBeTruthy()
     })
 
-    it('randeaza profilul cu obiective si interese', async () => {
+    it('renders the profile with objectives and interests', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: USER, error: null },
@@ -266,7 +288,7 @@ describe('pagina /profile', () => {
         expect(screen.getByText('1 / 5 selected')).toBeTruthy()
     })
 
-    it('trateaza listele lipsa', async () => {
+    it('handles the missing lists', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: USER, error: null },
@@ -281,22 +303,22 @@ describe('pagina /profile', () => {
     })
 })
 
-describe('pagina /assessment/new', () => {
-    it('redirectioneaza vizitatorii neautentificati', async () => {
+describe('/assessment/new page', () => {
+    it('redirects unauthenticated visitors', async () => {
         authAs(null)
         mockFrom(supabase.from, { users: { data: null, error: null } })
 
         await expectRedirect(NewTestPage, '/')
     })
 
-    it('redirectioneaza cand userul nu exista in baza de date', async () => {
+    it('redirects when the user does not exist in the database', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, { users: { data: null, error: null }, categories: { data: [], error: null } })
 
         await expectRedirect(NewTestPage, '/')
     })
 
-    it('afiseaza doar categoriile de nivelul userului', async () => {
+    it('shows only the categories matching the user level', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: 'Intermediate' }, error: null },
@@ -304,7 +326,7 @@ describe('pagina /assessment/new', () => {
                 data: [
                     { id: 1, name: 'Frontend', difficulty: 'Intermediate' },
                     { id: 2, name: 'Backend', difficulty: 'Advanced' },
-                    { id: 3, name: 'Fara nivel', difficulty: null },
+                    { id: 3, name: 'No level', difficulty: null },
                 ],
                 error: null,
             },
@@ -317,7 +339,7 @@ describe('pagina /assessment/new', () => {
         expect(screen.getByText('Intermediate')).toBeTruthy()
     })
 
-    it('trateaza userii fara nivel setat', async () => {
+    it('handles users without a level set', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: null }, error: null },
@@ -327,21 +349,21 @@ describe('pagina /assessment/new', () => {
         render(await NewTestPage())
 
         expect(screen.getByText('Beginner')).toBeTruthy()
-        expect(screen.getByText(/Nu exista categorii/)).toBeTruthy()
+        expect(screen.getByText(/no categories for your level/i)).toBeTruthy()
     })
 })
 
-describe('pagina /assessment/[id]', () => {
+describe('/assessment/[id] page', () => {
     const params = Promise.resolve({ id: '77' })
 
-    it('redirectioneaza vizitatorii neautentificati', async () => {
+    it('redirects unauthenticated visitors', async () => {
         authAs(null)
         mockFrom(supabase.from, { users: { data: null, error: null } })
 
         await expectRedirect(() => AssessmentPage({ params: Promise.resolve({ id: '77' }) }), '/')
     })
 
-    it('redirectioneaza cand testul apartine altui user', async () => {
+    it('redirects when the test belongs to another user', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5 }, error: null },
@@ -355,7 +377,7 @@ describe('pagina /assessment/[id]', () => {
         )
     })
 
-    it('redirectioneaza cand testul este deja finalizat', async () => {
+    it('redirects when the test is already completed', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5 }, error: null },
@@ -369,7 +391,7 @@ describe('pagina /assessment/[id]', () => {
         )
     })
 
-    it('randeaza intrebarile testului in desfasurare', async () => {
+    it('renders the questions of the test in progress', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5 }, error: null },
@@ -400,8 +422,8 @@ describe('pagina /assessment/[id]', () => {
     })
 })
 
-describe('pagina /assessment/[id]/completed', () => {
-    it('redirectioneaza vizitatorii neautentificati', async () => {
+describe('/assessment/[id]/completed page', () => {
+    it('redirects unauthenticated visitors', async () => {
         authAs(null)
         mockFrom(supabase.from, { users: { data: null, error: null } })
 
@@ -411,7 +433,7 @@ describe('pagina /assessment/[id]/completed', () => {
         )
     })
 
-    it('redirectioneaza cand testul nu este finalizat', async () => {
+    it('redirects when the test is not completed', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5 }, error: null },
@@ -425,7 +447,7 @@ describe('pagina /assessment/[id]/completed', () => {
         )
     })
 
-    it('afiseaza rezultatele testului finalizat', async () => {
+    it('shows the results of the completed test', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5 }, error: null },
@@ -465,7 +487,7 @@ describe('pagina /assessment/[id]/completed', () => {
         expect(screen.getByText('Started: 1 Sep 2026')).toBeTruthy()
     })
 
-    it('foloseste categoria implicita cand testul nu are raspunsuri', async () => {
+    it('uses the default category when the test has no answers', async () => {
         authAs({ id: 'auth-1' })
         mockFrom(supabase.from, {
             users: { data: { id: 5 }, error: null },

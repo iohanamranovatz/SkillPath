@@ -29,8 +29,8 @@ async function pickQuestion(
 ) {
     const supabase = await createClient();
 
-    // Construim query-ul de fiecare data de la zero: optiunile de count/head
-    // se dau DOAR la primul .select(), nu se pot re-aplica pe builder-ul deja transformat.
+    // Build the query from scratch every time: the count/head options
+    // are applied ONLY on the first .select(); they cannot be re-applied on the already transformed builder.
     const buildQuery = (options?: { count: 'exact'; head?: boolean }) => {
         const query = supabase
             .from('questions')

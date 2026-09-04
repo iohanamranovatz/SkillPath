@@ -20,7 +20,7 @@ export default function QuestionTable({ questions }: Props) {
     // Track which question is currently being deleted to show the spinner
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
-    // confirmare stergere (modal propriu, nu confirm() nativ)
+    // delete confirmation (custom modal, not the native confirm())
     const [toDelete, setToDelete] = useState<Question | null>(null);
     const [error, setError] = useState("");
 
@@ -155,8 +155,8 @@ export default function QuestionTable({ questions }: Props) {
             error={error}
             message={
                 <>
-                    Ești sigur că vrei să ștergi{" "}
-                    <span className="font-medium text-foreground">{toDelete?.title}</span>? Acțiunea nu poate fi anulată.
+                    Are you sure you want to delete{" "}
+                    <span className="font-medium text-foreground">{toDelete?.title}</span>? This action cannot be undone.
                 </>
             }
             onConfirm={handleDelete}

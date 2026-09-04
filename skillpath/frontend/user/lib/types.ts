@@ -20,8 +20,8 @@ export interface UserProfileData {
 export interface ProfileViewProps {
     initialData: UserProfileData;
     objectives: Objective[];
-    userInterestTagIds: number[]; // ID-urile tag-urilor selectate de user
-    allTags: Tag[]; // Toate tag-urile disponibile din tabela tags
+    userInterestTagIds: number[]; // The ids of the tags selected by the user
+    allTags: Tag[]; // All available tags from the tags table
 }
 
 export interface Resource {

@@ -14,7 +14,7 @@ export function AddResourceForm({ categoryId }: { categoryId: number }) {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!title.trim()) { setMsg("Adaugă un titlu."); return; }
+        if (!title.trim()) { setMsg("Please add a title."); return; }
 
         setLoading(true);
         const res = await addResource({ categoryId, title, url, type });
@@ -23,7 +23,7 @@ export function AddResourceForm({ categoryId }: { categoryId: number }) {
 
         if (res.success) {
             setTitle(""); setUrl(""); setType("article");
-            router.refresh(); // reîncarcă datele server-component-ului
+            router.refresh(); // reload the server component data
         }
     }
 

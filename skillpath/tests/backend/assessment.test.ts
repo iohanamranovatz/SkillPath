@@ -17,7 +17,7 @@ vi.mock('@/backend/user/evaluateUserLevel', () => ({
     evaluateUserLevel: vi.fn(),
 }))
 
-// modulul este mock-uit mai sus, deci importul returneaza spy-ul
+// the module is mocked above, so the import returns the spy
 import { evaluateUserLevel } from '@/backend/user/evaluateUserLevel'
 
 const QUESTIONS = [
@@ -40,8 +40,8 @@ describe('backend/user/generateAssessment', () => {
         expect(supabase.from).not.toHaveBeenCalled()
     })
 
-    it('creeaza testul si randurile de raspuns goale', async () => {
-        // amestecarea intrebarilor foloseste Math.random; il fixam ca ordinea sa fie stabila
+    it('creates the test and the empty answer rows', async () => {
+        // shuffling the questions uses Math.random; we pin it so the order is stable
         vi.spyOn(Math, 'random').mockReturnValue(0.5)
         const queries = mockFrom(supabase.from, {
             questions: { data: QUESTIONS, error: null },
@@ -54,7 +54,7 @@ describe('backend/user/generateAssessment', () => {
         expect(result.success).toBe(true)
         expect(result.data!.assessmentId).toBe(77)
         expect(result.data!.questions).toHaveLength(2)
-        // optiunile care nu sunt array devin lista goala
+        // options that are not an array become an empty list
         expect(result.data!.questions.map((q) => q.options.length).sort()).toEqual([0, 1])
 
         expect(queries.questions[0].eq).toHaveBeenCalledWith('category_id', 3)
@@ -68,7 +68,7 @@ describe('backend/user/generateAssessment', () => {
         ])
     })
 
-    it('limiteaza testul la 10 intrebari', async () => {
+    it('limits the test to 10 questions', async () => {
         const many = Array.from({ length: 25 }, (_, i) => ({
             id: i + 1,
             question_text: `Q${i + 1}`,
@@ -86,7 +86,7 @@ describe('backend/user/generateAssessment', () => {
         expect(result.data!.questions).toHaveLength(10)
     })
 
-    it('propaga eroarea la preluarea intrebarilor', async () => {
+    it('propagates the error when fetching the questions', async () => {
         mockFrom(supabase.from, { questions: { data: null, error: { message: 'no questions table' } } })
 
         const result = await generateAssessment(5, 3)
@@ -94,7 +94,7 @@ describe('backend/user/generateAssessment', () => {
         expect(result).toEqual({ success: false, message: 'no questions table', data: null })
     })
 
-    it('semnaleaza cand categoria nu are intrebari active', async () => {
+    it('reports when the category has no active questions', async () => {
         mockFrom(supabase.from, { questions: { data: [], error: null } })
 
         const result = await generateAssessment(5, 3)
@@ -102,7 +102,7 @@ describe('backend/user/generateAssessment', () => {
         expect(result).toEqual({ success: false, message: 'Sorry, no questions found!', data: null })
     })
 
-    it('returneaza eroare cand testul nu poate fi creat', async () => {
+    it('returns an error when the test cannot be created', async () => {
         mockFrom(supabase.from, {
             questions: { data: QUESTIONS, error: null },
             assessments: { data: null, error: { message: 'insert refuzat' } },
@@ -113,7 +113,7 @@ describe('backend/user/generateAssessment', () => {
         expect(result).toEqual({ success: false, message: 'insert refuzat', data: null })
     })
 
-    it('foloseste un mesaj implicit cand insert-ul nu returneaza nici date, nici eroare', async () => {
+    it('uses a default message when the insert returns neither data nor error', async () => {
         mockFrom(supabase.from, {
             questions: { data: QUESTIONS, error: null },
             assessments: { data: null, error: null },
@@ -121,10 +121,10 @@ describe('backend/user/generateAssessment', () => {
 
         const result = await generateAssessment(5, 3)
 
-        expect(result.message).toBe('Nu s-a putut crea testul.')
+        expect(result.message).toBe('Could not create the test.')
     })
 
-    it('sterge testul creat daca inserarea raspunsurilor esueaza', async () => {
+    it('deletes the created test if inserting the answers fails', async () => {
         const queries = mockFrom(supabase.from, {
             questions: { data: QUESTIONS, error: null },
             assessments: [{ data: { id: 77 }, error: null }, { error: null }],
@@ -144,7 +144,7 @@ describe('backend/user/saveSingleAnswer', () => {
         vi.clearAllMocks()
     })
 
-    it('salveaza raspunsul selectat pentru intrebare', async () => {
+    it('saves the selected answer for the question', async () => {
         const queries = mockFrom(supabase.from, { assessment_answers: { error: null } })
 
         const result = await saveSingleAnswer(77, 2, 'b')
@@ -155,7 +155,7 @@ describe('backend/user/saveSingleAnswer', () => {
         expect(queries.assessment_answers[0].eq).toHaveBeenCalledWith('question_id', 2)
     })
 
-    it('raporteaza esecul de auto-save', async () => {
+    it('reports the auto-save failure', async () => {
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         mockFrom(supabase.from, { assessment_answers: { error: { message: 'offline' } } })
 
@@ -183,25 +183,26 @@ describe('backend/user/submitAssessment', () => {
     ]
 
     it.each([
-        ['id-ul testului lipseste', 0, [{ questionId: 1, optionId: 'a' }]],
-        ['nu exista raspunsuri', 77, []],
-    ])('respinge trimiterea cand %s', async (_case, id, answers) => {
+        ['the test id is missing', 0, [{ questionId: 1, optionId: 'a' }]],
+        ['there are no answers', 77, []],
+    ])('rejects the submission when %s', async (_case, id, answers) => {
         const result = await submitAssessment(id, answers)
 
         expect(result).toEqual({ success: false, message: 'Test invalid.', data: null })
     })
 
-    it('calculeaza scorul total si scorul pe categorii', async () => {
+    it('computes the total score and the score per category', async () => {
         const queries = mockFrom(supabase.from, {
             questions: { data: questions, error: null },
             assessment_answers: { error: null },
-            assessments: [{ error: null }, { data: { user_id: 7 }, error: null }],
+            // 1st call = the owner lookup (select user_id), 2nd = the status update
+            assessments: [{ data: { user_id: 7 }, error: null }, { error: null }],
         })
 
         const result = await submitAssessment(77, [
-            { questionId: 1, optionId: 'a' }, // corect
-            { questionId: 2, optionId: 'x' }, // gresit
-            { questionId: 3, optionId: 'c' }, // corect
+            { questionId: 1, optionId: 'a' }, // correct
+            { questionId: 2, optionId: 'x' }, // wrong
+            { questionId: 3, optionId: 'c' }, // correct
         ])
 
         expect(result.success).toBe(true)
@@ -215,24 +216,24 @@ describe('backend/user/submitAssessment', () => {
             { category: 'Frontend', score: 50, correct: 1, total: 2 },
             { category: 'Backend', score: 100, correct: 1, total: 1 },
         ])
-        // fiecare raspuns este salvat individual
-        expect(queries.assessment_answers).toHaveLength(3)
-        expect(queries.assessment_answers[0].update).toHaveBeenCalledWith({
+        // 1st query = the isInitialAssessment() count, then one update per answer
+        expect(queries.assessment_answers).toHaveLength(4)
+        expect(queries.assessment_answers[1].update).toHaveBeenCalledWith({
             selected_option_id: 'a',
             is_correct: true,
         })
-        // testul este marcat finalizat cu scorul procentual
-        expect(queries.assessments[0].update).toHaveBeenCalledWith(
+        // the test is marked as completed with the percentage score
+        expect(queries.assessments[1].update).toHaveBeenCalledWith(
             expect.objectContaining({ status: 'completed', score_total: 67 })
         )
         expect(evaluateUserLevel).toHaveBeenCalledWith(7)
     })
 
-    it('grupeaza sub "Unknown" intrebarile care nu mai exista', async () => {
+    it('groups questions that no longer exist under "Unknown"', async () => {
         mockFrom(supabase.from, {
             questions: { data: [], error: null },
             assessment_answers: { error: null },
-            assessments: [{ error: null }, { data: null, error: null }],
+            assessments: [{ data: null, error: null }, { error: null }],
         })
 
         const result = await submitAssessment(77, [{ questionId: 999, optionId: 'a' }])
@@ -240,12 +241,13 @@ describe('backend/user/submitAssessment', () => {
         expect(result.data!.perCategory).toEqual([
             { category: 'Unknown', score: 0, correct: 0, total: 1 },
         ])
-        // fara proprietar identificat, nivelul nu este reevaluat
-        expect(result.data!.level).toBeNull()
+        // without an identified owner the level is not re-evaluated and the
+        // default "Beginner" is returned as-is
+        expect(result.data!.level).toBe('Beginner')
         expect(evaluateUserLevel).not.toHaveBeenCalled()
     })
 
-    it('propaga eroarea la preluarea intrebarilor', async () => {
+    it('propagates the error when fetching the questions', async () => {
         mockFrom(supabase.from, { questions: { data: null, error: { message: 'fetch failed' } } })
 
         const result = await submitAssessment(77, [{ questionId: 1, optionId: 'a' }])
@@ -259,7 +261,7 @@ describe('backend/user/getTests', () => {
         vi.clearAllMocks()
     })
 
-    it('mapeaza testele cu categorii si progres', async () => {
+    it('maps the tests with categories and progress', async () => {
         const queries = mockFrom(supabase.from, {
             assessments: {
                 data: [
@@ -291,7 +293,7 @@ describe('backend/user/getTests', () => {
 
         const result = await getTests(5)
 
-        expect(result.succes).toBe(true)
+        expect(result.success).toBe(true)
         expect(result.data![0]).toEqual({
             id: 1,
             categories: ['Frontend'],
@@ -302,13 +304,14 @@ describe('backend/user/getTests', () => {
             startedAt: '2026-09-01T10:00:00.000Z',
             completedAt: '2026-09-01T10:20:00.000Z',
             progress: '20%',
+            isInitial: false,
         })
-        // testul neterminat nu are scor afisat
+        // the unfinished test has no score displayed
         expect(result.data![1]).toMatchObject({ categories: [], score: null, notAnswered: 0 })
         expect(queries.assessments[0].eq).toHaveBeenCalledWith('user_id', 5)
     })
 
-    it('trateaza testele fara raspunsuri', async () => {
+    it('handles tests without answers', async () => {
         mockFrom(supabase.from, {
             assessments: {
                 data: [{ id: 3, status: 'in_progress', started_at: null, completed_at: null }],
@@ -321,11 +324,11 @@ describe('backend/user/getTests', () => {
         expect(result.data![0]).toMatchObject({ questions: 0, notAnswered: 0, categories: [] })
     })
 
-    it('returneaza eroarea din baza de date', async () => {
+    it('returns the database error', async () => {
         mockFrom(supabase.from, { assessments: { data: null, error: { message: 'boom' } } })
 
         const result = await getTests(5)
 
-        expect(result).toEqual({ succes: false, message: 'boom', data: [] })
+        expect(result).toEqual({ success: false, message: 'boom', data: [] })
     })
 })

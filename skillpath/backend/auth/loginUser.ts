@@ -13,17 +13,17 @@ export async function loginUser(email : string, password: string)
     });
 
     if(error){
-        // verificare daca eroarea e legata de neconfirmarea email-ului
+        // check whether the error is caused by an unconfirmed email
         if (error.message.includes("Email not confirmed")) {
             return {
-                succes:false,
-                message: "Va rugam sa va confirmati email-ul inainte de a va loga!"
+                success: false,
+                message: "Please confirm your email before logging in!"
             };
         }
 
         return {
-            succes:false,
-            message: "Email sau parola incorecta!"
+            success: false,
+            message: "Incorrect email or password!"
         };
     }
     const userID=data.user.id;

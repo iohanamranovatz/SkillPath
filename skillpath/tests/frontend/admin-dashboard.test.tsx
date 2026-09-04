@@ -60,7 +60,7 @@ const dashboardProps = {
 }
 
 describe('Dashboard admin', () => {
-    it('randeaza cardurile, activitatea, topul si categoriile slabe', () => {
+    it('renders the cards, the activity, the top users and the weak categories', () => {
         render(<Dashboard {...dashboardProps} />)
 
         expect(screen.getByRole('heading', { name: 'Dashboard' })).toBeTruthy()
@@ -70,7 +70,7 @@ describe('Dashboard admin', () => {
         expect(screen.getByText('Weakest Categories')).toBeTruthy()
     })
 
-    it('StatCard afiseaza titlul, valoarea si variatia', () => {
+    it('StatCard shows the title, the value and the change', () => {
         render(<StatCard title="Questions" value={42} change="30 active" />)
 
         expect(screen.getByText('Questions')).toBeTruthy()
@@ -78,7 +78,7 @@ describe('Dashboard admin', () => {
         expect(screen.getByText('30 active')).toBeTruthy()
     })
 
-    it('AssessmentActivityCard scaleaza barele la valoarea maxima', () => {
+    it('AssessmentActivityCard scales the bars to the maximum value', () => {
         const { container } = render(
             <AssessmentActivityCard items={dashboardProps.assessmentActivity} />
         )
@@ -88,7 +88,7 @@ describe('Dashboard admin', () => {
         expect(bars[1].getAttribute('style')).toContain('height: 0%')
     })
 
-    it('AssessmentActivityCard trateaza saptamana fara activitate', () => {
+    it('AssessmentActivityCard handles a week without activity', () => {
         const { container } = render(
             <AssessmentActivityCard items={[{ day: 'Mon', fullDay: 'Monday', count: 0 }]} />
         )
@@ -96,7 +96,7 @@ describe('Dashboard admin', () => {
         expect(container.querySelector('.bg-primary')!.getAttribute('style')).toContain('height: 0%')
     })
 
-    it('MostProlificUsersCard afiseaza randurile cu rang si initiala', () => {
+    it('MostProlificUsersCard shows the rows with rank and initial', () => {
         render(<MostProlificUsersCard users={dashboardProps.topUsers} />)
 
         expect(screen.getByText('ana@test.com')).toBeTruthy()
@@ -104,7 +104,7 @@ describe('Dashboard admin', () => {
         expect(screen.getByText('A')).toBeTruthy()
     })
 
-    it('MostProlificUsersCard randeaza tabelul gol', () => {
+    it('MostProlificUsersCard renders the empty table', () => {
         render(<MostProlificUsersCard users={[]} />)
 
         expect(screen.getByText('Most Prolific Users')).toBeTruthy()
@@ -122,7 +122,7 @@ describe('Dashboard admin', () => {
         expect(container.innerHTML).toContain(expectedClass)
     })
 
-    it('Logo foloseste eticheta implicita si una personalizata', () => {
+    it('Logo uses the default label and a custom one', () => {
         const { rerender } = render(<Logo />)
         expect(screen.getByText('SkillPath')).toBeTruthy()
 
@@ -130,7 +130,7 @@ describe('Dashboard admin', () => {
         expect(screen.getByText('Admin')).toBeTruthy()
     })
 
-    it('AdminFooter afiseaza versiunea', () => {
+    it('AdminFooter shows the version', () => {
         render(<AdminFooter />)
 
         expect(screen.getByText('System Version 1.0.0')).toBeTruthy()
@@ -138,7 +138,7 @@ describe('Dashboard admin', () => {
 })
 
 describe('AdminHeader', () => {
-    it('deschide meniul si face sign out', () => {
+    it('opens the menu and signs out', () => {
         render(<AdminHeader />)
 
         expect(screen.queryByText('Sign out')).toBeNull()
@@ -150,7 +150,7 @@ describe('AdminHeader', () => {
         expect(screen.queryByText('Sign out')).toBeNull()
     })
 
-    it('inchide meniul la click in afara', () => {
+    it('closes the menu on an outside click', () => {
         render(<AdminHeader />)
 
         fireEvent.click(screen.getByRole('button', { name: /Administrator/ }))
@@ -163,7 +163,7 @@ describe('AdminHeader', () => {
 })
 
 describe('AdminSidebar', () => {
-    it('marcheaza ruta curenta ca activa', () => {
+    it('marks the current route as active', () => {
         nav.pathname = '/questions'
         render(<AdminSidebar />)
 
@@ -171,7 +171,7 @@ describe('AdminSidebar', () => {
         expect(screen.getByRole('link', { name: /Dashboard/ }).getAttribute('aria-current')).toBeNull()
     })
 
-    it('ascunde etichetele cand este pliat', () => {
+    it('hides the labels when collapsed', () => {
         render(<AdminSidebar />)
 
         expect(screen.getByText('Manage users')).toBeTruthy()
@@ -191,13 +191,13 @@ describe('UserTable', () => {
         { id: 4, name: 'Dana', email: 'd@test.com', role: 'user', estimated_level: 'Necunoscut' },
     ] as any[]
 
-    it('afiseaza mesajul gol cand nu exista utilizatori', () => {
+    it('shows the empty message when there are no users', () => {
         render(<UserTable users={[]} />)
 
         expect(screen.getByText('No users found.')).toBeTruthy()
     })
 
-    it('afiseaza datele fiecarui utilizator', () => {
+    it('shows the data of every user', () => {
         render(<UserTable users={users} />)
 
         expect(screen.getByText('ana@test.com')).toBeTruthy()
@@ -206,18 +206,18 @@ describe('UserTable', () => {
         expect(screen.getByRole('link', { name: 'Ana' }).getAttribute('href')).toBe('/manageUsers/1')
     })
 
-    it('schimba rolul doar dupa confirmare', async () => {
+    it('changes the role only after confirmation', async () => {
         const onRoleChange = vi.fn()
         render(<UserTable users={users} onRoleChange={onRoleChange} />)
 
         const selects = screen.getAllByRole('combobox')
 
-        // schimbarea din dropdown doar deschide dialogul
+        // changing the dropdown only opens the dialog
         fireEvent.change(selects[0], { target: { value: 'admin' } })
         expect(screen.getByText('Change role?')).toBeTruthy()
         expect(onRoleChange).not.toHaveBeenCalled()
 
-        // Cancel inchide dialogul fara sa schimbe nimic
+        // Cancel closes the dialog without changing anything
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
         await waitFor(() => expect(screen.queryByText('Change role?')).toBeNull())
         expect(onRoleChange).not.toHaveBeenCalled()
@@ -227,7 +227,7 @@ describe('UserTable', () => {
         await waitFor(() => expect(onRoleChange).toHaveBeenCalledWith(1, 'admin'))
     })
 
-    it('sterge utilizatorul doar dupa confirmare', async () => {
+    it('deletes the user only after confirmation', async () => {
         const onDelete = vi.fn()
         render(<UserTable users={users} onDelete={onDelete} />)
 
@@ -240,8 +240,8 @@ describe('UserTable', () => {
     })
 })
 
-describe('UserToolbar si FilterSelect', () => {
-    it('transmite cautarea si nivelul selectat', () => {
+describe('UserToolbar and FilterSelect', () => {
+    it('passes the search term and the selected level', () => {
         const onSearchChange = vi.fn()
         const onLevelChange = vi.fn()
         render(
@@ -262,7 +262,7 @@ describe('UserToolbar si FilterSelect', () => {
         expect(onLevelChange).toHaveBeenCalledWith('Advanced')
     })
 
-    it('FilterSelect afiseaza placeholder-ul si optiunile', () => {
+    it('FilterSelect shows the placeholder and the options', () => {
         render(
             <FilterSelect
                 value=""
@@ -285,7 +285,7 @@ describe('AddUserModal', () => {
         })
     }
 
-    it('nu randeaza nimic cand este inchis', () => {
+    it('renders nothing when closed', () => {
         const { container } = render(
             <AddUserModal isOpen={false} onClose={vi.fn()} onUserAdded={vi.fn()} />
         )
@@ -293,7 +293,7 @@ describe('AddUserModal', () => {
         expect(container.firstChild).toBeNull()
     })
 
-    it('trimite formularul si notifica parintele', async () => {
+    it('submits the form and notifies the parent', async () => {
         const onClose = vi.fn()
         const onUserAdded = vi.fn()
         vi.mocked(AddUser).mockResolvedValue({ success: true, user: { id: 9, name: 'Ana' } } as any)
@@ -306,7 +306,7 @@ describe('AddUserModal', () => {
         expect(onClose).toHaveBeenCalled()
     })
 
-    it('afiseaza eroarea returnata de server', async () => {
+    it('shows the error returned by the server', async () => {
         vi.mocked(AddUser).mockResolvedValue({ success: false, message: 'All fields are required.' } as any)
         render(<AddUserModal isOpen onClose={vi.fn()} onUserAdded={vi.fn()} />)
 
@@ -316,7 +316,7 @@ describe('AddUserModal', () => {
         expect(await screen.findByText('Error: All fields are required.')).toBeTruthy()
     })
 
-    it('se inchide de la butonul Cancel', () => {
+    it('closes from the Cancel button', () => {
         const onClose = vi.fn()
         render(<AddUserModal isOpen onClose={onClose} onUserAdded={vi.fn()} />)
 
@@ -327,7 +327,7 @@ describe('AddUserModal', () => {
 })
 
 describe('CategoryCard', () => {
-    it('afiseaza initialele, tagul si numarul de exercitii', () => {
+    it('shows the initials, the tag and the exercise count', () => {
         const onClick = vi.fn()
         render(
             <CategoryCard
@@ -344,7 +344,7 @@ describe('CategoryCard', () => {
         expect(onClick).toHaveBeenCalled()
     })
 
-    it('ascunde pilula de tag cand lipseste', () => {
+    it('hides the tag pill when it is missing', () => {
         render(
             <CategoryCard category={{ id: '2', name: 'Backend', exerciseCount: 0, tags: '' }} />
         )

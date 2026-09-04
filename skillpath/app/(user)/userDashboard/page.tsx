@@ -14,8 +14,8 @@ export default async function DashboardPage(){
     const supabase = await createClient();
 
     const { data } = await supabase.auth.getUser();
-    //verificam daca avem un user logat a.i nu poate fi accesata pagina daca
-    //nu este user logat
+    // check that a user is logged in, so the page cannot be accessed if
+    // no logged-in user
     if(!data.user)
             redirect('/');
 
@@ -25,7 +25,7 @@ export default async function DashboardPage(){
         .eq("auth_key", data.user.id)
         .single();
 
-    // orice cont care nu e admin este tratat ca user (student)
+    // any non-admin account is treated as a user (student)
     if (error || !userData || userData.role === 'admin') {
         redirect('/');
     }

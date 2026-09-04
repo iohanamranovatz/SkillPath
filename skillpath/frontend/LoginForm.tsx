@@ -7,16 +7,16 @@ import Link from "next/link";
 export function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [eroare, setEroare] = useState('');
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setEroare('');
+    setError('');
 
-    const rezultat = await loginUser(email, password);
+    const result = await loginUser(email, password);
 
-    if (rezultat && rezultat.succes === false) {
-        setEroare(rezultat.message);
+    if (result && result.success === false) {
+        setError(result.message);
     }
   };
 
@@ -26,7 +26,7 @@ export function LoginForm() {
       
       <div className="w-full max-w-md bg-[#1C1F28] border border-gray-800 rounded-2xl p-8 shadow-2xl">
         
-        {/* Logo "Codewell" reprodus din design */}
+        {/* Brand logo */}
         <div className="flex items-center justify-center gap-3 mb-8">
           <div className="bg-[#6B72E1] p-2 rounded-xl flex items-center justify-center w-10 h-10">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -73,14 +73,14 @@ export function LoginForm() {
             />
           </div>
 
-          {/* Mesaj de eroare */}
-          {eroare && (
+          {/* Error message */}
+          {error && (
             <p className="text-[#FF5C5C] text-sm text-center font-medium bg-[#FF5C5C]/10 py-2 rounded-lg border border-[#FF5C5C]/20">
-              {eroare}
+              {error}
             </p>
           )}
 
-          {/* Buton de Submit (culoarea mov din poza ta) */}
+          {/* Submit button */}
           <button 
             type="submit" 
             className="w-full bg-[#6B72E1] hover:bg-[#585ed6] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg shadow-[#6B72E1]/20 mt-4 flex items-center justify-center gap-2"
@@ -93,7 +93,7 @@ export function LoginForm() {
           
         </form>
 
-        {/* Link-uri extra inferioare */}
+        {/* Footer links */}
         <div className="mt-8 pt-6 border-t border-gray-800 text-center flex flex-col gap-3">
           <a href="#" className="text-sm text-[#6B72E1] hover:text-white transition-colors">
             Forgot your password?

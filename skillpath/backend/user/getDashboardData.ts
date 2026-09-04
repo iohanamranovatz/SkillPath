@@ -39,7 +39,7 @@ export interface DashboardData {
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// Normalizam dificultatea din DB (EASY/MEDIUM/HARD) in formatul componentelor (Easy/Medium/Hard)
+// Normalize the DB difficulty (EASY/MEDIUM/HARD) to the component format (Easy/Medium/Hard)
 function normalizeDifficulty(raw: string | null | undefined): "Easy" | "Medium" | "Hard" {
     switch ((raw || "").toUpperCase()) {
         case "HARD":
@@ -51,7 +51,7 @@ function normalizeDifficulty(raw: string | null | undefined): "Easy" | "Medium" 
     }
 }
 
-// Returneaza cheia care apare cel mai des intr-o lista (ex: categoria / dificultatea dominanta a unui test)
+// Returns the key that appears most often in a list (e.g. the dominant category / difficulty of a test)
 function mostFrequent<T extends string | number>(items: T[]): T | null {
     if (items.length === 0) return null;
     const counts = new Map<T, number>();
@@ -78,7 +78,7 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
         recommendedResources: [],
     };
 
-    // // 1. Toate testele completate ale userului, cronologic
+    // // 1. All completed tests of the user, in chronological order
     // const { data: assessments } = await supabase
     //     .from("assessments")
     //     .select("id, score_total, completed_at")
@@ -96,7 +96,7 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
 
     const assessmentIds = regularTests.map((a) => a.id);
 
-    // 2. Toate raspunsurile din aceste teste, cu categorie + dificultate
+    // 2. All answers from these tests, with category + difficulty
     const { data: answers } = await supabase
         .from("assessment_answers")
         .select(`
@@ -112,9 +112,9 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
 
     const rows = (answers || []) as any[];
 
-    // 3. SKILL RADAR — procent de raspunsuri corecte pe fiecare categorie (cumulat)
+    // 3. SKILL RADAR - percentage of correct answers per category (cumulative)
     const categoryStats: Record<number, { name: string; total: number; correct: number }> = {};
-    // Grupam si per-test pentru RecentResults (categoria/dificultatea dominanta a fiecarui test)
+    // Also group per test for RecentResults (dominant category/difficulty of each test)
     const perAssessment: Record<number, { categories: string[]; difficulties: string[] }> = {};
 
     for (const ans of rows) {
@@ -146,7 +146,7 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
         .filter(([, stat]) => Math.round((stat.correct / stat.total) * 100) < 60)
         .map(([id]) => Number(id));
 
-    // 4. SCORE CHART — media score_total grupata pe luna
+    // 4. SCORE CHART - average score_total grouped by month
     const monthBuckets: Record<string, { label: string; sum: number; count: number }> = {};
     for (const a of regularTests) {
         if (a.completedAt == null || a.score == null) continue;
@@ -171,7 +171,7 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
             score: Math.round(bucket.sum / bucket.count),
         }));
 
-    // 5. RECENT RESULTS — ultimele 5 teste completate
+    // 5. RECENT RESULTS - the last 5 completed tests
     const recentResults: RecentResult[] = [...regularTests]
         .filter((a) => a.completedAt != null)
         .sort((x, y) => new Date(y.completedAt).getTime() - new Date(x.completedAt).getTime())
@@ -191,7 +191,7 @@ export async function getDashboardData(userId: number): Promise<DashboardData> {
             };
         });
 
-    // 6. RECOMMENDED RESOURCES — resurse pentru categoriile slabe (<60%)
+    // 6. RECOMMENDED RESOURCES - resources for the weak categories (<60%)
     let recommendedResources: RecommendedResource[] = [];
     if (weakCategoryIds.length > 0) {
         const { data: resources } = await supabase

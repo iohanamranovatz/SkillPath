@@ -20,7 +20,7 @@ export type UserTest = {
     isInitial?: boolean
 }
 
-// paginare -> numarul de categorii per pagina
+// pagination -> number of items per page
 const ITEMS_PER_PAGE = 4;
 
 export function TestsView({
@@ -38,7 +38,7 @@ export function TestsView({
     const [initialTestError, setInitialTestError] = useState<string | null>(null);
     const needsInitialAssessment = initialOnboardingState.requiresInitialAssessment;
 
-    // paginare
+    // pagination
     const [currentPage, setCurrentPage] = useState(1);
 
     async function handleInitialTest() {
@@ -106,13 +106,13 @@ export function TestsView({
         return test.categories.includes(activeFilter)
     })
 
-    // Reseteaza pagina cand utilizatorul schimba filtrul
+    // Reset the page when the user changes the filter
     const handleFilterChange = (filter: string) => {
         setActiveFilter(filter)
         setCurrentPage(1)
     }
 
-    // Calcule pentru paginare
+    // Pagination computations
     const totalPages = Math.ceil(visibleTests.length / ITEMS_PER_PAGE)
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
     const paginatedTests = visibleTests.slice(startIndex, startIndex + ITEMS_PER_PAGE)
@@ -206,7 +206,7 @@ export function TestsView({
                         ))}
                     </div>
 
-                    {/* Controale de Paginare */}
+                    {/* Pagination controls */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between pt-4 border-t text-sm">
                             <span className="text-muted-foreground">
