@@ -8,6 +8,7 @@ import {useState} from "react";
 import {updateProfile} from "@/backend/user/profile/updateProfile";
 import { ProfileViewProps } from "@/frontend/user/lib/types";
 import {addObjective, deleteObjective, toggleInterestTag, toggleObjective} from "@/backend/user/profile/profileActions";
+import ConfirmDialog from "@/frontend/components/confirm-dialog";
 
 const MAX_OBJECTIVES = 5;
 const MAX_TAGS = 5;
@@ -21,6 +22,18 @@ export function ProfileView({
 
     const [message, setMessage] = useState<string | null>(null);
     const [newObjective, setNewObjective] = useState("");
+
+    // confirmare stergere obiectiv (dialog propriu, nu confirm() nativ)
+    const [objectiveToDelete, setObjectiveToDelete] = useState<{ id: number; title: string } | null>(null);
+    const [deletingObjective, setDeletingObjective] = useState(false);
+
+    const confirmDeleteObjective = async () => {
+        if (!objectiveToDelete) return;
+        setDeletingObjective(true);
+        await deleteObjective(objectiveToDelete.id);
+        setDeletingObjective(false);
+        setObjectiveToDelete(null);
+    };
 
     const [searchQuery, setSearchQuery] = useState("");
     const [filterStatus, setFilterStatus] = useState<"all" | "completed" | "incompleted">("all");
@@ -114,7 +127,7 @@ export function ProfileView({
                         <div className="space-y-2 text-sm text-muted-foreground">
                             <span>Experience level</span>
                             <div className="block w-full rounded-lg border border-border/50 bg-card/50 px-3 py-2.5 text-sm text-muted-foreground cursor-not-allowed">
-                                {initialData?.estimated_level || "Junior"}
+                                {initialData?.estimated_level || "Beginner"}
                             </div>
                         </div>
                     </div>
@@ -262,14 +275,8 @@ export function ProfileView({
 
                                 <button
                                     type="button"
-                                    onClick={async () => {
-                                        const confirmed = window.confirm(
-                                            `Are you sure you want to delete "${obj.title}"?`
-                                        );
-                                        if (confirmed) {
-                                            await deleteObjective(obj.id);
-                                        }
-                                    }}
+                                    onClick={() => setObjectiveToDelete(obj)}
+                                    aria-label={`Delete objective ${obj.title}`}
                                     className="text-muted-foreground hover:text-red-400 transition-colors"
                                 >
                                     <Trash2 className="size-4" />
@@ -341,6 +348,22 @@ export function ProfileView({
                     </p>
                 )}
             </Card>
+
+            <ConfirmDialog
+                open={objectiveToDelete !== null}
+                title="Delete objective?"
+                confirmLabel="Delete"
+                busyLabel="Deleting…"
+                busy={deletingObjective}
+                message={
+                    <>
+                        Sigur vrei să ștergi obiectivul{" "}
+                        <span className="font-medium text-foreground">{objectiveToDelete?.title}</span>?
+                    </>
+                }
+                onConfirm={confirmDeleteObjective}
+                onCancel={() => setObjectiveToDelete(null)}
+            />
         </div>
     )
 }

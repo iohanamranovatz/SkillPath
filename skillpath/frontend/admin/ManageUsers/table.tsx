@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { User} from "@/frontend/admin/lib/types";
 import {Eye, Trash2} from "lucide-react";
 import Link from "next/link";
+import ConfirmDialog from "@/frontend/components/confirm-dialog";
 
 interface Props {
     users: User[];
@@ -11,16 +13,44 @@ interface Props {
 }
 
 export default function UserTable({ users, onDelete, onRoleChange }: Props) {
+    // confirmari (dialoguri proprii, nu confirm() nativ)
+    const [pendingRole, setPendingRole] = useState<{ user: User; newRole: string } | null>(null);
+    const [toDelete, setToDelete] = useState<User | null>(null);
+    const [busy, setBusy] = useState(false);
+
+    const confirmRoleChange = async () => {
+        if (!pendingRole) return;
+        setBusy(true);
+        await onRoleChange?.(pendingRole.user.id, pendingRole.newRole);
+        setBusy(false);
+        setPendingRole(null);
+    };
+
+    const confirmDelete = async () => {
+        if (!toDelete) return;
+        setBusy(true);
+        await onDelete?.(toDelete.id);
+        setBusy(false);
+        setToDelete(null);
+    };
+
     const getLevelClass = (level: string) => {
         switch (level?.toLowerCase()) {
-            case "senior": return "badge-diff-hard";
-            case "mid": return "badge-diff-medium";
-            case "junior": return "badge-diff-easy";
+            case "advanced":
+            case "senior": // valoare veche, pastrata pentru randurile deja existente
+                return "badge-diff-hard";
+            case "intermediate":
+            case "mid": // valoare veche, pastrata pentru randurile deja existente
+                return "badge-diff-medium";
+            case "beginner":
+            case "junior": // valoare veche, pastrata pentru randurile deja existente
+                return "badge-diff-easy";
             default: return "bg-muted text-muted-foreground";
         }
     };
 
     return (
+        <>
         <div className="data-table-container">
             <table className="data-table">
                 <thead className="data-table-header">
@@ -60,14 +90,9 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
                             <td className="data-table-td">
                                 <select
                                     value={u.role || "user"}
-                                    onChange={async (e) => {
-                                        const newRole = e.target.value;
-                                        const confirmed = window.confirm(
-                                            `Are you sure you want to change role for user ${u.name} in "${newRole}"?`
-                                        );
-                                        if (confirmed) {
-                                            await onRoleChange?.(u.id, newRole);
-                                        }
+                                    onChange={(e) => {
+                                        // select controlat -> valoarea revine singura daca se anuleaza
+                                        setPendingRole({ user: u, newRole: e.target.value });
                                     }}
                                     className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-foreground outline-none focus:border-blue-500 cursor-pointer"
                                 >
@@ -102,7 +127,7 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
 
                                     <button
                                         type="button"
-                                        onClick={() => onDelete?.(u.id)}
+                                        onClick={() => setToDelete(u)}
                                         aria-label={`Delete user ${u.id}`}
                                         className="group inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive active:scale-90"
                                     >
@@ -116,5 +141,40 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
                 </tbody>
             </table>
         </div>
+
+        <ConfirmDialog
+            open={pendingRole !== null}
+            title="Change role?"
+            tone="default"
+            confirmLabel="Change role"
+            busyLabel="Changing…"
+            busy={busy}
+            message={
+                <>
+                    Sigur vrei să schimbi rolul lui{" "}
+                    <span className="font-medium text-foreground">{pendingRole?.user.name}</span> în{" "}
+                    <span className="font-medium text-foreground">{pendingRole?.newRole}</span>?
+                </>
+            }
+            onConfirm={confirmRoleChange}
+            onCancel={() => setPendingRole(null)}
+        />
+
+        <ConfirmDialog
+            open={toDelete !== null}
+            title="Delete user?"
+            confirmLabel="Delete"
+            busyLabel="Deleting…"
+            busy={busy}
+            message={
+                <>
+                    Sigur vrei să ștergi contul lui{" "}
+                    <span className="font-medium text-foreground">{toDelete?.name}</span>? Acțiunea nu poate fi anulată.
+                </>
+            }
+            onConfirm={confirmDelete}
+            onCancel={() => setToDelete(null)}
+        />
+        </>
     );
 }

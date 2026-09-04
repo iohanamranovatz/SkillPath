@@ -6,6 +6,7 @@ import { submitAssessment } from "@/backend/user/submitAssessment";
 import { saveSingleAnswer} from "@/backend/user/saveProgressAssessment";
 import { Card } from "@/frontend/user/common/card";
 import { Button } from "@/frontend/user/common/button";
+import { AnswerReview, ReviewedQuestion } from "@/frontend/user/components/answer-review";
 
 type Question = {
     id: number;
@@ -79,7 +80,7 @@ export function AssessmentRunner({
 
         setLoading(false);
         if (!res.success || !res.data) {
-            setError(res.message ?? "Eroare la trimiterea testului.");
+            setError(res.message ?? "Error at submitting.");
             return;
         }
         setResult(res.data);
@@ -87,47 +88,74 @@ export function AssessmentRunner({
     };
 
     if (result) {
+        // imperechem intrebarile din test cu corectura primita de la server
+        const reviewById = new Map<number, any>(
+            (result.review ?? []).map((r: any) => [r.questionId, r])
+        );
+
+        const reviewedQuestions: ReviewedQuestion[] = questions.map((q) => {
+            const r = reviewById.get(q.id);
+            return {
+                id: q.id,
+                question_text: q.question_text,
+                difficulty: q.difficulty,
+                options: q.options,
+                selectedOptionId: r?.selectedOptionId ?? answers[q.id] ?? null,
+                isCorrect: r?.isCorrect ?? null,
+                correctAnswer: r?.correctOptionId ?? null,
+            };
+        });
+
         return (
-            <Card className="space-y-6 p-6">
-                <div className="space-y-1 text-center">
-                    <h1 className="text-xl font-semibold">Test finalizat!</h1>
-                    <p className="text-4xl font-bold text-chart-3">{result.scorePct}%</p>
-                    <p className="text-sm text-muted-foreground">
-                        {result.correct} din {result.total} corecte
-                    </p>
-                    {result.level && (
-                        <p className="text-sm">
-                            Nivel estimat: <span className="font-medium">{result.level}</span>
+            <div className="space-y-6">
+                <Card className="space-y-6 p-6">
+                    <div className="space-y-1 text-center">
+                        <h1 className="text-xl font-semibold">Test completed!</h1>
+                        <p className="text-4xl font-bold text-chart-3">{result.scorePct}%</p>
+                        <p className="text-sm text-muted-foreground">
+                            {result.correct} out of {result.total} correct
                         </p>
-                    )}
-                </div>
+                        {result.level && (
+                            <p className="text-sm">
+                                Estimated level: <span className="font-medium">{result.level}</span>
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="space-y-3">
+                        <h2 className="text-sm font-medium">Score by category</h2>
+                        {result.perCategory?.map((c: any) => (
+                            <div key={c.category} className="space-y-1">
+                                <div className="flex justify-between text-sm">
+                                    <span>{c.category}</span>
+                                    <span
+                                        className={
+                                            c.score < 50 ? "text-destructive" : "text-muted-foreground"
+                                        }
+                                    >
+                                        {c.score}%{c.score < 50 ? " · weak area" : ""}
+                                    </span>
+                                </div>
+                                <div className="h-2 w-full rounded-full bg-muted">
+                                    <div
+                                        className="h-2 rounded-full bg-primary"
+                                        style={{ width: `${c.score}%` }}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
 
                 <div className="space-y-3">
-                    <h2 className="text-sm font-medium">Scor pe categorie</h2>
-                    {result.perCategory?.map((c: any) => (
-                        <div key={c.category} className="space-y-1">
-                            <div className="flex justify-between text-sm">
-                                <span>{c.category}</span>
-                                <span
-                                    className={
-                                        c.score < 50 ? "text-destructive" : "text-muted-foreground"
-                                    }
-                                >
-                                    {c.score}%{c.score < 50 ? " · zona slaba" : ""}
-                                </span>
-                            </div>
-                            <div className="h-2 w-full rounded-full bg-muted">
-                                <div
-                                    className="h-2 rounded-full bg-primary"
-                                    style={{ width: `${c.score}%` }}
-                                />
-                            </div>
-                        </div>
-                    ))}
+                    <h2 className="text-sm font-medium">Your answers</h2>
+                    <AnswerReview questions={reviewedQuestions} />
                 </div>
 
-                <Button onClick={() => router.push("/userDashboard")} className="w-full">Inapoi la dashboard</Button>
-            </Card>
+                <Button onClick={() => router.push("/userDashboard")} className="w-full">
+                    Back to dashboard
+                </Button>
+            </div>
         );
     }
 
@@ -150,7 +178,7 @@ export function AssessmentRunner({
             <div>
                 <h1 className="text-xl font-semibold">Test</h1>
                 <p className="text-sm text-muted-foreground">
-                    {questions.length} întrebări · răspunde la toate.
+                    {questions.length} questions · answer them all.
                 </p>
             </div>
 
@@ -191,7 +219,7 @@ export function AssessmentRunner({
 
             <Button onClick={handleSubmit} disabled={loading || !allAnswered} className="w-full">
                 {loading
-                    ? "Se trimite..."
+                    ? "Submitting..."
                     : allAnswered
                         ? "Submit test"
                         : "All questions must be answered"}

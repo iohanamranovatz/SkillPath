@@ -110,7 +110,7 @@ describe('CategoriesManager', () => {
             expect(addCategory).toHaveBeenCalledWith({
                 name: 'DevOps',
                 description: 'CI/CD',
-                difficulty: 'beginner',
+                difficulty: 'Beginner',
             })
         )
         await waitFor(() => expect(screen.queryByText('New Category')).toBeNull())

@@ -143,7 +143,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
 
                 <div className="flex items-center gap-3">
                     <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider border border-white/10">
-                        {user.estimated_level || "JUNIOR"}
+                        {user.estimated_level || "BEGINNER"}
                     </span>
 
                     <span className="rounded-full bg-blue-500/10 px-3 py-1 text-xs font-semibold text-blue-400 border border-blue-500/20">

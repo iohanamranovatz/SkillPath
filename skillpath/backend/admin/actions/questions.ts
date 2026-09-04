@@ -10,11 +10,26 @@ export type ActionResponse<T = any> = {
     error?: string;
 };
 
+// O intrebare are exact UN raspuns corect: corectarea din submitAssessment
+// compara correct_answer cu optiunea aleasa de user, deci mai multe valori
+// ("a,b") ar face intrebarea imposibil de nimerit.
 function validateAnswers(correctAnswerId: string | string[], options: Option[]): string | null {
-    const selectedCount = Array.isArray(correctAnswerId) ? correctAnswerId.length : (correctAnswerId ? 1 : 0);
-    if (selectedCount === 0) return "You must select at least one correct answer.";
-    if (selectedCount >= options.length) return `You cannot select all ${options.length} options as correct.`;
+    const selected = (Array.isArray(correctAnswerId) ? correctAnswerId : String(correctAnswerId ?? "").split(","))
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+    if (selected.length === 0) return "You must select the correct answer.";
+    if (selected.length > 1) return "A question can have only one correct answer.";
+    if (options.length < 2) return "A question needs at least two options.";
+    if (!options.some((opt) => opt.id === selected[0]))
+        return "The correct answer must be one of the options.";
+
     return null;
+}
+
+// Valoarea salvata in DB trebuie sa fie un singur id, curatat de spatii.
+function normalizeCorrectAnswer(correctAnswerId: string | string[] | undefined): string {
+    return (Array.isArray(correctAnswerId) ? correctAnswerId[0] : String(correctAnswerId ?? "").split(",")[0] ?? "").trim();
 }
 
 export async function getQuestions(): Promise<ActionResponse<Question[]>> {
@@ -42,7 +57,8 @@ export async function getQuestions(): Promise<ActionResponse<Question[]>> {
 
             difficulty: row.difficulty,
             options: row.options,
-            correctAnswersId: row.correct_answer.split(",").map((id: string) => id.trim()),
+            // intrebarile vechi pot avea mai multe valori salvate -> luam doar prima
+            correctAnswersId: normalizeCorrectAnswer(row.correct_answer),
             isActive: row.is_active
         }));
 
@@ -77,7 +93,7 @@ export async function createQuestion(payload: Omit<Question, "id">): Promise<Act
                 category_id: categoryID.id,
                 difficulty: payload.difficulty.toUpperCase(),
                 options: payload.options,
-                correct_answer: payload.correctAnswersId,
+                correct_answer: normalizeCorrectAnswer(payload.correctAnswersId),
                 is_active: payload.isActive
             }])
             .select()
@@ -118,7 +134,7 @@ export async function updateQuestion(questionId: string, payload: Partial<Questi
                 category_id: categoryId ? categoryId.id : 0,
                 difficulty: payload.difficulty,
                 options: payload.options,
-                correct_answer: payload.correctAnswersId,
+                correct_answer: normalizeCorrectAnswer(payload.correctAnswersId),
                 is_active: payload.isActive
             })
             .eq("id", parseInt(questionId))

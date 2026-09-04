@@ -16,7 +16,7 @@ export async function evaluateUserLevel(userId: number) {
 
     const { data, error } = await supabase
         .from("assessments")
-        .select("id, score_total, estimated_level, assessment_answers ( questions ( category_id ) )")
+        .select("id, score_total, assessment_answers ( questions ( category_id ) )")
         .eq("user_id", userId)
         .eq("status", "completed");
 

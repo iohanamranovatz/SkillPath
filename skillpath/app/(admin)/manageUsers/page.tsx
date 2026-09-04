@@ -26,6 +26,9 @@ export default function UserManagementPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
 
+    // erori afisate in pagina (in locul lui alert() nativ)
+    const [error, setError] = useState("");
+
     const fetchUsers = async () => {
         const { data, error } = await supabase
             .from("users")
@@ -61,7 +64,7 @@ export default function UserManagementPage() {
                 )
             );
         } else {
-            alert(res.message || "Could not change role!");
+            setError(res.message || "Could not change role!");
         }
     };
 
@@ -99,6 +102,7 @@ export default function UserManagementPage() {
 
         if (error) {
             console.log(`Error deleting user with ID: ${id}, `, error.message);
+            setError(error.message || "Could not delete user!");
             return;
         }
 
@@ -122,6 +126,20 @@ export default function UserManagementPage() {
                         + Add User
                     </button>
                 </div>
+
+                {/* Eroare la nivel de pagina (in locul lui alert() nativ) */}
+                {error && (
+                    <div className="mb-6 flex items-start justify-between gap-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
+                        <p className="text-sm text-red-400">{error}</p>
+                        <button
+                            onClick={() => setError("")}
+                            aria-label="Dismiss error"
+                            className="text-sm text-red-400/60 transition-colors hover:text-red-400"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
 
                 {/* Main Content Card */}
                 <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-card p-4 shadow-xl sm:p-6 backdrop-blur-xl">

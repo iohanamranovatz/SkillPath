@@ -5,6 +5,7 @@ import { Question } from "@/frontend/admin/lib/types";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Eye, Trash2, Loader2 } from "lucide-react";
 import { deleteQuestion } from "@/backend/admin/actions/questions";
+import ConfirmDialog from "@/frontend/components/confirm-dialog";
 
 interface Props {
     questions: Question[];
@@ -19,25 +20,35 @@ export default function QuestionTable({ questions }: Props) {
     // Track which question is currently being deleted to show the spinner
     const [deletingId, setDeletingId] = useState<string | null>(null);
 
+    // confirmare stergere (modal propriu, nu confirm() nativ)
+    const [toDelete, setToDelete] = useState<Question | null>(null);
+    const [error, setError] = useState("");
+
     const openPanel = (id: string) => {
         const params = new URLSearchParams(searchParams.toString());
         params.set("id", id);
         router.push(`${pathname}?${params.toString()}`);
     };
 
-    const handleDelete = async (e: React.MouseEvent, id: string) => {
+    const askDelete = (e: React.MouseEvent, question: Question) => {
         e.stopPropagation(); // Prevent the row click event from opening the panel
+        setError("");
+        setToDelete(question);
+    };
 
-        if (confirm("Are you sure you want to delete this question? This cannot be undone.")) {
-            setDeletingId(id);
+    const handleDelete = async () => {
+        if (!toDelete) return;
 
-            const response = await deleteQuestion(id);
+        setDeletingId(toDelete.id);
 
-            setDeletingId(null);
+        const response = await deleteQuestion(toDelete.id);
 
-            if (!response.success) {
-                alert(response.error || "Failed to delete question.");
-            }
+        setDeletingId(null);
+
+        if (response.success) {
+            setToDelete(null);
+        } else {
+            setError(response.error || "Failed to delete question.");
         }
     };
 
@@ -51,6 +62,7 @@ export default function QuestionTable({ questions }: Props) {
     };
 
     return (
+        <>
         <div className="data-table-container">
             <table className="data-table">
                 <thead className="data-table-header">
@@ -114,7 +126,7 @@ export default function QuestionTable({ questions }: Props) {
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={(e) => handleDelete(e, q.id)}
+                                        onClick={(e) => askDelete(e, q)}
                                         disabled={deletingId === q.id}
                                         aria-label={`Delete question ${q.id}`}
                                         className="group inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-destructive/10 hover:text-destructive active:scale-90 disabled:opacity-50 disabled:pointer-events-none cursor-pointer"
@@ -133,5 +145,23 @@ export default function QuestionTable({ questions }: Props) {
                 </tbody>
             </table>
         </div>
+
+        <ConfirmDialog
+            open={toDelete !== null}
+            title="Delete question?"
+            confirmLabel="Delete"
+            busyLabel="Deleting…"
+            busy={deletingId !== null && deletingId === toDelete?.id}
+            error={error}
+            message={
+                <>
+                    Ești sigur că vrei să ștergi{" "}
+                    <span className="font-medium text-foreground">{toDelete?.title}</span>? Acțiunea nu poate fi anulată.
+                </>
+            }
+            onConfirm={handleDelete}
+            onCancel={() => setToDelete(null)}
+        />
+        </>
     );
 }

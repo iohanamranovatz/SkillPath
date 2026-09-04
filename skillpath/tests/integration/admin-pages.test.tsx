@@ -276,7 +276,7 @@ describe('pagina /manageUsers', () => {
         name: `User ${i + 1}`,
         email: `user${i + 1}@test.com`,
         role: i === 0 ? 'admin' : 'user',
-        estimated_level: i % 2 === 0 ? 'Junior' : 'Senior',
+        estimated_level: i % 2 === 0 ? 'Beginner' : 'Advanced',
     }))
 
     it('incarca utilizatorii si ii pagineaza', async () => {
@@ -304,7 +304,7 @@ describe('pagina /manageUsers', () => {
         expect(screen.queryByText('user1@test.com')).toBeNull()
 
         fireEvent.change(screen.getByPlaceholderText('Search users...'), { target: { value: '' } })
-        fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'Senior' } })
+        fireEvent.change(screen.getAllByRole('combobox')[0], { target: { value: 'Advanced' } })
         expect(screen.queryByText('user1@test.com')).toBeNull()
         expect(screen.getByText('user2@test.com')).toBeTruthy()
 
@@ -328,28 +328,27 @@ describe('pagina /manageUsers', () => {
 
     it('schimba rolul unui utilizator', async () => {
         mockFrom(supabase.from, { users: { data: users.slice(0, 2), error: null } })
-        vi.spyOn(window, 'confirm').mockReturnValue(true)
         vi.mocked(updateUserRole).mockResolvedValue({ success: true })
         render(<UserManagementPage />)
         await screen.findByText('user1@test.com')
 
         fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: 'admin' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Change role' }))
 
         await waitFor(() => expect(updateUserRole).toHaveBeenCalledWith(1, 'admin'))
     })
 
     it('avertizeaza cand schimbarea rolului esueaza', async () => {
         mockFrom(supabase.from, { users: { data: users.slice(0, 2), error: null } })
-        vi.spyOn(window, 'confirm').mockReturnValue(true)
-        const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {})
         vi.mocked(updateUserRole).mockResolvedValue({ success: false, message: 'Could not change role' })
         render(<UserManagementPage />)
         await screen.findByText('user1@test.com')
 
         fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: 'admin' } })
+        fireEvent.click(screen.getByRole('button', { name: 'Change role' }))
 
-        await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('Could not change role'))
-        alertSpy.mockRestore()
+        // eroarea apare ca banner in pagina, nu ca alert() nativ
+        await waitFor(() => expect(screen.getByText('Could not change role')).toBeTruthy())
     })
 
     it('sterge un utilizator din lista', async () => {
@@ -358,6 +357,7 @@ describe('pagina /manageUsers', () => {
         await screen.findByText('user1@test.com')
 
         fireEvent.click(screen.getByRole('button', { name: 'Delete user 1' }))
+        fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
 
         await waitFor(() => expect(screen.queryByText('user1@test.com')).toBeNull())
     })
@@ -379,7 +379,7 @@ describe('pagina /manageUsers/[id]', () => {
         name: 'Ana Pop',
         email: 'ana@test.com',
         role: 'user',
-        estimated_level: 'Junior',
+        estimated_level: 'Beginner',
     }
 
     function seed(overrides: Record<string, any> = {}) {

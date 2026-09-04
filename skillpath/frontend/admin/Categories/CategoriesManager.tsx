@@ -70,7 +70,7 @@ export function CategoriesManager() {
         setEditing(null);
         setName("");
         setDescription("");
-        setDifficulty("beginner");
+        setDifficulty("Beginner");
         setError("");
         setModalOpen(true);
     }
@@ -131,6 +131,20 @@ export function CategoriesManager() {
                     <Plus className="w-4 h-4" /> Add Category
                 </button>
             </div>
+
+            {/* Eroare la nivel de pagina (ex. stergere esuata, cand nu e niciun modal deschis) */}
+            {error && !modalOpen && (
+                <div className="flex items-start justify-between gap-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
+                    <p className="text-sm text-red-400">{error}</p>
+                    <button
+                        onClick={() => setError("")}
+                        aria-label="Dismiss error"
+                        className="text-red-400/60 transition-colors hover:text-red-400"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+            )}
 
             {/* Search */}
             <SearchBar

@@ -396,7 +396,7 @@ describe('pagina /assessment/[id]', () => {
 
         expect(screen.getByText('1. Ce este JSX?')).toBeTruthy()
         expect(screen.getByText('Sintaxa')).toBeTruthy()
-        expect(screen.getByText('2 întrebări · răspunde la toate.')).toBeTruthy()
+        expect(screen.getByText('2 questions · answer them all.')).toBeTruthy()
     })
 })
 
