@@ -1,10 +1,12 @@
 "use server";
 
-import { supabase } from "../helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {Resource} from "@/frontend/user/lib/types";
 
 // --- Toate categoriile + numarul de intrebari (pentru lista principala)
 export async function getCategories() {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from("categories")
         .select("id, name, description, questions(count)")
@@ -23,6 +25,8 @@ export async function getCategories() {
 
 // --- O categorie dupa id (pentru titlul paginii de detaliu) ---
 export async function getCategoryById(id: number | string) {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from("categories")
         .select("id, name, description")
@@ -35,6 +39,8 @@ export async function getCategoryById(id: number | string) {
 
 // --- Tagurile unei categorii (afisate + folosite în dropdown-ul de resurse) ---
 export async function getCategoryTags(categoryId: number | string) {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from("tags")
         .select("id, name")
@@ -47,6 +53,8 @@ export async function getCategoryTags(categoryId: number | string) {
 
 // --- Resursele unei categorii (direct prin category_id) ---
 export async function getResourcesFromCategory(categoryId: number | string) {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from("learning_resources")
         .select("id, title, url, type, category_id")
@@ -72,6 +80,8 @@ export async function addResource(input: {
     url?: string;
     type?: string;          // article | video | course
 }) {
+    const supabase = await createClient();
+
     if (!input.title?.trim())
         return { success: false, message: "Please add title !" };
     if (!input.categoryId)
@@ -99,6 +109,8 @@ export async function updateCategory(input: {
     description?: string | null;
     difficulty: string;
 }) {
+    const supabase = await createClient();
+
     if (!input.name?.trim())
         return { success: false, message: "Please add the name of the category!" };
 
@@ -115,6 +127,8 @@ export async function updateCategory(input: {
 
 // --- Admin sterge o categorie ---
 export async function deleteCategory(id: number) {
+    const supabase = await createClient();
+
     const { error } = await supabase.from("categories").delete().eq("id", id);
 
     if (error) {
@@ -131,6 +145,8 @@ export async function deleteCategory(id: number) {
 
 // --- Admin adauga un tag la o categorie ---
 export async function addTag(input: { categoryId: number; name: string }) {
+    const supabase = await createClient();
+
     if (!input.name?.trim())
         return { success: false, message: "Tag Name is obligatory!" };
 
@@ -146,6 +162,8 @@ export async function addTag(input: { categoryId: number; name: string }) {
 
 // --- Admin editeaza un tag ---
 export async function updateTag(input: { id: number; name: string }) {
+    const supabase = await createClient();
+
     if (!input.name?.trim())
         return { success: false, message: "Tag name is obligatory." };
 
@@ -162,6 +180,8 @@ export async function updateTag(input: { id: number; name: string }) {
 
 // --- Admin sterge un tag ---
 export async function deleteTag(id: number) {
+    const supabase = await createClient();
+
     const { error } = await supabase.from("tags").delete().eq("id", id);
 
     if (error) {
@@ -177,6 +197,8 @@ export async function deleteTag(id: number) {
 
 // --- Admin adauga o categorie nouă ---
 export async function addCategory(input: { name: string; description?: string; difficulty: string }) {
+    const supabase = await createClient();
+
     if (!input.name?.trim())
         return { success: false, message: "Name of the category is obligatory." };
 
@@ -192,6 +214,8 @@ export async function addCategory(input: { name: string; description?: string; d
 
 // --- Întrebările dintr-o categorie ---
 export async function getQuestionsByCategory(categoryId: number | string) {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from("questions")
         .select("id, question_text, difficulty, options, correct_answer, is_active, tag_id")
@@ -203,6 +227,8 @@ export async function getQuestionsByCategory(categoryId: number | string) {
 }
 
 export async function getAllResources(categoryId?: number): Promise<{ success: boolean; message?: string; data: Resource[] }> {
+    const supabase = await createClient();
+
     let query = supabase
         .from("learning_resources")
         .select("id, title, url, type, category_id, categories(name)")

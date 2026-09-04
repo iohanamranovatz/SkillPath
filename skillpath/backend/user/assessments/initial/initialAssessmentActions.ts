@@ -5,8 +5,7 @@ import {
     getInitialAssessmentOnboardingState,
     isInitialAssessment,
 } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
-import { supabase } from "@/helper/SupabaseClient";
-
+import { createClient } from "@/helper/supabase/server";
 const REQUIRED_ANSWERS_PER_TIER = 6;
 
 type AssessmentAnswerPayload = {
@@ -75,6 +74,8 @@ export async function submitInitialAssessmentAction(
     assessmentId: number,
     answers: AssessmentAnswerPayload[]
 ) {
+    const supabase = await createClient();
+
     try {
         if (!assessmentId || answers.length === 0) {
             return { success: false, message: "Assessment submission is invalid.", data: null };

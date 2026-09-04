@@ -4,12 +4,14 @@ import { User} from "@/frontend/admin/lib/types";
 import UserToolbar from "@/frontend/admin/ManageUsers/toolbar";
 import UserTable from "@/frontend/admin/ManageUsers/table";
 import {useEffect, useMemo, useState} from "react";
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/client";
 import AddUserModal from "@/frontend/admin/ManageUsers/AddUserModal";
 import Pagination from "@/frontend/components/pagination";
 import {updateUserRole} from "@/backend/admin/actions/roleChange";
 
 const ITEMS_PER_PAGE = 7;
+
+const supabase = createClient();
 
 export default function UserManagementPage() {
     const [searchTerm, setSearchTerm] = useState("");

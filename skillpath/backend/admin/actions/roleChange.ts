@@ -1,9 +1,10 @@
 "use server"
 
-import {createClient} from "@supabase/supabase-js";
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 
 export async function updateUserRole(userId: number, newRole: string) {
+    const supabase = await createClient();
+
     try {
 
         const { data, error } = await supabase

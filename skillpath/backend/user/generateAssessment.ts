@@ -1,7 +1,6 @@
 "use server";
 
-import { supabase } from "@/helper/SupabaseClient";
-
+import { createClient } from "@/helper/supabase/server";
 const MAX_QUESTIONS = 10;
 
 export type AssessmentQuestion = {
@@ -12,6 +11,8 @@ export type AssessmentQuestion = {
 };
 // generam testul: luam intrebarile active din categorie (dificultati amestecate)
 export async function generateAssessment(userId: number, categoryId: number) {
+    const supabase = await createClient();
+
     if (!userId || !categoryId) {
         return { success: false, message: "Please fill all the fields!", data: null };
     }

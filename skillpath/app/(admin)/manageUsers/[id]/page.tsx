@@ -1,5 +1,5 @@
 import {PageProps} from "@/frontend/admin/lib/types";
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import Link from "next/link";
 import {AlertTriangle, ArrowLeft, BookOpen, CheckCircle, Clock, ExternalLink} from "lucide-react";
 import {getWeakCategories} from "@/backend/admin/getWeakCategories";
@@ -16,6 +16,8 @@ type UserDetailsProps = {
 };
 
 export default async function UserDetailsPage({ params, searchParams }: UserDetailsProps) {
+    const supabase = await createClient();
+
     const { id } = await params;
     const userId = parseInt(id, 10);
     const { category, page } = await searchParams;

@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import { NewTestForm } from "@/frontend/user/components/new-test-form";
 import { getInitialAssessmentOnboardingState } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export default async function NewTestPage() {
+    const supabase = await createClient();
+
     const { data } = await supabase.auth.getUser();
     if (!data.user) redirect("/");
 

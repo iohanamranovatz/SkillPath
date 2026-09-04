@@ -25,8 +25,8 @@ vi.mock('next/navigation', () => ({
 
 // Clientul Supabase real ar avea nevoie de variabile de mediu; in teste
 // fiecare fisier isi pune propriul mock peste acesta acolo unde conteaza.
-vi.mock('@/helper/SupabaseClient', () => {
-    const client = {
+const makeSupabaseStub = () => {
+    const client: any = {
         from: vi.fn(() => client),
         auth: {
             getUser: vi.fn(async () => ({ data: { user: null }, error: null })),
@@ -35,8 +35,11 @@ vi.mock('@/helper/SupabaseClient', () => {
             signOut: vi.fn(async () => ({ error: null })),
         },
     }
-    return { default: client, supabase: client }
-})
+    return { default: client, supabase: client, createClient: () => client }
+}
+
+vi.mock('@/helper/supabase/server', () => makeSupabaseStub())
+vi.mock('@/helper/supabase/client', () => makeSupabaseStub())
 
 afterEach(() => {
     cleanup()

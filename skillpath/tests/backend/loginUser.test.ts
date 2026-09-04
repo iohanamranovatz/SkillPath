@@ -1,17 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { loginUser } from '@/backend/auth/loginUser'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { redirect } from 'next/navigation'
 
-vi.mock('@/helper/SupabaseClient', () => ({
-    supabase: {
+vi.mock('@/helper/supabase/server', () => {
+    const client = {
         auth: {
             signInWithPassword: vi.fn(),
         },
         from: vi.fn(),
-    },
-}))
+    }
+    return { default: client, supabase: client, createClient: () => client }
+})
 
+
+const supabase = createClient() as any
 describe('loginUser Server Action', () => {
     beforeEach(() => {
         vi.clearAllMocks()

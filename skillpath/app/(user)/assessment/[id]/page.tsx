@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import { AssessmentRunner } from "@/frontend/user/components/assessment-runner";
 import { InitialAssessmentRunner } from "@/frontend/user/components/initial-assessment-runner";
 import { isInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export default async function AssessmentPage({ params }: { params: Promise<{ id: string }> }) {
+    const supabase = await createClient();
+
     const { id } = await params;
     const assessmentId = Number(id);
 

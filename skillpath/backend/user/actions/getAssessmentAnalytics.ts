@@ -1,10 +1,12 @@
 "use server"
 
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {redirect} from "next/navigation";
 import {getCompletedTests} from "@/backend/user/getTests";
 
 async function getAuthenticatedUser() {
+    const supabase = await createClient();
+
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) redirect("/");
 
@@ -19,6 +21,8 @@ async function getAuthenticatedUser() {
 }
 
 export async function getAssessmentAnalytics() {
+    const supabase = await createClient();
+
     const dbUser = await getAuthenticatedUser();
 
     // // 1. Preluăm TOATE testele completate ale userului
@@ -149,6 +153,8 @@ export async function getAssessmentAnalytics() {
 
 // Action pentru bifarea / debifarea resurselor parcurse
 export async function toggleResourceCompletion(resourceId: number, isCompleted: boolean) {
+    const supabase = await createClient();
+
     const dbUser = await getAuthenticatedUser();
 
     const { error } = await supabase

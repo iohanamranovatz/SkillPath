@@ -1,9 +1,11 @@
 "use server";
 
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import { WeakCategory } from "@/frontend/admin/lib/types";
 
 export async function getWeakCategories(userId?: number): Promise<WeakCategory[]> {
+    const supabase = await createClient();
+
     let query = supabase
         .from("assessment_answers")
         .select(`

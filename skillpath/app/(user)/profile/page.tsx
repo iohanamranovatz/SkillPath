@@ -1,10 +1,12 @@
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {ProfileView} from "@/frontend/user/components/profile-view";
 import {redirect} from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
+    const supabase = await createClient();
+
     const { data: authData } = await supabase.auth.getUser();
 
     if (!authData.user) {

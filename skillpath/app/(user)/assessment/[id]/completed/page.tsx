@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import { AssessmentViewer} from "@/frontend/user/components/assessmen-viewer";
 import { isInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export default async function AssessmentResultsPage({ params }: { params: Promise<{ id: string }> }) {
+    const supabase = await createClient();
+
     const { id } = await params;
     const assessmentId = Number(id);
 

@@ -1,8 +1,10 @@
 "use server"
 
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 
 export async function getAssessmentAnalytics(assessmentId: number) {
+    const supabase = await createClient();
+
     // iau raspunsurile salvate impreuna cu tag-ul intrebarii
     // !inner = inner join
     const { data: answers, error } = await supabase
@@ -92,6 +94,8 @@ export async function getAssessmentAnalytics(assessmentId: number) {
 }
 
 export async function getLatestAssessmentAnalytics() {
+    const supabase = await createClient();
+
     // preiau sesiunea utilizatorului logat direct din Supabase
     const { data: { user } } = await supabase.auth.getUser();
 

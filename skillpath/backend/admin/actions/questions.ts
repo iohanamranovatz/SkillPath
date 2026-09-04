@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { Question, Option } from "@/frontend/admin/lib/types";
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 
 export type ActionResponse<T = any> = {
     success: boolean;
@@ -18,6 +18,8 @@ function validateAnswers(correctAnswerId: string | string[], options: Option[]):
 }
 
 export async function getQuestions(): Promise<ActionResponse<Question[]>> {
+    const supabase = await createClient();
+
     try {
         const { data, error } = await supabase
             .from("questions")
@@ -52,6 +54,8 @@ export async function getQuestions(): Promise<ActionResponse<Question[]>> {
 }
 
 export async function createQuestion(payload: Omit<Question, "id">): Promise<ActionResponse<Question>> {
+    const supabase = await createClient();
+
     try {
         const validationError = validateAnswers(payload.correctAnswersId, payload.options);
         if (validationError) return { success: false, error: validationError };
@@ -89,6 +93,8 @@ export async function createQuestion(payload: Omit<Question, "id">): Promise<Act
 }
 
 export async function updateQuestion(questionId: string, payload: Partial<Question>): Promise<ActionResponse<Question>> {
+    const supabase = await createClient();
+
     try {
         if (payload.correctAnswersId !== undefined && payload.options !== undefined) {
             const validationError = validateAnswers(payload.correctAnswersId, payload.options);
@@ -134,6 +140,8 @@ export async function updateQuestion(questionId: string, payload: Partial<Questi
 }
 
 export async function deleteQuestion(questionId: string): Promise<ActionResponse> {
+    const supabase = await createClient();
+
     try {
         const { error } = await supabase
             .from("questions")
@@ -150,6 +158,8 @@ export async function deleteQuestion(questionId: string): Promise<ActionResponse
 }
 
 export async function getAllCategories(): Promise<string[]> {
+    const supabase = await createClient();
+
     try {
         const { data, error } = await supabase
             .from("categories")

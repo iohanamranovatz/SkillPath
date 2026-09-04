@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {AssessmentViewer} from "@/frontend/admin/ManageUsers/assessment-viewer";
@@ -17,6 +17,8 @@ type AdminAssessmentPageProps = {
 };
 
 export default async function AdminAssessmentResultsPage({ params }: AdminAssessmentPageProps) {
+    const supabase = await createClient();
+
     const { id, assessmentId: rawAssessmentId } = await params;
     const userId = Number(id);
     const assessmentId = Number(rawAssessmentId);

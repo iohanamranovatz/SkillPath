@@ -1,7 +1,6 @@
 "use server";
 
-import { supabase } from "@/helper/SupabaseClient";
-
+import { createClient } from "@/helper/supabase/server";
 const PASS_SCORE = 75; // scorul minim ca un test sa "conteze"
 
 const rankOrder: Record<string, number> = {
@@ -13,6 +12,8 @@ const rankOrder: Record<string, number> = {
 // Reevalueaza nivelul userului pe baza testelor trecute (>= 75%) si a
 // numarului de categorii distincte acoperite. Consistenta pe latime, nu un varf.
 export async function evaluateUserLevel(userId: number) {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from("assessments")
         .select("id, score_total, estimated_level, assessment_answers ( questions ( category_id ) )")

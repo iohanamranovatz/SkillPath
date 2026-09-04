@@ -1,4 +1,4 @@
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {INITIAL_ASSESSMENT_QUESTION_COUNT} from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 import {getTests} from "@/backend/user/getTests";
 
@@ -7,6 +7,8 @@ const QUESTIONS_PER_DIFFICULTY = 10;
 const categoryCursors = new Map<string, number>();
 
 async function getMasteredQuestionIds(userId: number) {
+    const supabase = await createClient();
+
     const { data, error } = await supabase
         .from('assessment_answers')
         .select('question_id, assessments!inner(user_id)')
@@ -25,6 +27,8 @@ async function pickQuestion(
     categoryId: number,
     excludeIds: number[]
 ) {
+    const supabase = await createClient();
+
     // Construim query-ul de fiecare data de la zero: optiunile de count/head
     // se dau DOAR la primul .select(), nu se pot re-aplica pe builder-ul deja transformat.
     const buildQuery = (options?: { count: 'exact'; head?: boolean }) => {
@@ -62,6 +66,8 @@ async function pickQuestion(
 }
 
 export async function buildAssessmentQuestions(userId: number) {
+    const supabase = await createClient();
+
     // categories.difficulty defines the 3 tiers we care about here.
     const { data: categories, error: categoriesError } = await supabase
         .from('categories')
@@ -124,6 +130,8 @@ export async function buildAssessmentQuestions(userId: number) {
 
 export async function createInitialAssessment(userId: number
 ) {
+    const supabase = await createClient();
+
     const questions = await buildAssessmentQuestions( userId);
 
     if (questions.length === 0) {
@@ -167,6 +175,8 @@ export async function createInitialAssessment(userId: number
 
 async function verifyAnswers(answers: { questionId: number; optionId: string }[]
 ): Promise<Map<number, boolean>> {
+    const supabase = await createClient();
+
     const questionIds = answers.map((a) => a.questionId);
 
     const { data: questions, error } = await supabase
@@ -196,6 +206,8 @@ export async function submitInitialAssessment(
     assessmentId: number,
     answers: { questionId: number; optionId: string }[]
 ): Promise<number[]> {
+    const supabase = await createClient();
+
     // 1. Verify correctness.
     const correctnessByQuestionId = await verifyAnswers(answers);
 
