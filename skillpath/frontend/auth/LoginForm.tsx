@@ -95,7 +95,7 @@ export function LoginForm() {
 
         {/* Footer links */}
         <div className="mt-8 pt-6 border-t border-gray-800 text-center flex flex-col gap-3">
-          <a href="/forgotPassword" className="text-sm text-[#6B72E1] hover:text-white transition-colors">
+          <a href="/forgot-password" className="text-sm text-[#6B72E1] hover:text-white transition-colors">
             Forgot your password?
           </a>
           <p className="text-sm text-gray-400">
