@@ -25,8 +25,8 @@ export async function requestPasswordReset(email: string) {
     });
 
     if (error) {
-        return { success: false, message: error.message };
+        return { success: false, message:  "Supabase password reset error" + error.message };
     }
 
-    return { success: true };
+    return { success: true, message: "Password updated successgfully" };
 }
