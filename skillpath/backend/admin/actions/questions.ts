@@ -10,9 +10,9 @@ export type ActionResponse<T = any> = {
     error?: string;
 };
 
-// O intrebare are exact UN raspuns corect: corectarea din submitAssessment
-// compara correct_answer cu optiunea aleasa de user, deci mai multe valori
-// ("a,b") ar face intrebarea imposibil de nimerit.
+// A question has exactly ONE correct answer: the grading in submitAssessment
+// compares correct_answer with the option chosen by the user, so several values
+// ("a,b") would make the question impossible to get right.
 function validateAnswers(correctAnswerId: string | string[], options: Option[]): string | null {
     const selected = (Array.isArray(correctAnswerId) ? correctAnswerId : String(correctAnswerId ?? "").split(","))
         .map((id) => id.trim())
@@ -27,7 +27,7 @@ function validateAnswers(correctAnswerId: string | string[], options: Option[]):
     return null;
 }
 
-// Valoarea salvata in DB trebuie sa fie un singur id, curatat de spatii.
+// The value stored in the DB must be a single id, trimmed of whitespace.
 function normalizeCorrectAnswer(correctAnswerId: string | string[] | undefined): string {
     return (Array.isArray(correctAnswerId) ? correctAnswerId[0] : String(correctAnswerId ?? "").split(",")[0] ?? "").trim();
 }
@@ -57,7 +57,7 @@ export async function getQuestions(): Promise<ActionResponse<Question[]>> {
 
             difficulty: row.difficulty,
             options: row.options,
-            // intrebarile vechi pot avea mai multe valori salvate -> luam doar prima
+            // legacy questions may have several stored values -> take only the first
             correctAnswersId: normalizeCorrectAnswer(row.correct_answer),
             isActive: row.is_active
         }));

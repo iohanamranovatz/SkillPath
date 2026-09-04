@@ -43,7 +43,7 @@ export function TagsManager({
         const res = await addTag({ categoryId, name: newName });
         setBusy(false);
         if (res.success) { setNewName(""); await refresh(); }
-        else setError(res.message ?? "Eroare.");
+        else setError(res.message ?? "Something went wrong.");
     }
 
     async function handleSaveEdit(id: number) {
@@ -51,7 +51,7 @@ export function TagsManager({
         const res = await updateTag({ id, name: editName });
         setBusy(false);
         if (res.success) { setEditId(null); await refresh(); }
-        else setError(res.message ?? "Eroare.");
+        else setError(res.message ?? "Something went wrong.");
     }
 
     async function handleDelete(id: number) {
@@ -59,7 +59,7 @@ export function TagsManager({
         const res = await deleteTag(id);
         setBusy(false);
         if (res.success) await refresh();
-        else setError(res.message ?? "Eroare.");
+        else setError(res.message ?? "Something went wrong.");
     }
 
     return (
@@ -69,7 +69,7 @@ export function TagsManager({
                 <input
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
-                    placeholder="Nume tag…"
+                    placeholder="Tag name…"
                     className="h-10 rounded-lg border border-white/10 bg-transparent px-3 search-input-modern"
                 />
                 <button
@@ -129,7 +129,7 @@ export function TagsManager({
                     )}
                 </div>
             ) : (
-                <p className="text-sm text-muted-foreground">Nicio etichetă încă.</p>
+                <p className="text-sm text-muted-foreground">No tags yet.</p>
             )}
         </div>
     );

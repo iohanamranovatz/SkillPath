@@ -14,13 +14,13 @@ vi.mock('@/helper/supabase/server', () => {
 
 const supabase = createClient() as any
 const ANSWERS = [
-    // React: 1 din 3 corecte -> 33% (zona slaba)
+    // React: 1 out of 3 correct -> 33% (weak area)
     { is_correct: true, questions: { tag_id: 1, tags: { id: 1, name: 'React' } } },
     { is_correct: false, questions: { tag_id: 1, tags: { id: 1, name: 'React' } } },
     { is_correct: false, questions: { tag_id: 1, tags: { id: 1, name: 'React' } } },
-    // SQL: 1 din 1 corect -> 100%
+    // SQL: 1 out of 1 correct -> 100%
     { is_correct: true, questions: { tag_id: 2, tags: { id: 2, name: 'SQL' } } },
-    // randuri fara tag -> ignorate
+    // rows without a tag -> ignored
     { is_correct: false, questions: null },
     { is_correct: false, questions: { tag_id: 3, tags: null } },
 ]
@@ -30,7 +30,7 @@ describe('backend/user/results/getAssessmentAnalytics', () => {
         vi.clearAllMocks()
     })
 
-    it('identifica zonele slabe (sub 60%) si resursele aferente', async () => {
+    it('identifies the weak areas (below 60%) and their resources', async () => {
         const queries = mockFrom(supabase.from, {
             assessment_answers: { data: ANSWERS, error: null },
             learning_resources: {
@@ -47,7 +47,7 @@ describe('backend/user/results/getAssessmentAnalytics', () => {
         expect(queries.learning_resources[0].in).toHaveBeenCalledWith('tag_id', [1])
     })
 
-    it('nu cauta resurse cand nu exista zone slabe', async () => {
+    it('does not look for resources when there are no weak areas', async () => {
         const queries = mockFrom(supabase.from, {
             assessment_answers: {
                 data: [{ is_correct: true, questions: { tag_id: 2, tags: { id: 2, name: 'SQL' } } }],
@@ -62,7 +62,7 @@ describe('backend/user/results/getAssessmentAnalytics', () => {
         expect(queries.learning_resources).toBeUndefined()
     })
 
-    it('returneaza lista goala de resurse cand query-ul nu intoarce nimic', async () => {
+    it('returns an empty resource list when the query returns nothing', async () => {
         mockFrom(supabase.from, {
             assessment_answers: { data: ANSWERS, error: null },
             learning_resources: { data: null, error: null },
@@ -73,7 +73,7 @@ describe('backend/user/results/getAssessmentAnalytics', () => {
         expect(result.recommendedResources).toEqual([])
     })
 
-    it('semnaleaza eroarea de interogare', async () => {
+    it('reports the query error', async () => {
         mockFrom(supabase.from, {
             assessment_answers: { data: null, error: { message: 'db error' } },
         })
@@ -89,7 +89,7 @@ describe('backend/user/results/getLatestAssessmentAnalytics', () => {
         vi.clearAllMocks()
     })
 
-    it('returneaza date goale cand nu exista utilizator autentificat', async () => {
+    it('returns empty data when there is no authenticated user', async () => {
         vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null } } as any)
 
         const result = await getLatestAssessmentAnalytics()
@@ -98,7 +98,7 @@ describe('backend/user/results/getLatestAssessmentAnalytics', () => {
         expect(supabase.from).not.toHaveBeenCalled()
     })
 
-    it('returneaza date goale cand userul nu are teste finalizate', async () => {
+    it('returns empty data when the user has no completed tests', async () => {
         vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: { id: 'u1' } } } as any)
         mockFrom(supabase.from, { assessments: { data: null, error: null } })
 
@@ -107,7 +107,7 @@ describe('backend/user/results/getLatestAssessmentAnalytics', () => {
         expect(result).toEqual({ weakAreas: [], recommendedResources: [], stats: null })
     })
 
-    it('deleaga analiza catre ultimul test completat', async () => {
+    it('delegates the analysis to the latest completed test', async () => {
         vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: { id: 'u1' } } } as any)
         const queries = mockFrom(supabase.from, {
             assessments: { data: { id: 42 }, error: null },

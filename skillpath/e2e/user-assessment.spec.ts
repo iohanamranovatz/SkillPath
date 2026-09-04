@@ -3,11 +3,11 @@ import { hasUserCredentials, MISSING_USER_CREDENTIALS } from './credentials'
 import { logInAs } from './session'
 
 /**
- * Fluxul complet al unui test de evaluare, de la generare pana la rezultate.
+ * The full flow of an assessment, from generation to results.
  *
- * ATENTIE: acest fisier SCRIE in baza de date (creeaza un assessment si
- * raspunsurile lui, si poate schimba nivelul estimat al userului). De aceea
- * trebuie rulat doar cu un cont de test dedicat.
+ * WARNING: this file WRITES to the database (it creates an assessment and its
+ * answers, and it may change the estimated level of the user). That is why it
+ * must only be run with a dedicated test account.
  */
 
 test.skip(!hasUserCredentials(), MISSING_USER_CREDENTIALS)
@@ -16,7 +16,7 @@ test.beforeEach(async ({ page }) => {
     await logInAs(page, 'user')
 })
 
-test('genereaza un test, raspunde la toate intrebarile si vede scorul', async ({ page }) => {
+test('generates a test, answers every question and sees the score', async ({ page }) => {
     await page.goto('/assessment/new')
     await expect(page.getByRole('heading', { name: 'Start a new test' })).toBeVisible()
 
@@ -26,7 +26,7 @@ test('genereaza un test, raspunde la toate intrebarile si vede scorul', async ({
         'nu exista categorii pentru nivelul contului de test'
     )
 
-    // alegem prima categorie disponibila si pornim testul
+    // pick the first available category and start the test
     const startButton = page.getByRole('button', { name: 'Start test' })
     await expect(startButton).toBeDisabled()
 
@@ -34,7 +34,7 @@ test('genereaza un test, raspunde la toate intrebarile si vede scorul', async ({
     await expect(startButton).toBeEnabled()
     await startButton.click()
 
-    // suntem pe pagina testului generat
+    // we are on the page of the generated test
     await expect(page).toHaveURL(/\/assessment\/\d+$/, { timeout: 30_000 })
     await expect(page.getByRole('heading', { name: 'Test', exact: true })).toBeVisible()
 
@@ -42,17 +42,17 @@ test('genereaza un test, raspunde la toate intrebarile si vede scorul', async ({
     const questionCount = await questionCards.count()
     expect(questionCount).toBeGreaterThan(0)
 
-    // raspundem la fiecare intrebare cu prima varianta
+    // answer every question with the first option
     for (let i = 0; i < questionCount; i++) {
         await questionCards.nth(i).locator('button').first().click()
     }
 
-    // auto-save-ul confirma salvarea in fundal
+    // the auto-save confirms the background save
     await expect(page.getByText('Saving...')).toBeHidden({ timeout: 20_000 })
 
     await page.getByRole('button', { name: /Trimite|Finalizeaz|Submit/i }).click()
 
-    // ecranul de rezultat
+    // the result screen
     await expect(page.getByRole('heading', { name: 'Test finalizat!' })).toBeVisible({
         timeout: 30_000,
     })
@@ -64,7 +64,7 @@ test('genereaza un test, raspunde la toate intrebarile si vede scorul', async ({
     await expect(page).toHaveURL(/\/userDashboard/)
 })
 
-test('un test finalizat poate fi revizuit din lista de teste', async ({ page }) => {
+test('a completed test can be reviewed from the test list', async ({ page }) => {
     await page.goto('/userDashboard')
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Tests' })
@@ -85,7 +85,7 @@ test('un test finalizat poate fi revizuit din lista de teste', async ({ page }) 
     await expect(page).toHaveURL(/\/userDashboard/)
 })
 
-test('rezultatele arata scorul pe categorii si resursele recomandate', async ({ page }) => {
+test('the results show the score per category and the recommended resources', async ({ page }) => {
     await page.goto('/userDashboard')
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Results' })
@@ -99,7 +99,7 @@ test('rezultatele arata scorul pe categorii si resursele recomandate', async ({ 
     await expect(page.getByRole('heading', { name: 'Score per Category' })).toBeVisible()
 })
 
-test('un test in desfasurare nu poate fi accesat prin ruta de rezultate', async ({ page }) => {
+test('a test in progress cannot be accessed through the results route', async ({ page }) => {
     await page.goto('/userDashboard')
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Tests' })
@@ -114,6 +114,6 @@ test('un test in desfasurare nu poate fi accesat prin ruta de rezultate', async 
     const assessmentId = page.url().match(/\/assessment\/(\d+)/)![1]
     await page.goto(`/assessment/${assessmentId}/completed`)
 
-    // pagina de rezultate redirectioneaza inapoi la test
+    // the results page redirects back to the test
     await expect(page).toHaveURL(new RegExp(`/assessment/${assessmentId}$`))
 })

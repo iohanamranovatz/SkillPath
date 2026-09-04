@@ -18,14 +18,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from '@/fr
 import { cn } from '@/frontend/user/lib/utils'
 
 describe('frontend/user/lib/utils', () => {
-    it('combina clasele si rezolva conflictele Tailwind', () => {
+    it('merges the classes and resolves Tailwind conflicts', () => {
         expect(cn('px-2', 'px-4')).toBe('px-4')
         expect(cn('text-sm', false && 'hidden', undefined, 'font-bold')).toBe('text-sm font-bold')
     })
 })
 
-describe('componente comune (user)', () => {
-    it('Avatar randeaza fallback-ul, badge-ul si grupul', () => {
+describe('shared components (user)', () => {
+    it('Avatar renders the fallback, the badge and the group', () => {
         render(
             <AvatarGroup>
                 <Avatar size="lg">
@@ -68,7 +68,7 @@ describe('componente comune (user)', () => {
         }
     )
 
-    it('Card randeaza toate sub-componentele', () => {
+    it('Card renders all its sub-components', () => {
         render(
             <Card size="sm">
                 <CardHeader>
@@ -86,7 +86,7 @@ describe('componente comune (user)', () => {
         })
     })
 
-    it('Progress randeaza eticheta si valoarea', () => {
+    it('Progress renders the label and the value', () => {
         const { container } = render(
             <Progress value={40}>
                 <ProgressLabel>Progres</ProgressLabel>
@@ -104,7 +104,7 @@ describe('componente comune (user)', () => {
         expect(container.querySelector('[data-slot="separator"]')).toBeTruthy()
     })
 
-    it('Tabs afiseaza panoul activ', () => {
+    it('Tabs shows the active panel', () => {
         render(
             <Tabs defaultValue="a">
                 <TabsList>

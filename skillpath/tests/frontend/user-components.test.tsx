@@ -34,7 +34,7 @@ describe('DifficultyBadge', () => {
 })
 
 describe('PageHeading', () => {
-    it('afiseaza titlul, descrierea si actiunea optionala', () => {
+    it('shows the title, the description and the optional action', () => {
         render(<PageHeading title="Tests" description="Descriere" action={<button>Nou</button>} />)
 
         expect(screen.getByRole('heading', { name: 'Tests' })).toBeTruthy()
@@ -42,7 +42,7 @@ describe('PageHeading', () => {
         expect(screen.getByRole('button', { name: 'Nou' })).toBeTruthy()
     })
 
-    it('functioneaza si fara actiune', () => {
+    it('works without an action as well', () => {
         render(<PageHeading title="Results" description="Fara actiune" />)
 
         expect(screen.queryByRole('button')).toBeNull()
@@ -50,14 +50,14 @@ describe('PageHeading', () => {
 })
 
 describe('GreetingHeader', () => {
-    it('saluta userul cu prenumele si afiseaza nivelul', () => {
+    it('greets the user by first name and shows the level', () => {
         render(<GreetingHeader name="Ana Maria Pop" level="Intermediate" />)
 
         expect(screen.getByText('Welcome back, Ana')).toBeTruthy()
         expect(screen.getByText('Intermediate')).toBeTruthy()
     })
 
-    it('apeleaza callback-urile primite pe cele doua butoane', () => {
+    it('calls the received callbacks on the two buttons', () => {
         const viewProgress = vi.fn()
         const startTest = vi.fn()
         render(<GreetingHeader name="Ana" level="Beginner" onStart={[viewProgress, startTest]} />)
@@ -71,7 +71,7 @@ describe('GreetingHeader', () => {
 })
 
 describe('StatCards', () => {
-    it('afiseaza statisticile si primele trei obiective', () => {
+    it('shows the stats and the first three objectives', () => {
         render(
             <StatCards
                 testsCompleted={12}
@@ -91,7 +91,7 @@ describe('StatCards', () => {
         expect(screen.queryByText('Al patrulea')).toBeNull()
     })
 
-    it('afiseaza mesajul gol cand nu exista obiective', () => {
+    it('shows the empty message when there are no objectives', () => {
         render(<StatCards testsCompleted={0} problemsSolved={0} />)
 
         expect(screen.getByText('No objectives set right now.')).toBeTruthy()
@@ -110,13 +110,13 @@ describe('ContinueCard', () => {
         progress: '30%',
     }
 
-    it('nu randeaza nimic fara test in desfasurare', () => {
+    it('renders nothing without a test in progress', () => {
         const { container } = render(<ContinueCard />)
 
         expect(container.firstChild).toBeNull()
     })
 
-    it('afiseaza progresul si numarul de intrebari ramase', () => {
+    it('shows the progress and the number of remaining questions', () => {
         render(<ContinueCard test={test} />)
 
         expect(screen.getByText('Frontend')).toBeTruthy()
@@ -124,7 +124,7 @@ describe('ContinueCard', () => {
         expect(screen.getByText('30%')).toBeTruthy()
     })
 
-    it('navigheaza la test la apasarea butonului Resume', () => {
+    it('navigates to the test when the Resume button is pressed', () => {
         render(<ContinueCard test={test} />)
 
         fireEvent.click(screen.getByRole('button', { name: /Resume/ }))
@@ -132,7 +132,7 @@ describe('ContinueCard', () => {
         expect(router.push).toHaveBeenCalledWith('/assessment/7')
     })
 
-    it('foloseste id-ul testului cand nu exista categorii', () => {
+    it('uses the test id when there are no categories', () => {
         render(<ContinueCard test={{ ...test, categories: [], progress: null }} />)
 
         expect(screen.getByText('Assessment #7')).toBeTruthy()
@@ -141,7 +141,7 @@ describe('ContinueCard', () => {
 })
 
 describe('RecentResults', () => {
-    it('afiseaza mesajul gol fara rezultate', () => {
+    it('shows the empty message when there are no results', () => {
         render(<RecentResults />)
 
         expect(screen.getByText(/No results yet/)).toBeTruthy()
@@ -166,7 +166,7 @@ describe('RecentResults', () => {
 })
 
 describe('RecommendedResources', () => {
-    it('afiseaza mesajul gol fara recomandari', () => {
+    it('shows the empty message when there are no recommendations', () => {
         render(<RecommendedResources />)
 
         expect(screen.getByText(/No recommendations yet/)).toBeTruthy()
@@ -188,7 +188,7 @@ describe('RecommendedResources', () => {
         }
     )
 
-    it('scrie tipul cu prima litera mare', () => {
+    it('capitalizes the type', () => {
         render(
             <RecommendedResources
                 resources={[{ id: 1, title: 'Ghid', type: 'VIDEO', url: 'u', reason: 'r' }]}
@@ -198,7 +198,7 @@ describe('RecommendedResources', () => {
         expect(screen.getByText('Video')).toBeTruthy()
     })
 
-    it('afiseaza "Resource" cand tipul lipseste', () => {
+    it('shows "Resource" when the type is missing', () => {
         render(
             <RecommendedResources
                 resources={[{ id: 1, title: 'Ghid', type: '', url: 'u', reason: 'r' }]}
@@ -209,27 +209,27 @@ describe('RecommendedResources', () => {
     })
 })
 
-describe('ScoreChart si SkillRadar', () => {
-    it('ScoreChart afiseaza starea goala', () => {
+describe('ScoreChart and SkillRadar', () => {
+    it('ScoreChart shows the empty state', () => {
         render(<ScoreChart />)
 
         expect(screen.getByText(/Complete a test to see your score history/)).toBeTruthy()
     })
 
-    it('ScoreChart randeaza graficul cand exista date', () => {
+    it('ScoreChart renders the chart when there is data', () => {
         render(<ScoreChart data={[{ month: 'Jan', score: 70 }]} />)
 
         expect(screen.getByText('Average score over time')).toBeTruthy()
         expect(screen.queryByText(/Complete a test/)).toBeNull()
     })
 
-    it('SkillRadar afiseaza starea goala', () => {
+    it('SkillRadar shows the empty state', () => {
         render(<SkillRadar />)
 
         expect(screen.getByText('Your performance across categories')).toBeTruthy()
     })
 
-    it('SkillRadar evidentiaza cea mai buna si cea mai slaba categorie', () => {
+    it('SkillRadar highlights the best and the weakest category', () => {
         render(
             <SkillRadar
                 data={[
@@ -245,7 +245,7 @@ describe('ScoreChart si SkillRadar', () => {
 })
 
 describe('Sidebar', () => {
-    it('marcheaza vizualizarea activa si schimba vizualizarea la click', () => {
+    it('marks the active view and switches the view on click', () => {
         const onViewChange = vi.fn()
         const onClose = vi.fn()
         render(
@@ -259,7 +259,7 @@ describe('Sidebar', () => {
         expect(onViewChange).toHaveBeenCalledWith('Results')
     })
 
-    it('afiseaza overlay-ul pe mobil si il inchide', () => {
+    it('shows the overlay on mobile and closes it', () => {
         const onClose = vi.fn()
         render(
             <Sidebar activeView="Tests" onViewChange={vi.fn()} mobileOpen onClose={onClose} />
@@ -276,7 +276,7 @@ describe('Sidebar', () => {
 describe('Topbar', () => {
     const data = { name: 'ana pop', email: 'ana@test.com' }
 
-    it('afiseaza initiala, numele si emailul', () => {
+    it('shows the initial, the name and the email', () => {
         render(<Topbar data={data} onMenuOpen={vi.fn()} />)
 
         expect(screen.getByText('A')).toBeTruthy()
@@ -284,7 +284,7 @@ describe('Topbar', () => {
         expect(screen.getByText('ana@test.com')).toBeTruthy()
     })
 
-    it('deschide meniul mobil', () => {
+    it('opens the mobile menu', () => {
         const onMenuOpen = vi.fn()
         render(<Topbar data={data} onMenuOpen={onMenuOpen} />)
 
@@ -293,7 +293,7 @@ describe('Topbar', () => {
         expect(onMenuOpen).toHaveBeenCalled()
     })
 
-    it('deschide dropdown-ul si face sign out', () => {
+    it('opens the dropdown and signs out', () => {
         render(<Topbar data={data} onMenuOpen={vi.fn()} />)
 
         expect(screen.queryByText('Sign out')).toBeNull()
@@ -305,7 +305,7 @@ describe('Topbar', () => {
         expect(screen.queryByText('Sign out')).toBeNull()
     })
 
-    it('inchide dropdown-ul la click in afara', () => {
+    it('closes the dropdown on an outside click', () => {
         render(<Topbar data={data} onMenuOpen={vi.fn()} />)
 
         fireEvent.click(screen.getByRole('button', { name: 'User menu' }))
@@ -318,7 +318,7 @@ describe('Topbar', () => {
 })
 
 describe('Pagination', () => {
-    it('afiseaza intervalul de elemente si paginile', () => {
+    it('shows the item range and the pages', () => {
         render(
             <Pagination currentPage={2} totalPages={3} totalItems={14} itemsPerPage={6} onPageChange={vi.fn()} />
         )
@@ -327,7 +327,7 @@ describe('Pagination', () => {
         expect(screen.getByText('Page 2 of 3')).toBeTruthy()
     })
 
-    it('navigheaza inainte si inapoi', () => {
+    it('navigates forward and backward', () => {
         const onPageChange = vi.fn()
         render(
             <Pagination currentPage={2} totalPages={3} totalItems={14} itemsPerPage={6} onPageChange={onPageChange} />
@@ -340,7 +340,7 @@ describe('Pagination', () => {
         expect(onPageChange).toHaveBeenCalledWith(3)
     })
 
-    it('dezactiveaza butoanele la limite si afiseaza 0 elemente', () => {
+    it('disables the buttons at the limits and shows 0 items', () => {
         render(
             <Pagination currentPage={1} totalPages={0} totalItems={0} itemsPerPage={6} onPageChange={vi.fn()} />
         )
@@ -352,7 +352,7 @@ describe('Pagination', () => {
 })
 
 describe('SearchBar', () => {
-    it('transmite textul cautat', () => {
+    it('passes the searched text', () => {
         const onChange = vi.fn()
         render(<SearchBar value="" onChange={onChange} />)
 
@@ -361,7 +361,7 @@ describe('SearchBar', () => {
         expect(onChange).toHaveBeenCalledWith('react')
     })
 
-    it('afiseaza butonul de golire doar cand exista text', () => {
+    it('shows the clear button only when there is text', () => {
         const onChange = vi.fn()
         const { rerender } = render(<SearchBar value="" onChange={onChange} placeholder="Cauta" />)
 

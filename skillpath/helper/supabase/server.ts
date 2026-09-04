@@ -2,9 +2,9 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { cache } from "react";
 
-// Client Supabase pentru server (server components + server actions).
-// Sesiunea este citita/scrisa din cookies, nu din memoria procesului, ca sa
-// functioneze si pe serverless (Vercel), unde fiecare request poate cadea pe
+// Supabase client for the server (server components + server actions).
+// The session is read from / written to cookies, not process memory, so that
+// it also works on serverless (Vercel), where each request may land on
 // alta instanta.
 // cache() -> o singura instanta per request.
 export const createClient = cache(() =>
@@ -23,8 +23,8 @@ export const createClient = cache(() =>
                             cookieStore.set(name, value, options)
                         );
                     } catch {
-                        // apelat dintr-un Server Component - refresh-ul token-ului
-                        // este facut de middleware, deci putem ignora.
+                        // called from a Server Component - the token refresh
+                        // is handled by the middleware, so this can be ignored.
                     }
                 },
             },

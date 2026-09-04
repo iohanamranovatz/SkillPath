@@ -6,6 +6,7 @@ import QuestionPanel from "@/frontend/admin/Questions/panel";
 import { useMemo, useState } from "react";
 import { Question } from "@/frontend/admin/lib/types";
 import Pagination from "@/frontend/components/pagination";
+import AiGenerator from "@/frontend/admin/Questions/ai-generator";
 
 const ITEMS_PER_PAGE = 6;
 
@@ -52,9 +53,12 @@ export default function QuestionBankClient({ initialQuestions }: { initialQuesti
                         setCurrentPage(1);
                     }}
                 />
+
+                <AiGenerator />
+
                 <QuestionTable questions={paginatedQuestions} />
 
-                {/* Paginare */}
+                {/* Pagination */}
                 <Pagination
                     currentPage={currentPage}
                     totalPages={totalPages}

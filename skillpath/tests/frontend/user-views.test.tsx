@@ -65,7 +65,7 @@ describe('TestsView', () => {
         }))
     }
 
-    it('afiseaza filtrele derivate din categoriile testelor', () => {
+    it('shows the filters derived from the test categories', () => {
         render(<TestsView tests={makeTests(2)} id={1} initialOnboardingState={onboardingState} />)
 
         expect(screen.getByRole('button', { name: 'All tests' })).toBeTruthy()
@@ -73,7 +73,7 @@ describe('TestsView', () => {
         expect(screen.getByRole('button', { name: 'Completed' })).toBeTruthy()
     })
 
-    it('filtreaza dupa categorie si dupa teste finalizate', () => {
+    it('filters by category and by completed tests', () => {
         render(<TestsView tests={makeTests(4)} id={1} initialOnboardingState={onboardingState} />)
 
         fireEvent.click(screen.getByRole('button', { name: 'Backend' }))
@@ -83,7 +83,7 @@ describe('TestsView', () => {
         expect(screen.getAllByText('Completed').length).toBeGreaterThan(1)
     })
 
-    it('afiseaza mesajul gol cand filtrul nu are rezultate', () => {
+    it('shows the empty message when the filter has no results', () => {
         render(
             <TestsView
                 tests={[{ ...makeTests(1)[0], score: null, status: 'in_progress' }]}
@@ -96,7 +96,7 @@ describe('TestsView', () => {
         expect(screen.getByText('No tests in this category yet.')).toBeTruthy()
     })
 
-    it('pagineaza cate 4 teste', () => {
+    it('paginates 4 tests at a time', () => {
         render(<TestsView tests={makeTests(6)} id={1} initialOnboardingState={onboardingState} />)
 
         expect(screen.getByText('Page 1 of 2')).toBeTruthy()
@@ -111,7 +111,7 @@ describe('TestsView', () => {
         expect(screen.getByText('Page 1 of 2')).toBeTruthy()
     })
 
-    it('reseteaza pagina la schimbarea filtrului', () => {
+    it('resets the page when the filter changes', () => {
         render(<TestsView tests={makeTests(6)} id={1} initialOnboardingState={onboardingState} />)
 
         fireEvent.click(screen.getAllByRole('button').slice(-1)[0])
@@ -121,7 +121,7 @@ describe('TestsView', () => {
         expect(screen.getByText('Page 1 of 2')).toBeTruthy()
     })
 
-    it('navigheaza la test sau la rezultat, dupa caz', () => {
+    it('navigates to the test or to the result, as appropriate', () => {
         render(<TestsView tests={makeTests(2)} id={1} initialOnboardingState={onboardingState} />)
 
         fireEvent.click(screen.getByRole('button', { name: /Review/ }))
@@ -144,7 +144,7 @@ describe('ResourcesView', () => {
         category: i < 4 ? 'Frontend' : 'Backend',
     }))
 
-    it('afiseaza primele 6 resurse si pagineaza restul', () => {
+    it('shows the first 6 resources and paginates the rest', () => {
         render(<ResourcesView resources={resources} />)
 
         expect(screen.getByText('Resursa 1')).toBeTruthy()
@@ -156,7 +156,7 @@ describe('ResourcesView', () => {
         expect(screen.getByText('Resursa 7')).toBeTruthy()
     })
 
-    it('filtreaza dupa categorie sau titlu', () => {
+    it('filters by category or title', () => {
         render(<ResourcesView resources={resources} />)
 
         fireEvent.change(screen.getByRole('textbox'), { target: { value: 'backend' } })
@@ -165,7 +165,7 @@ describe('ResourcesView', () => {
         expect(screen.getByText('Resursa 5')).toBeTruthy()
     })
 
-    it('afiseaza mesajul gol cand nu exista potriviri', () => {
+    it('shows the empty message when there are no matches', () => {
         render(<ResourcesView resources={resources} />)
 
         fireEvent.change(screen.getByRole('textbox'), { target: { value: 'inexistent' } })
@@ -173,7 +173,7 @@ describe('ResourcesView', () => {
         expect(screen.getByText('No resources available found.')).toBeTruthy()
     })
 
-    it('functioneaza fara resurse', () => {
+    it('works without resources', () => {
         render(<ResourcesView />)
 
         expect(screen.getByText('No resources available found.')).toBeTruthy()
@@ -186,20 +186,20 @@ describe('NewTestForm', () => {
         { id: 2, name: 'Backend' },
     ]
 
-    it('anunta cand nu exista categorii disponibile', () => {
+    it('announces when there are no available categories', () => {
         render(<NewTestForm userId={5} categories={[]} userLevel="Beginner" />)
 
-        expect(screen.getByText(/Nu exista categorii/)).toBeTruthy()
+        expect(screen.getByText(/no categories for your level/i)).toBeTruthy()
         expect(screen.queryByRole('button', { name: 'Start test' })).toBeNull()
     })
 
-    it('cere alegerea unei categorii inainte de start', () => {
+    it('requires picking a category before starting', () => {
         render(<NewTestForm userId={5} categories={categories} userLevel="Beginner" />)
 
         expect((screen.getByRole('button', { name: 'Start test' }) as HTMLButtonElement).disabled).toBe(true)
     })
 
-    it('genereaza testul si navigheaza la el', async () => {
+    it('generates the test and navigates to it', async () => {
         vi.mocked(generateAssessment).mockResolvedValue({
             success: true,
             data: { assessmentId: 42, questions: [] },
@@ -213,7 +213,7 @@ describe('NewTestForm', () => {
         expect(generateAssessment).toHaveBeenCalledWith(5, 2)
     })
 
-    it('afiseaza eroarea returnata de server', async () => {
+    it('shows the error returned by the server', async () => {
         vi.mocked(generateAssessment).mockResolvedValue({
             success: false,
             message: 'Sorry, no questions found!',
@@ -228,7 +228,7 @@ describe('NewTestForm', () => {
         expect(router.push).not.toHaveBeenCalled()
     })
 
-    it('afiseaza un mesaj implicit cand serverul nu trimite unul', async () => {
+    it('shows a default message when the server does not send one', async () => {
         vi.mocked(generateAssessment).mockResolvedValue({ success: false, data: null } as any)
         render(<NewTestForm userId={5} categories={categories} userLevel="Beginner" />)
 
@@ -263,7 +263,7 @@ describe('AssessmentRunner', () => {
         },
     ]
 
-    it('afiseaza intrebarile numerotate cu variante etichetate A, B', () => {
+    it('shows the numbered questions with options labelled A, B', () => {
         render(<AssessmentRunner assessmentId={77} questions={questions} />)
 
         expect(screen.getByText('1. Ce este JSX?')).toBeTruthy()
@@ -271,7 +271,7 @@ describe('AssessmentRunner', () => {
         expect(screen.getByText('2 questions · answer them all.')).toBeTruthy()
     })
 
-    it('salveaza automat raspunsul dupa 1,5 secunde', async () => {
+    it('auto-saves the answer after 1.5 seconds', async () => {
         vi.useFakeTimers()
         try {
             render(<AssessmentRunner assessmentId={77} questions={questions} />)
@@ -291,7 +291,7 @@ describe('AssessmentRunner', () => {
         }
     })
 
-    it('trimite testul si afiseaza scorul final', async () => {
+    it('submits the test and shows the final score', async () => {
         vi.mocked(submitAssessment).mockResolvedValue({
             success: true,
             data: {
@@ -304,7 +304,7 @@ describe('AssessmentRunner', () => {
                 ],
                 level: 'Intermediate',
                 review: [
-                    // q1: a ales 'a', corect era 'b'
+                    // q1: picked 'a', the correct one was 'b'
                     { questionId: 1, selectedOptionId: 'a', correctOptionId: 'b', isCorrect: false },
                     // q2: a ales 'a', corect
                     { questionId: 2, selectedOptionId: 'a', correctOptionId: 'a', isCorrect: true },
@@ -321,10 +321,10 @@ describe('AssessmentRunner', () => {
         expect(screen.getByText('50%')).toBeTruthy()
         expect(screen.getByText('1 out of 2 correct')).toBeTruthy()
         expect(screen.getByText('Intermediate')).toBeTruthy()
-        // categoria sub 50% este marcata ca zona slaba
+        // the category below 50% is marked as a weak area
         expect(screen.getByText('40% · weak area')).toBeTruthy()
 
-        // rezultatul arata si intrebarile cu raspunsul corect
+        // the result also shows the questions with the correct answer
         expect(screen.getByText('Your answers')).toBeTruthy()
         expect(screen.getByText('Correct answer')).toBeTruthy()
         expect(screen.getByText('Your answer')).toBeTruthy()
@@ -333,7 +333,7 @@ describe('AssessmentRunner', () => {
         expect(router.push).toHaveBeenCalledWith('/userDashboard')
     })
 
-    it('afiseaza eroarea cand trimiterea esueaza', async () => {
+    it('shows the error when the submission fails', async () => {
         vi.mocked(submitAssessment).mockResolvedValue({
             success: false,
             message: 'Test invalid.',
@@ -376,7 +376,7 @@ describe('AssessmentViewer', () => {
         },
     ]
 
-    it('afiseaza scorul, detaliile si raspunsurile', () => {
+    it('shows the score, the details and the answers', () => {
         render(
             <AssessmentViewer
                 assessmentId={77}
@@ -393,7 +393,7 @@ describe('AssessmentViewer', () => {
         expect(screen.getByText('2. Ce este un hook?')).toBeTruthy()
     })
 
-    it('ascunde cardul de scor cand scorul lipseste', () => {
+    it('hides the score card when the score is missing', () => {
         render(
             <AssessmentViewer
                 assessmentId={77}
@@ -406,7 +406,7 @@ describe('AssessmentViewer', () => {
         expect(screen.queryByText('Final Score')).toBeNull()
     })
 
-    it('navigheaza inapoi la dashboard', () => {
+    it('navigates back to the dashboard', () => {
         render(
             <AssessmentViewer
                 assessmentId={77}
@@ -448,7 +448,7 @@ describe('ProfileView', () => {
         )
     }
 
-    it('afiseaza identitatea userului si initialele', () => {
+    it('shows the user identity and the initials', () => {
         renderProfile()
 
         expect(screen.getByText('AN')).toBeTruthy()
@@ -456,7 +456,7 @@ describe('ProfileView', () => {
         expect(screen.getByText('Intermediate')).toBeTruthy()
     })
 
-    it('salveaza numele si afiseaza mesajul serverului', async () => {
+    it('saves the name and shows the server message', async () => {
         vi.mocked(updateProfile).mockResolvedValue({
             success: true,
             message: 'Profile updated successfully.',
@@ -468,7 +468,7 @@ describe('ProfileView', () => {
         expect(await screen.findByText('Profile updated successfully.')).toBeTruthy()
     })
 
-    it('adauga un obiectiv nou', async () => {
+    it('adds a new objective', async () => {
         renderProfile()
 
         fireEvent.change(screen.getByPlaceholderText('e.g. Master React Hooks'), {
@@ -479,7 +479,7 @@ describe('ProfileView', () => {
         await waitFor(() => expect(addObjective).toHaveBeenCalledWith(5, 'Invat Docker'))
     })
 
-    it('ignora obiectivele goale', () => {
+    it('ignores empty objectives', () => {
         renderProfile()
 
         fireEvent.click(screen.getByRole('button', { name: /Add/ }))
@@ -487,7 +487,7 @@ describe('ProfileView', () => {
         expect(addObjective).not.toHaveBeenCalled()
     })
 
-    it('blocheaza adaugarea peste limita de 5 obiective', () => {
+    it('blocks adding beyond the limit of 5 objectives', () => {
         renderProfile({
             objectives: Array.from({ length: 5 }, (_, i) => ({
                 id: i + 1,
@@ -500,7 +500,7 @@ describe('ProfileView', () => {
         expect((screen.getByRole('button', { name: /Add/ }) as HTMLButtonElement).disabled).toBe(true)
     })
 
-    it('cauta si filtreaza obiectivele', () => {
+    it('searches and filters the objectives', () => {
         renderProfile()
 
         fireEvent.change(screen.getByPlaceholderText('Search objectives...'), {
@@ -527,19 +527,19 @@ describe('ProfileView', () => {
         expect(screen.queryByText(hidden)).toBeNull()
     })
 
-    it('afiseaza progresul obiectivelor', () => {
+    it('shows the objective progress', () => {
         renderProfile()
 
         expect(screen.getByText('50%')).toBeTruthy()
     })
 
-    it('anunta cand nu exista obiective', () => {
+    it('announces when there are no objectives', () => {
         renderProfile({ objectives: [] })
 
         expect(screen.getByText('No objectives added yet.')).toBeTruthy()
     })
 
-    it('bifeaza un obiectiv', () => {
+    it('ticks an objective', () => {
         const { container } = renderProfile()
 
         const checkButtons = container.querySelectorAll('.size-5')
@@ -548,18 +548,18 @@ describe('ProfileView', () => {
         expect(toggleObjective).toHaveBeenCalledWith(1, true)
     })
 
-    it('sterge obiectivul doar dupa confirmare', async () => {
+    it('deletes the objective only after confirmation', async () => {
         const { container } = renderProfile()
         const trashButtons = Array.from(container.querySelectorAll('button')).filter((b) =>
             b.className.includes('hover:text-red-400')
         )
 
-        // clickul pe cos doar deschide dialogul
+        // clicking the bin only opens the dialog
         fireEvent.click(trashButtons[0])
         expect(screen.getByText('Delete objective?')).toBeTruthy()
         expect(deleteObjective).not.toHaveBeenCalled()
 
-        // Cancel inchide dialogul fara sa stearga
+        // Cancel closes the dialog without deleting
         fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
         await waitFor(() => expect(screen.queryByText('Delete objective?')).toBeNull())
         expect(deleteObjective).not.toHaveBeenCalled()
@@ -569,7 +569,7 @@ describe('ProfileView', () => {
         await waitFor(() => expect(deleteObjective).toHaveBeenCalledWith(1))
     })
 
-    it('afiseaza doar 8 taguri si le extinde la cerere', () => {
+    it('shows only 8 tags and expands them on demand', () => {
         renderProfile()
 
         expect(screen.queryByText(/Tag9/)).toBeNull()
@@ -581,7 +581,7 @@ describe('ProfileView', () => {
         expect(screen.queryByText(/Tag9/)).toBeNull()
     })
 
-    it('comuta un tag de interes', () => {
+    it('toggles an interest tag', () => {
         renderProfile()
 
         fireEvent.click(screen.getByRole('button', { name: 'Tag2 +' }))
@@ -589,7 +589,7 @@ describe('ProfileView', () => {
         expect(toggleInterestTag).toHaveBeenCalledWith(5, 2, false)
     })
 
-    it('blocheaza selectarea peste limita de 5 taguri', () => {
+    it('blocks selecting beyond the limit of 5 tags', () => {
         renderProfile({ userInterestTagIds: [1, 2, 3, 4, 5] })
 
         expect(screen.getByText(/Maximum limit of 5 topics reached/)).toBeTruthy()
@@ -616,7 +616,7 @@ describe('ResultsView', () => {
         })),
     }
 
-    it('afiseaza starea de incarcare, apoi datele', async () => {
+    it('shows the loading state, then the data', async () => {
         vi.mocked(getAssessmentAnalytics).mockResolvedValue(analytics as any)
         render(<ResultsView />)
 
@@ -629,7 +629,7 @@ describe('ResultsView', () => {
         expect(screen.getByText('14%')).toBeTruthy()
     })
 
-    it('afiseaza mesajul gol cand analiza nu poate fi incarcata', async () => {
+    it('shows the empty message when the analytics cannot be loaded', async () => {
         const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         vi.mocked(getAssessmentAnalytics).mockRejectedValue(new Error('boom'))
         render(<ResultsView />)
@@ -638,7 +638,7 @@ describe('ResultsView', () => {
         consoleSpy.mockRestore()
     })
 
-    it('bifeaza o resursa parcursa', async () => {
+    it('ticks a completed resource', async () => {
         vi.mocked(getAssessmentAnalytics).mockResolvedValue(analytics as any)
         render(<ResultsView />)
         await screen.findByText('71%')
@@ -650,7 +650,7 @@ describe('ResultsView', () => {
         expect(screen.getByText(/Progress of Completed Resources \(2\/7\)/)).toBeTruthy()
     })
 
-    it('filtreaza resursele pe categorie si pagineaza', async () => {
+    it('filters the resources by category and paginates', async () => {
         vi.mocked(getAssessmentAnalytics).mockResolvedValue(analytics as any)
         render(<ResultsView />)
         await screen.findByText('71%')
@@ -665,7 +665,7 @@ describe('ResultsView', () => {
         expect(screen.getByText('Resursa 6')).toBeTruthy()
     })
 
-    it('nu afiseaza sectiunile optionale cand lipsesc datele', async () => {
+    it('does not show the optional sections when the data is missing', async () => {
         vi.mocked(getAssessmentAnalytics).mockResolvedValue({
             scoreTotal: 100,
             estimatedLevel: 'Advanced',

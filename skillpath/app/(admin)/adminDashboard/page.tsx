@@ -8,8 +8,8 @@ export default async function DashboardPage(){
     const supabase = await createClient();
 
     const { data } = await supabase.auth.getUser();
-    //verificam daca avem un user logat a.i nu poate fi accesata pagina daca 
-    //nu este user logat
+    // check that a user is logged in, so the page cannot be accessed if 
+    // no logged-in user
     if(!data.user)
             redirect('/');
     

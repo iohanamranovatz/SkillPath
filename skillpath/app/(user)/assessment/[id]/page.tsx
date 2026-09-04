@@ -13,7 +13,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) redirect("/");
 
-    // auth.getUser() da uuid-ul; luam id-ul bigint din tabela users
+    // auth.getUser() gives the uuid; take the bigint id from the users table
     const { data: dbUser } = await supabase
         .from("users")
         .select("id")
@@ -21,7 +21,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
         .single();
     if (!dbUser) redirect("/");
 
-    // luam testul si verificam ca apartine userului logat
+    // fetch the test and check that it belongs to the logged-in user
     const { data: assessment } = await supabase
         .from("assessments")
         .select("id, user_id, status")
@@ -30,10 +30,10 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
 
     if (!assessment || assessment.user_id !== dbUser.id) redirect("/userDashboard");
 
-    // daca e deja finalizat, nu-l lasam sa-l refaca (rezultatele = #7)
+    // if it is already completed, do not let them retake it (results = #7)
     if (assessment.status === "completed") redirect("/userDashboard");
 
-    // luam intrebarile testului din assessment_answers -> questions (FARA correct_answer!)
+    // load the test questions from assessment_answers -> questions (WITHOUT correct_answer!)
     const { data: rows } = await supabase
         .from("assessment_answers")
         .select("question_id, selected_option_id, questions ( question_text, difficulty, options )")
@@ -45,7 +45,7 @@ export default async function AssessmentPage({ params }: { params: Promise<{ id:
         question_text: r.questions?.question_text ?? "",
         difficulty: r.questions?.difficulty ?? "",
         options: Array.isArray(r.questions?.options) ? r.questions.options : [],
-        selectedOptionId: r.selected_option_id, // pt reluare (null pana la submit)
+        selectedOptionId: r.selected_option_id, // for resuming (null until submit)
     }));
     const initialAssessment = await isInitialAssessment(assessmentId);
 

@@ -3,7 +3,7 @@
 import { createClient } from "@/helper/supabase/server";
 import {Resource} from "@/frontend/user/lib/types";
 
-// --- Toate categoriile + numarul de intrebari (pentru lista principala)
+// --- All categories + the question count (for the main list)
 export async function getCategories() {
     const supabase = await createClient();
 
@@ -23,7 +23,7 @@ export async function getCategories() {
     return { success: true, data: categories };
 }
 
-// --- O categorie dupa id (pentru titlul paginii de detaliu) ---
+// --- A single category by id (for the detail page title) ---
 export async function getCategoryById(id: number | string) {
     const supabase = await createClient();
 
@@ -37,7 +37,7 @@ export async function getCategoryById(id: number | string) {
     return { success: true, data };
 }
 
-// --- Tagurile unei categorii (afisate + folosite în dropdown-ul de resurse) ---
+// --- The tags of a category (displayed + used in the resource dropdown) ---
 export async function getCategoryTags(categoryId: number | string) {
     const supabase = await createClient();
 
@@ -51,7 +51,7 @@ export async function getCategoryTags(categoryId: number | string) {
     return { success: true, data: data ?? [] };
 }
 
-// --- Resursele unei categorii (direct prin category_id) ---
+// --- The resources of a category (directly via category_id) ---
 export async function getResourcesFromCategory(categoryId: number | string) {
     const supabase = await createClient();
 
@@ -73,9 +73,9 @@ export async function getResourcesFromCategory(categoryId: number | string) {
     return { success: true, data: resources };
 }
 
-// --- Admin adauga o resursa (direct in categorie) ---
+// --- Admin adds a resource (directly to the category) ---
 export async function addResource(input: {
-    categoryId: number;     // OBLIGATORIU — resursa apartine unei categorii
+    categoryId: number;     // REQUIRED - the resource belongs to a category
     title: string;
     url?: string;
     type?: string;          // article | video | course
@@ -102,7 +102,7 @@ export async function addResource(input: {
     return { success: true, data, message: "Resource was added!!" };
 }
 
-// --- Admin editeaza o categorie ---
+// --- Admin edits a category ---
 export async function updateCategory(input: {
     id: number;
     name: string;
@@ -125,14 +125,14 @@ export async function updateCategory(input: {
     return { success: true, data, message: "Updated category!" };
 }
 
-// --- Admin sterge o categorie (cu tot ce atarna de ea) ---
-// Stergerea e in cascada pentru ca FK-urile din DB sunt NO ACTION: fara pasii
-// de mai jos, Postgres respinge stergerea cu 23503.
+// --- Admin deletes a category (together with everything attached to it) ---
+// The delete is cascaded manually because the DB FKs are NO ACTION: without these
+// steps below, Postgres rejects the delete with 23503.
 export async function deleteCategory(id: number) {
     const supabase = await createClient();
 
-    // Intrebarile si resursele pot atarna de categorie fie direct (category_id),
-    // fie doar prin tag (tag_id) -> le strangem pe amandoua caile.
+    // Questions and resources can belong to the category either directly (category_id),
+    // or only through a tag (tag_id) -> collect them via both paths.
     const { data: tags } = await supabase
         .from("tags")
         .select("id")
@@ -140,7 +140,7 @@ export async function deleteCategory(id: number) {
 
     const tagIds = (tags ?? []).map((t) => t.id);
 
-    // colecteaza id-urile dintr-un tabel copil, pe ambele cai
+    // collect the ids from a child table, via both paths
     async function childIds(table: string) {
         const ids = new Set<number>();
 
@@ -164,7 +164,7 @@ export async function deleteCategory(id: number) {
     const questionIds = await childIds("questions");
     const resourceIds = await childIds("learning_resources");
 
-    // 1. raspunsurile date la intrebarile categoriei
+    // 1. the answers given to the questions of the category
     if (questionIds.length) {
         const { error } = await supabase
             .from("assessment_answers")
@@ -173,7 +173,7 @@ export async function deleteCategory(id: number) {
         if (error) return { success: false, message: error.message };
     }
 
-    // 2. progresul userilor pe resursele categoriei
+    // 2. user progress on the resources of the category
     if (resourceIds.length) {
         const { error } = await supabase
             .from("user_progress")
@@ -182,8 +182,8 @@ export async function deleteCategory(id: number) {
         if (error) return { success: false, message: error.message };
     }
 
-    // 3. copiii, in ordinea dependentelor
-    //    (questions/learning_resources inainte de tags -> amandoua refera tags)
+    // 3. the children, in dependency order
+    //    (questions/learning_resources before tags -> both reference tags)
     if (questionIds.length) {
         const { error } = await supabase.from("questions").delete().in("id", questionIds);
         if (error) return { success: false, message: `questions: ${error.message}` };
@@ -209,18 +209,18 @@ export async function deleteCategory(id: number) {
     const { error } = await supabase.from("categories").delete().eq("id", id);
 
     if (error) {
-        // 23503 = foreign key violation (a mai ramas ceva legat de categorie)
+        // 23503 = foreign key violation (something is still linked to the category)
         if (error.code === "23503")
             return {
                 success: false,
-                message: "Categoria mai are date asociate care nu au putut fi șterse.",
+                message: "The category still has associated data that could not be deleted.",
             };
         return { success: false, message: error.message };
     }
-    return { success: true, message: "Categorie ștearsă!" };
+    return { success: true, message: "Category deleted!" };
 }
 
-// --- Admin adauga un tag la o categorie ---
+// --- Admin adds a tag to a category ---
 export async function addTag(input: { categoryId: number; name: string }) {
     const supabase = await createClient();
 
@@ -237,7 +237,7 @@ export async function addTag(input: { categoryId: number; name: string }) {
     return { success: true, data, message: "Added tag!" };
 }
 
-// --- Admin editeaza un tag ---
+// --- Admin edits a tag ---
 export async function updateTag(input: { id: number; name: string }) {
     const supabase = await createClient();
 
@@ -255,7 +255,7 @@ export async function updateTag(input: { id: number; name: string }) {
     return { success: true, data, message: "Tag updated!" };
 }
 
-// --- Admin sterge un tag ---
+// --- Admin deletes a tag ---
 export async function deleteTag(id: number) {
     const supabase = await createClient();
 
@@ -272,7 +272,7 @@ export async function deleteTag(id: number) {
     return { success: true, message: "Tag deleted!" };
 }
 
-// --- Admin adauga o categorie nouă ---
+// --- Admin adds a new category ---
 export async function addCategory(input: { name: string; description?: string; difficulty: string }) {
     const supabase = await createClient();
 
@@ -289,7 +289,7 @@ export async function addCategory(input: { name: string; description?: string; d
     return { success: true, data, message: "Category added!" };
 }
 
-// --- Întrebările dintr-o categorie ---
+// --- The questions of a category ---
 export async function getQuestionsByCategory(categoryId: number | string) {
     const supabase = await createClient();
 
@@ -339,6 +339,6 @@ export async function fetchAllResourcesWrapper(): Promise<Resource[]> {
         return [];
     }
 
-    // trebuie returnat doar array-ul de resurse, fără success/message
+    // only the resources array must be returned, without success/message
     return response.data;
 }

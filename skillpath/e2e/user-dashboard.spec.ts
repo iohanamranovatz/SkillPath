@@ -3,8 +3,8 @@ import { hasUserCredentials, MISSING_USER_CREDENTIALS } from './credentials'
 import { logInAs } from './session'
 
 /**
- * Parcursul studentului prin dashboard. Aceste teste doar citesc date,
- * cu exceptia celui de profil (adauga si sterge un obiectiv, cu curatare).
+ * The student journey through the dashboard. These tests only read data,
+ * except the profile one (it adds and deletes an objective, with cleanup).
  */
 
 test.skip(!hasUserCredentials(), MISSING_USER_CREDENTIALS)
@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
     await expect(page.getByText(/Welcome back,/)).toBeVisible()
 })
 
-test('dashboard-ul afiseaza salutul, statisticile si graficele', async ({ page }) => {
+test('the dashboard shows the greeting, the stats and the charts', async ({ page }) => {
     await expect(page.getByText(/^Level:/)).toBeVisible()
     await expect(page.getByText('Tests completed')).toBeVisible()
     await expect(page.getByText('Problems solved')).toBeVisible()
@@ -26,7 +26,7 @@ test('dashboard-ul afiseaza salutul, statisticile si graficele', async ({ page }
     await expect(page.getByText('Recommended for you')).toBeVisible()
 })
 
-test('navigheaza intre toate vizualizarile din meniul lateral', async ({ page }) => {
+test('navigates between all the views in the sidebar', async ({ page }) => {
     const nav = page.getByRole('navigation', { name: 'Main navigation' })
 
     await nav.getByRole('button', { name: 'Tests' }).click()
@@ -48,7 +48,7 @@ test('navigheaza intre toate vizualizarile din meniul lateral', async ({ page })
     await expect(page.getByText(/Welcome back,/)).toBeVisible()
 })
 
-test('butoanele din antet duc la progres si la teste', async ({ page }) => {
+test('the header buttons lead to progress and to tests', async ({ page }) => {
     await page.getByRole('button', { name: 'View progress' }).click()
     await expect(page.getByRole('heading', { name: /Results & Analytics/ })).toBeVisible({
         timeout: 20_000,
@@ -61,7 +61,7 @@ test('butoanele din antet duc la progres si la teste', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'Tests' })).toBeVisible()
 })
 
-test('cautarea filtreaza resursele', async ({ page }) => {
+test('the search filters the resources', async ({ page }) => {
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Resources' })
         .click()
@@ -75,14 +75,14 @@ test('cautarea filtreaza resursele', async ({ page }) => {
     await expect(page.getByText('No resources available found.')).toBeHidden()
 })
 
-test('lista de teste se poate filtra dupa cele finalizate', async ({ page }) => {
+test('the test list can be filtered by completed tests', async ({ page }) => {
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Tests' })
         .click()
 
     await page.getByRole('button', { name: 'Completed' }).click()
 
-    // fie apar doar teste cu scor, fie mesajul de lista goala
+    // either only scored tests show up, or the empty-list message
     const emptyState = page.getByText('No tests in this category yet.')
     const reviewButtons = page.getByRole('button', { name: /Review/ })
 
@@ -94,7 +94,7 @@ test('lista de teste se poate filtra dupa cele finalizate', async ({ page }) => 
     }
 })
 
-test('profilul permite adaugarea si stergerea unui obiectiv', async ({ page }) => {
+test('the profile allows adding and deleting an objective', async ({ page }) => {
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Profile' })
         .click()
@@ -103,7 +103,7 @@ test('profilul permite adaugarea si stergerea unui obiectiv', async ({ page }) =
     const objective = `E2E obiectiv ${Date.now()}`
     const input = page.getByPlaceholder('e.g. Master React Hooks')
 
-    // daca cele 5 sloturi sunt ocupate, input-ul e dezactivat — sarim testul
+    // if the 5 slots are taken the input is disabled - skip the test
     test.skip(await input.isDisabled(), 'contul de test are deja 5 obiective active')
 
     await input.fill(objective)
@@ -111,7 +111,7 @@ test('profilul permite adaugarea si stergerea unui obiectiv', async ({ page }) =
 
     await expect(page.getByText(objective)).toBeVisible({ timeout: 15_000 })
 
-    // curatare: stergem obiectivul creat, ca sa nu ramana in contul de test
+    // cleanup: delete the objective we created so it does not stay in the test account
     const row = page
         .locator('div.flex.items-center.justify-between')
         .filter({ hasText: objective })
@@ -119,8 +119,8 @@ test('profilul permite adaugarea si stergerea unui obiectiv', async ({ page }) =
     page.once('dialog', (dialog) => dialog.accept())
     await row.getByRole('button').last().click()
 
-    // lista de obiective vine din server component, asa ca reincarcam pagina
-    // ca sa verificam ca stergerea chiar a ajuns in baza de date
+    // the objective list comes from a server component, so we reload the page
+    // to check that the delete really reached the database
     await page.reload()
     await page.getByRole('navigation', { name: 'Main navigation' })
         .getByRole('button', { name: 'Profile' })
@@ -128,7 +128,7 @@ test('profilul permite adaugarea si stergerea unui obiectiv', async ({ page }) =
     await expect(page.getByText(objective)).toBeHidden({ timeout: 15_000 })
 })
 
-test('se poate face sign out din bara de sus', async ({ page }) => {
+test('sign out works from the top bar', async ({ page }) => {
     await page.getByRole('button', { name: 'User menu' }).click()
     await page.getByText('Sign out').click()
 

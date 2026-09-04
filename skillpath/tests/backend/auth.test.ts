@@ -28,7 +28,7 @@ describe('backend/auth', () => {
     })
 
     describe('signUpUser', () => {
-        it('creeaza contul si cere confirmarea pe email', async () => {
+        it('creates the account and asks for email confirmation', async () => {
             vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({
                 data: { user: { id: 'u1' }, session: null },
                 error: null,
@@ -40,7 +40,7 @@ describe('backend/auth', () => {
             expect(result.message).toContain('created successfully')
         })
 
-        it('trimite numele complet si url-ul de redirect catre Supabase', async () => {
+        it('sends the full name and the redirect url to Supabase', async () => {
             vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({
                 data: { user: null, session: null },
                 error: null,
@@ -58,7 +58,7 @@ describe('backend/auth', () => {
             })
         })
 
-        it('returneaza mesajul de eroare venit de la Supabase', async () => {
+        it('returns the error message coming from Supabase', async () => {
             vi.mocked(supabase.auth.signUp).mockResolvedValueOnce({
                 data: { user: null, session: null },
                 error: { message: 'User already registered' },
@@ -71,7 +71,7 @@ describe('backend/auth', () => {
     })
 
     describe('signOut', () => {
-        it('face logout, invalideaza cache-ul si redirectioneaza la /login', async () => {
+        it('logs out, invalidates the cache and redirects to /login', async () => {
             vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({ error: null } as any)
 
             await signOut()
@@ -81,7 +81,7 @@ describe('backend/auth', () => {
             expect(redirect).toHaveBeenCalledWith('/login')
         })
 
-        it('logheaza eroarea dar tot redirectioneaza', async () => {
+        it('logs the error but still redirects', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             vi.mocked(supabase.auth.signOut).mockResolvedValueOnce({
                 error: { message: 'network' },

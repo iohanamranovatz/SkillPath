@@ -15,17 +15,30 @@ vi.mock('@/helper/supabase/server', () => {
 
 const supabase = createClient() as any
 const ANSWERS = [
-    // Frontend: 2 din 3 -> 67%
+    // Frontend: 2 out of 3 -> 67%
     { is_correct: true, questions: { category_id: 1, categories: { id: 1, name: 'Frontend' } } },
     { is_correct: true, questions: { category_id: 1, categories: { id: 1, name: 'Frontend' } } },
     { is_correct: false, questions: { category_id: 1, categories: { id: 1, name: 'Frontend' } } },
-    // Backend: 0 din 2 -> 0% (zona slaba)
+    // Backend: 0 out of 2 -> 0% (weak area)
     { is_correct: false, questions: { category_id: 2, categories: { id: 2, name: 'Backend' } } },
     { is_correct: false, questions: { category_id: 2, categories: { id: 2, name: 'Backend' } } },
-    // randuri incomplete -> ignorate
+    // incomplete rows -> ignored
     { is_correct: true, questions: null },
     { is_correct: true, questions: { category_id: 3, categories: null } },
 ]
+
+// getAssessmentAnalytics reads the tests through getCompletedTests(), so the
+// rows mocked on the `assessments` table must have the shape getTests() expects.
+function completedTest(id: number, score_total: number | null) {
+    return {
+        id,
+        score_total,
+        status: 'completed',
+        started_at: null,
+        completed_at: null,
+        assessment_answers: [],
+    }
+}
 
 function authenticated(dbUser: any = { id: 5, estimated_level: 'Intermediate' }) {
     vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: { id: 'auth-1' } } } as any)
@@ -37,14 +50,14 @@ describe('backend/user/actions/getAssessmentAnalytics', () => {
         vi.clearAllMocks()
     })
 
-    it('agrega scorurile pe categorii si marcheaza resursele parcurse', async () => {
+    it('aggregates the scores per category and marks the completed resources', async () => {
         const dbUser = authenticated()
         const queries = mockFrom(supabase.from, {
             users: { data: dbUser, error: null },
             assessments: {
                 data: [
-                    { id: 1, score_total: 80 },
-                    { id: 2, score_total: 61 },
+                    completedTest(1, 80),
+                    completedTest(2, 61),
                 ],
                 error: null,
             },
@@ -67,7 +80,7 @@ describe('backend/user/actions/getAssessmentAnalytics', () => {
 
         const result = await getAssessmentAnalytics()
 
-        expect(result.scoreTotal).toBe(71) // media dintre 80 si 61, rotunjita
+        expect(result.scoreTotal).toBe(71) // the average of 80 and 61, rounded
         expect(result.estimatedLevel).toBe('Intermediate')
         expect(result.categoryScores).toEqual([
             { id: 1, name: 'Frontend', percentage: 67 },
@@ -82,7 +95,7 @@ describe('backend/user/actions/getAssessmentAnalytics', () => {
         expect(queries.learning_resources[0].in).toHaveBeenCalledWith('category_id', [2])
     })
 
-    it('returneaza valori implicite cand userul nu are teste finalizate', async () => {
+    it('returns default values when the user has no completed tests', async () => {
         authenticated({ id: 5, estimated_level: null })
         mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: null }, error: null },
@@ -100,11 +113,11 @@ describe('backend/user/actions/getAssessmentAnalytics', () => {
         })
     })
 
-    it('returneaza doar scorul general cand raspunsurile nu pot fi citite', async () => {
+    it('returns only the overall score when the answers cannot be read', async () => {
         authenticated()
         mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: 'Beginner' }, error: null },
-            assessments: { data: [{ id: 1, score_total: 50 }], error: null },
+            assessments: { data: [completedTest(1, 50)], error: null },
             assessment_answers: { data: null, error: { message: 'boom' } },
         })
 
@@ -119,11 +132,11 @@ describe('backend/user/actions/getAssessmentAnalytics', () => {
         })
     })
 
-    it('trateaza scorurile lipsa ca 0 la calculul mediei', async () => {
+    it('treats missing scores as 0 when computing the average', async () => {
         authenticated()
         mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: 'Beginner' }, error: null },
-            assessments: { data: [{ id: 1, score_total: null }, { id: 2, score_total: 100 }], error: null },
+            assessments: { data: [completedTest(1, null), completedTest(2, 100)], error: null },
             assessment_answers: { data: [], error: null },
             user_progress: { data: null, error: null },
         })
@@ -134,15 +147,15 @@ describe('backend/user/actions/getAssessmentAnalytics', () => {
         expect(result.recommendedResources).toEqual([])
     })
 
-    it('redirectioneaza cand nu exista sesiune', async () => {
+    it('redirects when there is no session', async () => {
         vi.mocked(supabase.auth.getUser).mockResolvedValue({ data: { user: null } } as any)
 
-        // dupa redirect (mock-uit, deci fara oprire) codul continua si arunca
+        // after the redirect (mocked, so execution is not stopped) the code continues and throws
         await expect(getAssessmentAnalytics()).rejects.toThrow()
         expect(redirect).toHaveBeenCalledWith('/')
     })
 
-    it('redirectioneaza cand userul autentificat nu exista in baza de date', async () => {
+    it('redirects when the authenticated user does not exist in the database', async () => {
         authenticated()
         mockFrom(supabase.from, { users: { data: null, error: null } })
 
@@ -156,7 +169,7 @@ describe('backend/user/actions/toggleResourceCompletion', () => {
         vi.clearAllMocks()
     })
 
-    it('salveaza starea resursei pentru userul curent', async () => {
+    it('saves the resource state for the current user', async () => {
         authenticated()
         const queries = mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: 'Beginner' }, error: null },
@@ -172,7 +185,7 @@ describe('backend/user/actions/toggleResourceCompletion', () => {
         )
     })
 
-    it('raporteaza esecul salvarii', async () => {
+    it('reports the save failure', async () => {
         authenticated()
         mockFrom(supabase.from, {
             users: { data: { id: 5, estimated_level: 'Beginner' }, error: null },

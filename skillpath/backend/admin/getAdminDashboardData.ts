@@ -15,7 +15,7 @@ const FULL_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
 export async function getAdminDashboardData(): Promise<DashboardData> {
     const supabase = await createClient();
 
-    // Rulam interogarile in paralel
+    // Run the queries in parallel
     const [usersRes, assessmentsRes, questionsRes, categoriesRes, answersRes] = await Promise.all([
         supabase.from("users").select("id, name, email, role"),
         supabase.from("assessments").select("id, user_id, status, completed_at"),
@@ -32,7 +32,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
     const categories = (categoriesRes.data || []) as any[];
     const answers = (answersRes.data || []) as any[];
 
-    // Doar studentii (orice nu e admin)
+    // Students only (anything that is not an admin)
     const students = users.filter((u) => u.role !== "admin");
     const completed = assessments.filter((a) => a.status === "completed");
 
@@ -63,7 +63,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
     }));
     const assessmentsThisWeek = assessmentActivity.reduce((sum, b) => sum + b.count, 0);
 
-    // --- TOP USERS: studenti dupa numar de assessment-uri completate ---
+    // --- TOP USERS: students ranked by number of completed assessments ---
     const countByUser = new Map<number, number>();
     for (const a of completed) {
         countByUser.set(a.user_id, (countByUser.get(a.user_id) || 0) + 1);
@@ -84,7 +84,7 @@ export async function getAdminDashboardData(): Promise<DashboardData> {
             };
         });
 
-    // --- WEAKEST CATEGORIES: rata de greseala pe categorie (incorect / total) ---
+    // --- WEAKEST CATEGORIES: error rate per category (incorrect / total) ---
     const catStats: Record<number, { name: string; total: number; wrong: number }> = {};
     for (const ans of answers) {
         const q = ans.questions;

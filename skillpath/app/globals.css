@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Tailwind v4 - Cursor pointer pe butoane */
+/* Tailwind v4 - pointer cursor on buttons */
 @layer base {
     button:not(:disabled),
     [role="button"]:not([aria-disabled="true"]),
@@ -58,16 +58,16 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* SETĂRI GLOBALE (Impunem Dark Theme ca fiind tema implicită) */
+/* GLOBAL SETTINGS (dark theme enforced as the default) */
 :root {
     color-scheme: dark;
-    --background: oklch(0.18 0.02 260);        /* Fundal închis spre albastru/slate */
+    --background: oklch(0.18 0.02 260);        /* Dark background, blue/slate leaning */
     --foreground: oklch(0.96 0.005 264);        /* Text alb/deschis */
-    --card: oklch(0.22 0.02 260);              /* Carduri ușor mai deschise decât fundalul */
+    --card: oklch(0.22 0.02 260);              /* Cards slightly lighter than the background */
     --card-foreground: oklch(0.96 0.005 264);
     --popover: oklch(0.22 0.02 260);
     --popover-foreground: oklch(0.96 0.005 264);
-    --primary: oklch(0.60 0.18 255);            /* Albastru intens (pentru butoane/butoane active) */
+    --primary: oklch(0.60 0.18 255);            /* Vivid blue (for buttons / active buttons) */
     --primary-foreground: oklch(0.985 0 0);
     --secondary: oklch(0.26 0.02 260);
     --secondary-foreground: oklch(0.96 0.005 264);
@@ -85,7 +85,7 @@
     --chart-4: oklch(0.78 0.14 85);
     --chart-5: oklch(0.68 0.18 25);
     --radius: 0.7rem;
-    --sidebar: oklch(0.20 0.02 260);            /* Sidebar închis separat */
+    --sidebar: oklch(0.20 0.02 260);            /* Separately darkened sidebar */
     --sidebar-foreground: oklch(0.96 0.005 264);
     --sidebar-primary: oklch(0.60 0.18 255);
     --sidebar-primary-foreground: oklch(0.985 0 0);

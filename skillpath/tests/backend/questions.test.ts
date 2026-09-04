@@ -28,7 +28,7 @@ describe('Questions Server Actions', () => {
     })
 
     describe('getQuestions', () => {
-        it('ar trebui să preia și să mapeze întrebările cu succes', async () => {
+        it('should fetch and map the questions successfully', async () => {
             const mockDbData = [
                 {
                     id: 1,
@@ -43,7 +43,9 @@ describe('Questions Server Actions', () => {
             ]
 
             vi.mocked(supabase.from).mockReturnValue({
-                select: vi.fn().mockResolvedValue({ data: mockDbData, error: null })
+                select: vi.fn().mockReturnValue({
+                    order: vi.fn().mockResolvedValue({ data: mockDbData, error: null })
+                })
             } as any)
 
             const result = await getQuestions()
@@ -63,9 +65,11 @@ describe('Questions Server Actions', () => {
             ])
         })
 
-        it('ar trebui să returneze eroare dacă interogarea eșuează', async () => {
+        it('should return an error if the query fails', async () => {
             vi.mocked(supabase.from).mockReturnValue({
-                select: vi.fn().mockResolvedValue({ data: null, error: { message: 'Database error' } })
+                select: vi.fn().mockReturnValue({
+                    order: vi.fn().mockResolvedValue({ data: null, error: { message: 'Database error' } })
+                })
             } as any)
 
             const result = await getQuestions()
@@ -86,7 +90,7 @@ describe('Questions Server Actions', () => {
             isActive: true
         }
 
-        it('ar trebui să eșueze dacă validarea răspunsurilor eșuează (zero corecte)', async () => {
+        it('should fail if the answer validation fails (zero correct)', async () => {
             const invalidPayload = { ...validPayload, correctAnswersId: "" }
             const result = await createQuestion(invalidPayload)
 
@@ -94,7 +98,7 @@ describe('Questions Server Actions', () => {
             expect(result.error).toBe('You must select the correct answer.')
         })
 
-        it('ar trebui să eșueze dacă categoria nu este găsită', async () => {
+        it('should fail if the category is not found', async () => {
             vi.mocked(supabase.from).mockReturnValue({
                 select: vi.fn().mockReturnValue({
                     eq: vi.fn().mockReturnValue({
@@ -109,7 +113,7 @@ describe('Questions Server Actions', () => {
             expect(result.error).toBe("Category 'Backend' not found.")
         })
 
-        it('ar trebui să creeze o întrebare cu succes', async () => {
+        it('should create a question successfully', async () => {
             vi.mocked(supabase.from).mockImplementation((tableName: string) => {
                 if (tableName === 'categories') {
                     return {
@@ -147,7 +151,7 @@ describe('Questions Server Actions', () => {
             isActive: true
         }
 
-        it('ar trebui să actualizeze întrebarea cu succes', async () => {
+        it('should update the question successfully', async () => {
             vi.mocked(supabase.from).mockImplementation((tableName: string) => {
                 if (tableName === 'categories') {
                     return {
@@ -178,7 +182,7 @@ describe('Questions Server Actions', () => {
     })
 
     describe('deleteQuestion', () => {
-        it('ar trebui să șteargă întrebarea cu succes', async () => {
+        it('should delete the question successfully', async () => {
             vi.mocked(supabase.from).mockReturnValue({
                 delete: vi.fn().mockReturnValue({
                     eq: vi.fn().mockResolvedValue({ error: null })
@@ -191,7 +195,7 @@ describe('Questions Server Actions', () => {
             expect(revalidatePath).toHaveBeenCalledWith('/admin/questions')
         })
 
-        it('ar trebui să returneze eroare dacă ștergerea eșuează', async () => {
+        it('should return an error if the delete fails', async () => {
             vi.mocked(supabase.from).mockReturnValue({
                 delete: vi.fn().mockReturnValue({
                     eq: vi.fn().mockResolvedValue({ error: { message: 'Delete failed' } })
@@ -209,7 +213,7 @@ describe('Questions Server Actions', () => {
 import { getAllCategories } from "@/backend/admin/actions/questions"
 
 describe('getAllCategories', () => {
-    it('ar trebui să returneze o listă de nume de categorii', async () => {
+    it('should return a list of category names', async () => {
         const mockCategories = [{ name: 'Frontend' }, { name: 'Backend' }]
 
         vi.mocked(supabase.from).mockReturnValue({
@@ -222,7 +226,7 @@ describe('getAllCategories', () => {
         expect(supabase.from).toHaveBeenCalledWith('categories')
     })
 
-    it('ar trebui să returneze un array gol în caz de eroare', async () => {
+    it('should return an empty array on error', async () => {
         vi.mocked(supabase.from).mockReturnValue({
             select: vi.fn().mockResolvedValue({ data: null, error: { message: 'Db error' } })
         } as any)

@@ -23,7 +23,7 @@ export function ProfileView({
     const [message, setMessage] = useState<string | null>(null);
     const [newObjective, setNewObjective] = useState("");
 
-    // confirmare stergere obiectiv (dialog propriu, nu confirm() nativ)
+    // objective delete confirmation (custom dialog, not the native confirm())
     const [objectiveToDelete, setObjectiveToDelete] = useState<{ id: number; title: string } | null>(null);
     const [deletingObjective, setDeletingObjective] = useState(false);
 
@@ -143,14 +143,14 @@ export function ProfileView({
                         <p className="text-xs text-muted-foreground">Add and track your learning goals.</p>
                     </div>
 
-                    {/* Badge clar pentru limita de sloturi */}
+                    {/* Explicit badge for the slot limit */}
                     <span className="rounded-full bg-secondary/80 px-3 py-1 text-xs font-medium text-muted-foreground border border-border">
                         <strong className="text-foreground">{objectives.length}</strong> of {MAX_OBJECTIVES} active goals (Max 5)
                     </span>
 
                 </div>
 
-                {/* Bara de progres vizuala */}
+                {/* Visual progress bar */}
                 {objectives.length > 0 && (
                     <div className="space-y-1.5">
                         <div className="flex items-center justify-between text-xs text-muted-foreground font-medium">
@@ -174,7 +174,7 @@ export function ProfileView({
                     </div>
                 )}
 
-                {/* Zona adaugare obiectiv + avertisment limita */}
+                {/* Add-objective area + limit warning */}
                 <div className="space-y-1.5">
                     <div className="flex gap-2">
                         <input
@@ -305,7 +305,7 @@ export function ProfileView({
         </span>
                 </div>
 
-                {/* Randăm doar visibleTags */}
+                {/* Render only visibleTags */}
                 <div className="flex flex-wrap gap-2">
                     {visibleTags.map((tag) => {
                         const isSelected = userInterestTagIds.includes(tag.id);
@@ -331,7 +331,7 @@ export function ProfileView({
                     })}
                 </div>
 
-                {/* Butonul de Show More / Show Less */}
+                {/* Show more / show less button */}
                 {hasMoreTags && (
                     <button
                         type="button"
@@ -357,7 +357,7 @@ export function ProfileView({
                 busy={deletingObjective}
                 message={
                     <>
-                        Sigur vrei să ștergi obiectivul{" "}
+                        Are you sure you want to delete the objective{" "}
                         <span className="font-medium text-foreground">{objectiveToDelete?.title}</span>?
                     </>
                 }

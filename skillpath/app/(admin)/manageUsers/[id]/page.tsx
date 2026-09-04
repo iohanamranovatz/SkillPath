@@ -23,7 +23,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
     const { category, page } = await searchParams;
 
     const currentPage = parseInt(page || "1", 10);
-    const pageSize = 6; // Numarul de resurse per pagina
+    const pageSize = 6; // Number of resources per page
 
     const { data: user, error: userError } = await supabase
         .from("users")
@@ -31,8 +31,8 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
         .eq("id", userId)
         .single();
 
-    // extragem toate evaluarile asociate utilizatorului,
-    // ordonate descrescator dupa data de incepere
+    // fetch all assessments associated with the user,
+    // ordered descending by start date
     const { data: assessments, error: assessmentsError } = await supabase
         .from("assessments")
         .select("*")
@@ -41,7 +41,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
 
     const weakCategories = await getWeakCategories(userId);
 
-    // 2. Preluam resursele recomandate pentru categoriile slabe ale utilizatorului
+    // 2. Fetch the recommended resources for the user weak categories
     const weakCategoryIds = weakCategories.map((cat) => cat.categoryId);
     let recommendedResources: any[] = [];
 
@@ -61,7 +61,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
         recommendedResources = resources || [];
     }
 
-    // 3. Preluam progresul completat al utilizatorului
+    // 3. Fetch the completed progress of the user
     const { data: userProgress } = await supabase
         .from("user_progress")
         .select("resource_id, is_completed")
@@ -71,7 +71,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
         (userProgress || []).filter((p) => p.is_completed).map((p) => p.resource_id)
     );
 
-    // 4. Mapam starea resurselor pentru utilizator
+    // 4. Map the resource state for the user
     const resourcesWithStatus = recommendedResources.map((res: any) => ({
         id: res.id,
         title: res.title,
@@ -88,12 +88,12 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
         ? Math.round((completedResourcesCount / totalResourcesCount) * 100)
         : 0;
 
-    // 4. Filtrarea resurselor pe categorie
+    // 4. Filter the resources by category
     const filteredResources = category && category !== "all"
         ? resourcesWithStatus.filter((r) => r.categoryId.toString() === category)
         : resourcesWithStatus;
 
-    // 5. Paginarea resurselor filtrate
+    // 5. Pagination of the filtered resources
     const totalFilteredPages = Math.ceil(filteredResources.length / pageSize) || 1;
     const paginatedResources = filteredResources.slice(
         (currentPage - 1) * pageSize,
@@ -121,7 +121,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
 
     return (
         <div className="min-h-screen bg-background p-8 text-foreground space-y-8">
-            {/* Buton inapoi */}
+            {/* Back button */}
             <Link
                 href="/manageUsers"
                 className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -167,7 +167,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                     <p className="text-2xl font-bold mt-1 text-blue-400">{avgScore} pts</p>
                 </div>
 
-                {/* Resurse Parcurse */}
+                {/* Completed resources */}
                 <div className="rounded-2xl border border-white/10 bg-card p-5">
                     <p className="text-xs text-muted-foreground">Resources Completed</p>
                     <p className="text-2xl font-bold mt-1 text-purple-400">
@@ -212,7 +212,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                 )}
             </div>
 
-            {/* Secțiune Progres Resurse cu Filtrare & Paginare */}
+            {/* Resource progress section with filtering & pagination */}
             <div className="rounded-2xl border border-white/10 bg-card p-6 shadow-xl space-y-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export default async function UserDetailsPage({ params, searchParams }: UserDeta
                         <h2 className="text-lg font-semibold">Learning Resources Progress</h2>
                     </div>
 
-                    {/* Filtre si Paginare (Client Control) */}
+                    {/* Filters and pagination (client-side control) */}
                     <ResourceFilters
                         categories={weakCategories.map((wc) => ({ id: wc.categoryId, name: wc.categoryName }))}
                         selectedCategory={category || "all"}

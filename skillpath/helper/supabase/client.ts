@@ -1,7 +1,7 @@
 import { createBrowserClient } from "@supabase/ssr";
 
-// Client Supabase pentru componente "use client".
-// Citeste aceeasi sesiune din cookies ca si clientul de server.
+// Supabase client for "use client" components.
+// Reads the same session from cookies as the server client.
 export function createClient() {
     return createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

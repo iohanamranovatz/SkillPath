@@ -23,7 +23,7 @@ export default async function AdminAssessmentResultsPage({ params }: AdminAssess
     const userId = Number(id);
     const assessmentId = Number(rawAssessmentId);
 
-    // 1. Preluăm datele testului
+    // 1. Fetch the test data
     const { data: assessment } = await supabase
         .from("assessments")
         .select("id, user_id, status, score_total, started_at")
@@ -34,7 +34,7 @@ export default async function AdminAssessmentResultsPage({ params }: AdminAssess
         redirect(`/manageUsers/${userId}`);
     }
 
-    // 2. Extragerea întrebărilor și a răspunsurilor date de utilizator
+    // 2. Extract the questions and the answers given by the user
     const { data: rows } = await supabase
         .from("assessment_answers")
         .select(`

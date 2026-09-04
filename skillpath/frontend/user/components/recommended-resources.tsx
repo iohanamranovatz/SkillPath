@@ -23,7 +23,7 @@ interface RecommendedResourcesProps {
     onViewChange?: (view: View) => void
 }
 
-// Prima litera mare pentru afisare (ex: "article" -> "Article")
+// Capitalize the first letter for display (e.g. "article" -> "Article")
 function labelForType(type: string) {
     if (!type) return "Resource"
     return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase()

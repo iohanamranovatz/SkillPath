@@ -25,7 +25,7 @@ export async function getAssessmentAnalytics() {
 
     const dbUser = await getAuthenticatedUser();
 
-    // // 1. Preluăm TOATE testele completate ale userului
+    // // 1. Fetch ALL completed tests of the user
     // const { data: userAssessments } = await supabase
     //     .from("assessments")
     //     .select("id, score_total")
@@ -48,13 +48,13 @@ export async function getAssessmentAnalytics() {
         };
     }
 
-    // Calculăm media scorului total pe toate testele
+    // Compute the average total score across all tests
     const totalSum = userAssessments.reduce((acc, curr) => acc + (curr.score || 0), 0);
     const overallScore = Math.round(totalSum / userAssessments.length);
 
     const assessmentIds = userAssessments.map(a => a.id);
 
-    // 2. Preluăm TOATE răspunsurile din TOATE testele completate
+    // 2. Fetch ALL answers from ALL completed tests
     const { data: answers, error } = await supabase
         .from("assessment_answers")
         .select(`
@@ -76,7 +76,7 @@ export async function getAssessmentAnalytics() {
         };
     }
 
-    // 3. Agregăm rezultatele pe categorii (cumulat din toate testele)
+    // 3. Aggregate the results per category (cumulative across all tests)
     const categoryStats: Record<number, { name: string; total: number; correct: number }> = {};
 
     answers.forEach((ans: any) => {
@@ -94,7 +94,7 @@ export async function getAssessmentAnalytics() {
         if (ans.is_correct) categoryStats[catId].correct += 1;
     });
 
-    // 4. Calculăm procentul general pe fiecare categorie și identificăm Weak Areas (< 60%)
+    // 4. Compute the overall percentage per category and identify Weak Areas (< 60%)
     const categoryScores: { id: number; name: string; percentage: number }[] = [];
     const weakCategoryIds: number[] = [];
     const weakAreas: { id: number; name: string; percentage: number }[] = [];
@@ -111,7 +111,7 @@ export async function getAssessmentAnalytics() {
         }
     });
 
-    // 5. Preluăm resursele recomandate pentru TOATE categoriile slabe acumulate
+    // 5. Fetch the recommended resources for ALL accumulated weak categories
     let recommendedResources: any[] = [];
     if (weakCategoryIds.length > 0) {
         const { data: resources } = await supabase
@@ -122,7 +122,7 @@ export async function getAssessmentAnalytics() {
         recommendedResources = resources || [];
     }
 
-    // 6. Verificăm ce resurse a bifat deja userul din user_progress
+    // 6. Check which resources the user has already ticked in user_progress
     const { data: userProgress } = await supabase
         .from("user_progress")
         .select("resource_id, is_completed")
@@ -151,7 +151,7 @@ export async function getAssessmentAnalytics() {
 }
 
 
-// Action pentru bifarea / debifarea resurselor parcurse
+// Action for ticking / unticking completed resources
 export async function toggleResourceCompletion(resourceId: number, isCompleted: boolean) {
     const supabase = await createClient();
 

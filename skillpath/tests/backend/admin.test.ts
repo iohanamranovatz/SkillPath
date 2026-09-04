@@ -29,7 +29,7 @@ describe('backend/admin', () => {
     })
 
     describe('AddUser', () => {
-        it('adauga utilizatorul si invalideaza dashboard-ul', async () => {
+        it('adds the user and invalidates the dashboard', async () => {
             const created = { id: 1, name: 'Ana', email: 'ana@test.com' }
             const queries = mockFrom(supabase.from, { users: { data: created, error: null } })
 
@@ -55,7 +55,7 @@ describe('backend/admin', () => {
             expect(supabase.from).not.toHaveBeenCalled()
         })
 
-        it('returneaza mesaj descriptiv cand insert-ul esueaza', async () => {
+        it('returns a descriptive message when the insert fails', async () => {
             mockFrom(supabase.from, { users: { data: null, error: { message: 'duplicate email' } } })
 
             const result = await AddUser(
@@ -69,7 +69,7 @@ describe('backend/admin', () => {
     })
 
     describe('updateUserRole', () => {
-        it('schimba rolul utilizatorului', async () => {
+        it('changes the user role', async () => {
             const queries = mockFrom(supabase.from, { users: { data: [{ id: 1 }], error: null } })
 
             const result = await updateUserRole(1, 'admin')
@@ -79,7 +79,7 @@ describe('backend/admin', () => {
             expect(queries.users[0].eq).toHaveBeenCalledWith('id', 1)
         })
 
-        it('returneaza mesaj de eroare cand update-ul esueaza', async () => {
+        it('returns an error message when the update fails', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             mockFrom(supabase.from, { users: { data: null, error: { message: 'denied' } } })
 
@@ -89,7 +89,7 @@ describe('backend/admin', () => {
             consoleSpy.mockRestore()
         })
 
-        it('prinde exceptiile neasteptate', async () => {
+        it('catches unexpected exceptions', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             vi.mocked(supabase.from).mockImplementation(() => {
                 throw new Error('connection lost')
@@ -103,24 +103,23 @@ describe('backend/admin', () => {
     })
 
     describe('getWeakCategories', () => {
+        // a category is only reported once it has more than 5 answers, so the
+        // percentages are not computed on a handful of rows
+        function answersFor(categoryId: number, name: string, total: number, wrong: number) {
+            return Array.from({ length: total }, (_, i) => ({
+                is_correct: i >= wrong,
+                questions: { category_id: categoryId, categories: { id: categoryId, name } },
+            }))
+        }
+
         const answers = [
-            {
-                is_correct: false,
-                questions: { category_id: 1, categories: { id: 1, name: 'Frontend' } },
-            },
-            {
-                is_correct: true,
-                questions: { category_id: 1, categories: { id: 1, name: 'Frontend' } },
-            },
-            {
-                is_correct: false,
-                questions: { category_id: 2, categories: { id: 2, name: 'Backend' } },
-            },
-            // rand fara categorie -> trebuie ignorat
+            ...answersFor(1, 'Frontend', 8, 4),
+            ...answersFor(2, 'Backend', 6, 6),
+            // row without a category -> must be ignored
             { is_correct: false, questions: { category_id: 3, categories: null } },
         ]
 
-        it('calculeaza procentul de greseala si sorteaza descrescator', async () => {
+        it('computes the error percentage and sorts descending', async () => {
             mockFrom(supabase.from, { assessment_answers: { data: answers, error: null } })
 
             const result = await getWeakCategories()
@@ -129,21 +128,31 @@ describe('backend/admin', () => {
                 {
                     categoryId: 2,
                     categoryName: 'Backend',
-                    wrongAnswersCount: 1,
-                    totalAnswersCount: 1,
+                    wrongAnswersCount: 6,
+                    totalAnswersCount: 6,
                     errorPercentage: 100,
                 },
                 {
                     categoryId: 1,
                     categoryName: 'Frontend',
-                    wrongAnswersCount: 1,
-                    totalAnswersCount: 2,
+                    wrongAnswersCount: 4,
+                    totalAnswersCount: 8,
                     errorPercentage: 50,
                 },
             ])
         })
 
-        it('filtreaza dupa user cand primeste userId', async () => {
+        it('leaves out the categories with 5 answers or fewer', async () => {
+            mockFrom(supabase.from, {
+                assessment_answers: { data: answersFor(9, 'Testing', 5, 5), error: null },
+            })
+
+            const result = await getWeakCategories()
+
+            expect(result).toEqual([])
+        })
+
+        it('filters by user when a userId is provided', async () => {
             const queries = mockFrom(supabase.from, {
                 assessment_answers: { data: [], error: null },
             })
@@ -153,7 +162,7 @@ describe('backend/admin', () => {
             expect(queries.assessment_answers[0].eq).toHaveBeenCalledWith('assessments.user_id', 42)
         })
 
-        it('returneaza lista goala si logheaza eroarea', async () => {
+        it('returns an empty list and logs the error', async () => {
             const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
             mockFrom(supabase.from, {
                 assessment_answers: { data: null, error: { message: 'query failed' } },

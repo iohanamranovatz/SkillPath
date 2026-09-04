@@ -5,22 +5,22 @@ import { ReactNode } from "react";
 interface Props {
     open: boolean;
     title: string;
-    /** Textul explicativ; poate contine si markup (ex. numele evidentiat). */
+    /** Explanatory text; may contain markup (e.g. a highlighted name). */
     message: ReactNode;
-    /** Mesaj de eroare afisat in dialog; dialogul ramane deschis cat timp e setat. */
+    /** Error message shown inside the dialog; the dialog stays open while it is set. */
     error?: string;
-    /** Cat timp actiunea e in curs -> butonul de confirmare e blocat. */
+    /** While the action is in progress the confirm button is disabled. */
     busy?: boolean;
     confirmLabel?: string;
     busyLabel?: string;
     cancelLabel?: string;
-    /** "danger" = buton rosu (stergeri), "default" = albastru (restul). */
+    /** "danger" = red button (deletions), "default" = blue (everything else). */
     tone?: "danger" | "default";
     onConfirm: () => void;
     onCancel: () => void;
 }
 
-// Dialog de confirmare in stilul aplicatiei, folosit in locul lui confirm() nativ.
+// App-styled confirmation dialog, used instead of the native confirm().
 export default function ConfirmDialog({
     open,
     title,

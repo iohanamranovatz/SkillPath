@@ -1,9 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// In Next 16 conventia `middleware.ts` a fost redenumita `proxy.ts`.
-// Reimprospateaza token-ul Supabase la fiecare request si scrie cookie-urile
-// actualizate in raspuns. Fara asta sesiunea expira si userul e dat afara.
+// In Next 16 the `middleware.ts` convention was renamed to `proxy.ts`.
+// Refreshes the Supabase token on every request and writes the cookies
+// refreshed in the response. Without this the session expires and the user is logged out.
 export async function proxy(request: NextRequest) {
     let response = NextResponse.next({ request });
 
@@ -28,7 +28,7 @@ export async function proxy(request: NextRequest) {
         }
     );
 
-    // IMPORTANT: nu scoate acest apel - el declanseaza refresh-ul sesiunii.
+    // IMPORTANT: do not remove this call - it triggers the session refresh.
     await supabase.auth.getUser();
 
     return response;

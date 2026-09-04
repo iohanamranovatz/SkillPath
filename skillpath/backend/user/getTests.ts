@@ -15,7 +15,7 @@ export async function getTests(userId:number){
         .order("started_at", {ascending : false });
 
     if(error)
-        return { succes:false, message: error.message, data : [] };
+        return { success: false, message: error.message, data : [] };
 
     const tests = (data ?? []).map((a: any) => {
         const answers = a.assessment_answers ?? [];
@@ -23,7 +23,7 @@ export async function getTests(userId:number){
         // Count how many answers have selected_option_id as null
         const notAnswered = answers.filter((ans: any) => ans.selected_option_id !== null).length;
 
-        // Folosim raspunsurile ca o punte spre categoria din care face parte testul
+        // Use the answers as a bridge to the category the test belongs to
         const categories = Array.from(new Set(answers.map((ans: any) => ans.questions?.categories?.name).filter(Boolean))) as string[];
 
         return {

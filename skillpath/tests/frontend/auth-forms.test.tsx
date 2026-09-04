@@ -20,7 +20,7 @@ describe('LoginForm', () => {
         fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: password } })
     }
 
-    it('trimite credentialele catre server', async () => {
+    it('sends the credentials to the server', async () => {
         vi.mocked(loginUser).mockResolvedValue(undefined as any)
         render(<LoginForm />)
 
@@ -31,20 +31,20 @@ describe('LoginForm', () => {
         expect(screen.queryByText(/incorecta/)).toBeNull()
     })
 
-    it('afiseaza eroarea returnata de server', async () => {
+    it('shows the error returned by the server', async () => {
         vi.mocked(loginUser).mockResolvedValue({
-            succes: false,
-            message: 'Email sau parola incorecta!',
+            success: false,
+            message: 'Incorrect email or password!',
         } as any)
         render(<LoginForm />)
 
         fill('gresit@test.com', 'gresita')
         fireEvent.click(screen.getByRole('button', { name: /Log In/ }))
 
-        expect(await screen.findByText('Email sau parola incorecta!')).toBeTruthy()
+        expect(await screen.findByText('Incorrect email or password!')).toBeTruthy()
     })
 
-    it('are link catre pagina de inregistrare', () => {
+    it('has a link to the sign up page', () => {
         render(<LoginForm />)
 
         expect(screen.getByRole('link', { name: 'Sign up' }).getAttribute('href')).toBe('/signup')
@@ -69,7 +69,7 @@ describe('SignUpForm', () => {
         fireEvent.submit(document.querySelector('form')!)
     }
 
-    it('creeaza contul si afiseaza mesajul de confirmare', async () => {
+    it('creates the account and shows the confirmation message', async () => {
         vi.mocked(signUpUser).mockResolvedValue({
             success: true,
             message: 'The account has been created successfully! Please check your email to verify your account.',
@@ -83,7 +83,7 @@ describe('SignUpForm', () => {
         expect(signUpUser).toHaveBeenCalledWith('Ana', 'ana@test.com', 'parola123')
     })
 
-    it('verifica potrivirea parolelor', async () => {
+    it('checks that the passwords match', async () => {
         render(<SignUpForm />)
 
         fill({ confirm: 'altceva' })
@@ -93,7 +93,7 @@ describe('SignUpForm', () => {
         expect(signUpUser).not.toHaveBeenCalled()
     })
 
-    it('cere minimum 6 caractere pentru parola', async () => {
+    it('requires at least 6 characters for the password', async () => {
         render(<SignUpForm />)
 
         fill({ password: '123', confirm: '123' })
@@ -103,7 +103,7 @@ describe('SignUpForm', () => {
         expect(signUpUser).not.toHaveBeenCalled()
     })
 
-    it('afiseaza eroarea venita de la Supabase', async () => {
+    it('shows the error coming from Supabase', async () => {
         vi.mocked(signUpUser).mockResolvedValue({
             success: false,
             message: 'User already registered',
@@ -116,7 +116,7 @@ describe('SignUpForm', () => {
         expect(await screen.findByText('User already registered')).toBeTruthy()
     })
 
-    it('prinde exceptiile neasteptate', async () => {
+    it('catches unexpected exceptions', async () => {
         vi.mocked(signUpUser).mockRejectedValue(new Error('Network down'))
         render(<SignUpForm />)
 

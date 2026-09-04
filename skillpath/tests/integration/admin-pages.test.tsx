@@ -40,8 +40,8 @@ vi.mock('next/navigation', () => ({
     notFound: vi.fn(),
 }))
 
-// acelasi client stub pentru ambele module (server + browser), ca sa poata fi
-// controlat dintr-un singur loc in teste
+// the same client stub for both modules (server + browser), so it can be
+// controlled from a single place in the tests
 const stub = vi.hoisted(() => ({
     client: { from: vi.fn(), auth: { getUser: vi.fn() } },
 }))
@@ -88,21 +88,31 @@ function authAs(user: any) {
 }
 
 describe('AdminLayout', () => {
-    it('randeaza chrome-ul in jurul continutului', () => {
-        render(
-            <AdminLayout>
-                <p>Continut pagina</p>
-            </AdminLayout>
-        )
+    // the layout is an async server component: it checks the session and the
+    // admin role before rendering the chrome, so it has to be awaited
+    it('renders the chrome around the content', async () => {
+        authAs({ id: 'auth-1' })
+        mockFrom(supabase.from, { users: { data: { role: 'admin' }, error: null } })
 
-        expect(screen.getByText('Continut pagina')).toBeTruthy()
+        render(await AdminLayout({ children: <p>Page content</p> }))
+
+        expect(screen.getByText('Page content')).toBeTruthy()
         expect(screen.getByText('Admin Dashboard')).toBeTruthy()
         expect(screen.getByRole('navigation', { name: 'Main navigation' })).toBeTruthy()
     })
+
+    it('redirects a visitor who is not an admin', async () => {
+        authAs({ id: 'auth-1' })
+        mockFrom(supabase.from, { users: { data: { role: 'user' }, error: null } })
+
+        await AdminLayout({ children: <p>Page content</p> })
+
+        expect(redirect).toHaveBeenCalledWith('/login')
+    })
 })
 
-describe('pagina /adminDashboard', () => {
-    it('redirectioneaza vizitatorii neautentificati', async () => {
+describe('/adminDashboard page', () => {
+    it('redirects unauthenticated visitors', async () => {
         authAs(null)
 
         await AdminDashboardPage()
@@ -110,7 +120,7 @@ describe('pagina /adminDashboard', () => {
         expect(redirect).toHaveBeenCalledWith('/')
     })
 
-    it('randeaza dashboard-ul pentru un admin autentificat', async () => {
+    it('renders the dashboard for an authenticated admin', async () => {
         authAs({ id: 'auth-1' })
         vi.mocked(getAdminDashboardData).mockResolvedValue({
             stats: [{ title: 'Total Students', value: 3, change: '2 active' }],
@@ -120,7 +130,7 @@ describe('pagina /adminDashboard', () => {
         })
 
         const page = await AdminDashboardPage()
-        // pagina randeaza componenta server AdminDashboardUI, deci o rezolvam separat
+        // the page renders the AdminDashboardUI server component, so we resolve it separately
         render(await AdminDashboardUI())
 
         expect(page).toBeTruthy()
@@ -130,7 +140,7 @@ describe('pagina /adminDashboard', () => {
     })
 })
 
-describe('pagina /questions', () => {
+describe('/questions page', () => {
     const questions = Array.from({ length: 8 }, (_, i) => ({
         id: String(i + 1),
         title: `Intrebarea ${i + 1}`,
@@ -142,7 +152,7 @@ describe('pagina /questions', () => {
         isActive: true,
     }))
 
-    it('trece intrebarile incarcate catre client', async () => {
+    it('passes the loaded questions to the client', async () => {
         vi.mocked(getQuestions).mockResolvedValue({ success: true, data: questions } as any)
 
         render(await QuestionBankPage())
@@ -151,7 +161,7 @@ describe('pagina /questions', () => {
         expect(screen.getByText('Intrebarea 1')).toBeTruthy()
     })
 
-    it('foloseste o lista goala cand incarcarea esueaza', async () => {
+    it('uses an empty list when loading fails', async () => {
         vi.mocked(getQuestions).mockResolvedValue({ success: false, error: 'boom' } as any)
 
         render(await QuestionBankPage())
@@ -159,7 +169,7 @@ describe('pagina /questions', () => {
         expect(screen.getByText('No questions found.')).toBeTruthy()
     })
 
-    it('filtreaza dupa text si dificultate si pagineaza', () => {
+    it('filters by text and difficulty and paginates', () => {
         render(<QuestionBankClient initialQuestions={questions} />)
 
         expect(screen.getByText('Page 1 of 2')).toBeTruthy()
@@ -183,8 +193,8 @@ describe('pagina /questions', () => {
     })
 })
 
-describe('pagina /weakCategories', () => {
-    it('afiseaza incarcarea, apoi topul categoriilor problematice', async () => {
+describe('/weakCategories page', () => {
+    it('shows the loading state, then the top problem categories', async () => {
         vi.mocked(getWeakCategories).mockResolvedValue([
             {
                 categoryId: 1,
@@ -199,27 +209,27 @@ describe('pagina /weakCategories', () => {
         expect(screen.getByText('Loading weak categories...')).toBeTruthy()
 
         expect(await screen.findByText('Backend')).toBeTruthy()
-        expect(screen.getByText('80% Greșit (8/10)')).toBeTruthy()
+        expect(screen.getByText('80% Wrong (8/10)')).toBeTruthy()
     })
 
-    it('anunta lipsa datelor', async () => {
+    it('announces the missing data', async () => {
         vi.mocked(getWeakCategories).mockResolvedValue([])
         render(<WeakCategoriesCard />)
 
         expect(
-            await screen.findByText('Nu există suficiente date pentru a genera statistici.')
+            await screen.findByText('Not enough data to generate statistics yet.')
         ).toBeTruthy()
     })
 })
 
-describe('paginile de categorii', () => {
-    it('/categories randeaza managerul de categorii', async () => {
+describe('category pages', () => {
+    it('/categories renders the categories manager', async () => {
         render(<CategoriesPage />)
 
         expect(await screen.findByRole('heading', { name: 'Skill Categories' })).toBeTruthy()
     })
 
-    it('/categories/[id] afiseaza resursele si intrebarile categoriei', async () => {
+    it('/categories/[id] shows the resources and the questions of the category', async () => {
         vi.mocked(getCategoryById).mockResolvedValue({
             success: true,
             data: { id: 1, name: 'Frontend', description: 'React & Next.js' },
@@ -245,17 +255,17 @@ describe('paginile de categorii', () => {
         expect(screen.getByText('Ce este JSX?')).toBeTruthy()
     })
 
-    it('/categories/[id] anunta categoria inexistenta', async () => {
+    it('/categories/[id] announces a non-existent category', async () => {
         vi.mocked(getCategoryById).mockResolvedValue({ success: false, data: null } as any)
         vi.mocked(getResourcesFromCategory).mockResolvedValue({ success: true, data: [] } as any)
         vi.mocked(getQuestionsByCategory).mockResolvedValue({ success: true, data: [] } as any)
 
         render(await CategoryDetailPage({ params: Promise.resolve({ id: '99' }) }))
 
-        expect(screen.getByText('Categoria nu a fost găsită.')).toBeTruthy()
+        expect(screen.getByText('Category not found.')).toBeTruthy()
     })
 
-    it('/categories/[id] afiseaza starile goale', async () => {
+    it('/categories/[id] shows the empty states', async () => {
         vi.mocked(getCategoryById).mockResolvedValue({
             success: true,
             data: { id: 1, name: 'Frontend', description: null },
@@ -265,12 +275,12 @@ describe('paginile de categorii', () => {
 
         render(await CategoryDetailPage({ params: Promise.resolve({ id: '1' }) }))
 
-        expect(screen.getByText('Nicio resursă adăugată încă.')).toBeTruthy()
-        expect(screen.getByText('Nicio întrebare în această categorie.')).toBeTruthy()
+        expect(screen.getByText('No resources available yet.')).toBeTruthy()
+        expect(screen.getByText('No questions belong to this category.')).toBeTruthy()
     })
 })
 
-describe('pagina /manageUsers', () => {
+describe('/manageUsers page', () => {
     const users = Array.from({ length: 9 }, (_, i) => ({
         id: i + 1,
         name: `User ${i + 1}`,
@@ -279,7 +289,7 @@ describe('pagina /manageUsers', () => {
         estimated_level: i % 2 === 0 ? 'Beginner' : 'Advanced',
     }))
 
-    it('incarca utilizatorii si ii pagineaza', async () => {
+    it('loads the users and paginates them', async () => {
         mockFrom(supabase.from, { users: { data: users, error: null } })
         render(<UserManagementPage />)
 
@@ -292,7 +302,7 @@ describe('pagina /manageUsers', () => {
         expect(screen.getByText('user8@test.com')).toBeTruthy()
     })
 
-    it('filtreaza dupa cautare, nivel si rol', async () => {
+    it('filters by search, level and role', async () => {
         mockFrom(supabase.from, { users: { data: users, error: null } })
         render(<UserManagementPage />)
         await screen.findByText('user1@test.com')
@@ -314,7 +324,7 @@ describe('pagina /manageUsers', () => {
         expect(screen.queryByText('user2@test.com')).toBeNull()
     })
 
-    it('logheaza eroarea de incarcare', async () => {
+    it('logs the loading error', async () => {
         const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
         mockFrom(supabase.from, { users: { data: null, error: { message: 'db down' } } })
         render(<UserManagementPage />)
@@ -326,7 +336,7 @@ describe('pagina /manageUsers', () => {
         consoleSpy.mockRestore()
     })
 
-    it('schimba rolul unui utilizator', async () => {
+    it('changes the role of a user', async () => {
         mockFrom(supabase.from, { users: { data: users.slice(0, 2), error: null } })
         vi.mocked(updateUserRole).mockResolvedValue({ success: true })
         render(<UserManagementPage />)
@@ -338,7 +348,7 @@ describe('pagina /manageUsers', () => {
         await waitFor(() => expect(updateUserRole).toHaveBeenCalledWith(1, 'admin'))
     })
 
-    it('avertizeaza cand schimbarea rolului esueaza', async () => {
+    it('warns when the role change fails', async () => {
         mockFrom(supabase.from, { users: { data: users.slice(0, 2), error: null } })
         vi.mocked(updateUserRole).mockResolvedValue({ success: false, message: 'Could not change role' })
         render(<UserManagementPage />)
@@ -347,11 +357,11 @@ describe('pagina /manageUsers', () => {
         fireEvent.change(screen.getAllByRole('combobox')[2], { target: { value: 'admin' } })
         fireEvent.click(screen.getByRole('button', { name: 'Change role' }))
 
-        // eroarea apare ca banner in pagina, nu ca alert() nativ
+        // the error shows up as a banner in the page, not as a native alert()
         await waitFor(() => expect(screen.getByText('Could not change role')).toBeTruthy())
     })
 
-    it('sterge un utilizator din lista', async () => {
+    it('deletes a user from the list', async () => {
         mockFrom(supabase.from, { users: { data: users.slice(0, 2), error: null } })
         render(<UserManagementPage />)
         await screen.findByText('user1@test.com')
@@ -362,7 +372,7 @@ describe('pagina /manageUsers', () => {
         await waitFor(() => expect(screen.queryByText('user1@test.com')).toBeNull())
     })
 
-    it('deschide modalul de adaugare si insereaza userul nou in lista', async () => {
+    it('opens the add modal and inserts the new user into the list', async () => {
         mockFrom(supabase.from, { users: { data: [], error: null } })
         render(<UserManagementPage />)
         await screen.findByText('No users found.')
@@ -373,7 +383,7 @@ describe('pagina /manageUsers', () => {
     })
 })
 
-describe('pagina /manageUsers/[id]', () => {
+describe('/manageUsers/[id] page', () => {
     const user = {
         id: 1,
         name: 'Ana Pop',
@@ -403,7 +413,7 @@ describe('pagina /manageUsers/[id]', () => {
         })
     }
 
-    it('afiseaza profilul, metricile si resursele recomandate', async () => {
+    it('shows the profile, the metrics and the recommended resources', async () => {
         vi.mocked(getWeakCategories).mockResolvedValue([
             {
                 categoryId: 2,
@@ -430,7 +440,7 @@ describe('pagina /manageUsers/[id]', () => {
         expect(screen.getByText('Node Guide')).toBeTruthy()
     })
 
-    it('filtreaza resursele dupa categoria din url', async () => {
+    it('filters the resources by the category in the url', async () => {
         vi.mocked(getWeakCategories).mockResolvedValue([
             {
                 categoryId: 2,
@@ -452,7 +462,7 @@ describe('pagina /manageUsers/[id]', () => {
         expect(screen.queryByText('Node Guide')).toBeNull()
     })
 
-    it('anunta cand utilizatorul nu exista', async () => {
+    it('announces when the user does not exist', async () => {
         vi.mocked(getWeakCategories).mockResolvedValue([])
         mockFrom(supabase.from, {
             users: { data: null, error: { message: 'not found' } },
@@ -477,7 +487,7 @@ describe('ResourceFilters', () => {
         { id: 2, name: 'Backend' },
     ]
 
-    it('schimba categoria si reseteaza pagina', () => {
+    it('changes the category and resets the page', () => {
         render(
             <ResourceFilters categories={categories} selectedCategory="all" currentPage={1} totalPages={3} />
         )
@@ -489,7 +499,7 @@ describe('ResourceFilters', () => {
         })
     })
 
-    it('navigheaza intre pagini', () => {
+    it('navigates between pages', () => {
         render(
             <ResourceFilters categories={categories} selectedCategory="all" currentPage={2} totalPages={3} />
         )
@@ -503,7 +513,7 @@ describe('ResourceFilters', () => {
         expect(nav.router.push).toHaveBeenCalledWith('/manageUsers/1?page=3', { scroll: false })
     })
 
-    it('dezactiveaza butoanele la capete', () => {
+    it('disables the buttons at the ends', () => {
         render(
             <ResourceFilters categories={categories} selectedCategory="1" currentPage={1} totalPages={1} />
         )

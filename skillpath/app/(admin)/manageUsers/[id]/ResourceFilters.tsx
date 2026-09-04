@@ -24,14 +24,14 @@ export default function ResourceFilters({
         const params = new URLSearchParams(searchParams.toString());
         params.set(key, value);
         if (key === "category") {
-            params.set("page", "1"); // resetăm la pagina 1 la schimbarea categoriei
+            params.set("page", "1"); // reset to page 1 when the category changes
         }
         router.push(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
     return (
         <div className="flex flex-wrap items-center gap-3">
-            {/* Select Categorie */}
+            {/* Category select */}
             <select
                 value={selectedCategory}
                 onChange={(e) => updateQueryParams("category", e.target.value)}
@@ -47,7 +47,7 @@ export default function ResourceFilters({
                 ))}
             </select>
 
-            {/* Paginare */}
+            {/* Pagination */}
             <div className="flex items-center gap-1.5 border border-white/10 bg-white/5 rounded-lg px-2 py-1 text-xs">
                 <button
                     disabled={currentPage <= 1}

@@ -9,7 +9,7 @@ export type AssessmentQuestion = {
     difficulty: string;
     options: { id: string; text: string }[];
 };
-// generam testul: luam intrebarile active din categorie (dificultati amestecate)
+// generate the test: take the active questions from the category (mixed difficulties)
 export async function generateAssessment(userId: number, categoryId: number) {
     const supabase = await createClient();
 
@@ -25,7 +25,7 @@ export async function generateAssessment(userId: number, categoryId: number) {
 
     if (qErr) return { success: false, message: qErr.message, data: null };
 
-    // amestecam si luam maxim N (nu esuam daca sunt mai putine)
+    // shuffle and take at most N (do not fail if there are fewer)
     const picked = [...(questions ?? [])].sort(() => Math.random() - 0.5).slice(0, MAX_QUESTIONS);
 
     if (picked.length === 0) {
@@ -43,7 +43,7 @@ export async function generateAssessment(userId: number, categoryId: number) {
         .select("id")
         .single();
     if (aErr || !created) {
-        return { success: false, message: aErr?.message ?? "Nu s-a putut crea testul.", data: null };
+        return { success: false, message: aErr?.message ?? "Could not create the test.", data: null };
     }
     const assessmentId = created.id;
 

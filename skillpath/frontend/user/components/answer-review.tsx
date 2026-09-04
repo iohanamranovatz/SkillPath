@@ -13,8 +13,8 @@ export type ReviewedQuestion = {
     correctAnswer: string | null;
 };
 
-// Lista de intrebari cu raspunsul ales de user si cel corect.
-// Folosita si pe pagina de rezultate, si pe ecranul de dupa submit.
+// List of questions with the answer chosen by the user and the correct one.
+// Used both on the results page and on the post-submit screen.
 export function AnswerReview({ questions }: { questions: ReviewedQuestion[] }) {
     return (
         <div className="space-y-6">

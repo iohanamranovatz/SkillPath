@@ -20,7 +20,7 @@ type CategoryRow = {
     exerciseCount: number;
 };
 
-// paginare -> numarul de categorii per pagina
+// pagination -> number of categories per page
 const ITEMS_PER_PAGE = 6;
 
 export function CategoriesManager() {
@@ -38,11 +38,11 @@ export function CategoriesManager() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
 
-    // confirmare ștergere
+    // delete confirmation
     const [toDelete, setToDelete] = useState<CategoryRow | null>(null);
     const [deleting, setDeleting] = useState(false);
 
-    // paginare
+    // pagination
     const [currentPage, setCurrentPage] = useState(1);
 
     async function load() {
@@ -96,7 +96,7 @@ export function CategoriesManager() {
             setModalOpen(false);
             await load();
         } else {
-            setError(res.message ?? "A apărut o eroare.");
+            setError(res.message ?? "Something went wrong.");
         }
     }
 
@@ -109,7 +109,7 @@ export function CategoriesManager() {
             setToDelete(null);
             await load();
         } else {
-            setError(res.message ?? "A apărut o eroare.");
+            setError(res.message ?? "Something went wrong.");
             setToDelete(null);
         }
     }
@@ -132,7 +132,7 @@ export function CategoriesManager() {
                 </button>
             </div>
 
-            {/* Eroare la nivel de pagina (ex. stergere esuata, cand nu e niciun modal deschis) */}
+            {/* Page-level error (e.g. failed delete, when no modal is open) */}
             {error && !modalOpen && (
                 <div className="flex items-start justify-between gap-3 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
                     <p className="text-sm text-red-400">{error}</p>
@@ -219,7 +219,7 @@ export function CategoriesManager() {
                         })}
                     </div>
 
-                    {/* 2. Paginarea este in afara grid-ului, pe toata latimea */}
+                    {/* 2. Pagination sits outside the grid, full width */}
                     <Pagination
                         currentPage={currentPage}
                         totalPages={totalPages}
@@ -306,7 +306,7 @@ export function CategoriesManager() {
                 </div>
             )}
 
-            {/* ===== Confirmare ștergere ===== */}
+            {/* ===== Delete confirmation ===== */}
             {toDelete && (
                 <div
                     className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -316,7 +316,7 @@ export function CategoriesManager() {
                          className="w-full max-w-sm bg-card rounded-2xl border border-white/10 shadow-2xl p-6 space-y-4">
                         <h2 className="text-lg font-semibold">Delete category?</h2>
                         <p className="text-sm text-muted-foreground">
-                            Ești sigur că vrei să ștergi <span className="font-medium text-foreground">{toDelete.name}</span>? Acțiunea nu poate fi anulată.
+                            Are you sure you want to delete <span className="font-medium text-foreground">{toDelete.name}</span>? This action cannot be undone.
                         </p>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setToDelete(null)}

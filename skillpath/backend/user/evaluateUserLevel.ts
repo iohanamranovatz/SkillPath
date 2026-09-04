@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/helper/supabase/server";
-const PASS_SCORE = 75; // scorul minim ca un test sa "conteze"
+const PASS_SCORE = 75; // minimum score for a test to "count"
 
 const rankOrder: Record<string, number> = {
     "Beginner": 1,
@@ -9,8 +9,8 @@ const rankOrder: Record<string, number> = {
     "Advanced": 3
 };
 
-// Reevalueaza nivelul userului pe baza testelor trecute (>= 75%) si a
-// numarului de categorii distincte acoperite. Consistenta pe latime, nu un varf.
+// Re-evaluates the user level based on passed tests (>= 75%) and the
+// number of distinct categories covered. Breadth and consistency, not one peak.
 export async function evaluateUserLevel(userId: number) {
     const supabase = await createClient();
 
@@ -22,14 +22,14 @@ export async function evaluateUserLevel(userId: number) {
 
     if (error || !data) return { success: false, message: error?.message, data: null };
 
-    // testele trecute (scor >= 75%) + categoriile lor distincte
+    // passed tests (score >= 75%) + their distinct categories
     let qualified = 0;
     const categories = new Set<number>();
 
     for (const a of data as any[]) {
         if ((a.score_total ?? 0) < PASS_SCORE) continue;
         qualified++;
-        // categoria testului = categoria intrebarilor lui (generate dintr-o categorie)
+        // the test category = the category of its questions (generated from one category)
         const catId = a.assessment_answers?.[0]?.questions?.category_id;
         if (catId != null) categories.add(catId);
     }
@@ -44,8 +44,8 @@ export async function evaluateUserLevel(userId: number) {
 
     const estimatedLevel = here?.estimated_level;
 
-    // nivelul calculat din tot istoricul (praguri ajustabile)
-    // trebuie trecute teste (>=75%) in mai multe categorii DISTINCTE
+    // level computed from the whole history (thresholds are tunable)
+    // tests (>=75%) must be passed in several DISTINCT categories
     let level = "Beginner";
     if (qualified >= 6 && distinctCats >= 6) level = "Advanced";
     else if (qualified >= 4 && distinctCats >= 4) level = "Intermediate";

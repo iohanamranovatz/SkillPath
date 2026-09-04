@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function UserTable({ users, onDelete, onRoleChange }: Props) {
-    // confirmari (dialoguri proprii, nu confirm() nativ)
+    // confirmations (custom dialogs, not the native confirm())
     const [pendingRole, setPendingRole] = useState<{ user: User; newRole: string } | null>(null);
     const [toDelete, setToDelete] = useState<User | null>(null);
     const [busy, setBusy] = useState(false);
@@ -37,13 +37,13 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
     const getLevelClass = (level: string) => {
         switch (level?.toLowerCase()) {
             case "advanced":
-            case "senior": // valoare veche, pastrata pentru randurile deja existente
+            case "senior": // legacy value, kept for rows that already exist
                 return "badge-diff-hard";
             case "intermediate":
-            case "mid": // valoare veche, pastrata pentru randurile deja existente
+            case "mid": // legacy value, kept for rows that already exist
                 return "badge-diff-medium";
             case "beginner":
-            case "junior": // valoare veche, pastrata pentru randurile deja existente
+            case "junior": // legacy value, kept for rows that already exist
                 return "badge-diff-easy";
             default: return "bg-muted text-muted-foreground";
         }
@@ -91,7 +91,7 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
                                 <select
                                     value={u.role || "user"}
                                     onChange={(e) => {
-                                        // select controlat -> valoarea revine singura daca se anuleaza
+                                        // controlled select -> the value reverts on its own if the change is cancelled
                                         setPendingRole({ user: u, newRole: e.target.value });
                                     }}
                                     className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-medium text-foreground outline-none focus:border-blue-500 cursor-pointer"
@@ -151,8 +151,8 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
             busy={busy}
             message={
                 <>
-                    Sigur vrei să schimbi rolul lui{" "}
-                    <span className="font-medium text-foreground">{pendingRole?.user.name}</span> în{" "}
+                    Are you sure you want to change the role of{" "}
+                    <span className="font-medium text-foreground">{pendingRole?.user.name}</span> to{" "}
                     <span className="font-medium text-foreground">{pendingRole?.newRole}</span>?
                 </>
             }
@@ -168,8 +168,8 @@ export default function UserTable({ users, onDelete, onRoleChange }: Props) {
             busy={busy}
             message={
                 <>
-                    Sigur vrei să ștergi contul lui{" "}
-                    <span className="font-medium text-foreground">{toDelete?.name}</span>? Acțiunea nu poate fi anulată.
+                    Are you sure you want to delete the account of{" "}
+                    <span className="font-medium text-foreground">{toDelete?.name}</span>? This action cannot be undone.
                 </>
             }
             onConfirm={confirmDelete}

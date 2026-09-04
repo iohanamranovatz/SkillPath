@@ -9,22 +9,22 @@ export function SignUpForm() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     
-    const [eroare, setEroare] = useState('');
+    const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setEroare('');
+        setError('');
         setSuccessMessage('');
         
         if (password != confirmPassword) {
-            setEroare("Passwords do not match!");
+            setError("Passwords do not match!");
             return;
         }
         
         if (password.length < 6) {
-            setEroare("Password must be at least 6 characters long!");
+            setError("Password must be at least 6 characters long!");
             return;
         }
         
@@ -34,12 +34,12 @@ export function SignUpForm() {
             const res = await signUpUser(name, email, password);
 
             if (!res.success) {
-                setEroare(res.message);
+                setError(res.message);
             } else {
                 setSuccessMessage(res.message);
             }
-        } catch (error) {
-            setEroare((error as Error).message || "An error occurred during sign up.");
+        } catch (err) {
+            setError((err as Error).message || "An error occurred during sign up.");
         } finally {
             setLoading(false);
         }
@@ -51,7 +51,7 @@ export function SignUpForm() {
 
             <div className="w-full max-w-md bg-[#1C1F28] border border-gray-800 rounded-2xl p-8 shadow-2xl">
 
-                {/* Logo "Codewell" reprodus din design */}
+                {/* Brand logo */}
                 <div className="flex items-center justify-center gap-3 mb-8">
                     <div className="bg-[#6B72E1] p-2 rounded-xl flex items-center justify-center w-10 h-10">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -128,21 +128,21 @@ export function SignUpForm() {
                         />
                     </div>
 
-                    {/* Mesaj de eroare */}
-                    {eroare && (
+                    {/* Error message */}
+                    {error && (
                         <p className="text-[#FF5C5C] text-sm text-center font-medium bg-[#FF5C5C]/10 py-2 rounded-lg border border-[#FF5C5C]/20">
-                            {eroare}
+                            {error}
                         </p>
                     )}
 
-                    {/* Mesaj de succes pentru confirmare email */}
+                    {/* Success message for email confirmation */}
                     {successMessage && (
                         <p className="text-[#5CFF8D] text-sm text-center font-medium bg-[#5CFF8D]/10 py-3 px-4 rounded-lg border border-[#5CFF8D]/20">
                             {successMessage}
                         </p>
                     )}
 
-                    {/* Buton de Submit (culoarea mov din poza ta) */}
+                    {/* Submit button */}
                     <button
                         type="submit"
                         disabled={loading}
