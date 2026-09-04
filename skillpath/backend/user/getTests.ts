@@ -1,11 +1,12 @@
 "use server";
 
-import {supabase} from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {
     INITIAL_ASSESSMENT_QUESTION_COUNT
 } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
 export async function getTests(userId:number){
+    const supabase = await createClient();
 
     const {data, error} = await supabase.from("assessments")
         .select('id,status,score_total,started_at,completed_at' +

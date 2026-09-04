@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { redirect } from 'next/navigation'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { mockFrom } from '../helpers/supabaseMock'
 
 import AdminLayout from '@/app/(admin)/layout'
@@ -40,11 +40,23 @@ vi.mock('next/navigation', () => ({
     notFound: vi.fn(),
 }))
 
-vi.mock('@/helper/SupabaseClient', () => {
-    const client = { from: vi.fn(), auth: { getUser: vi.fn() } }
-    return { default: client, supabase: client }
-})
+// acelasi client stub pentru ambele module (server + browser), ca sa poata fi
+// controlat dintr-un singur loc in teste
+const stub = vi.hoisted(() => ({
+    client: { from: vi.fn(), auth: { getUser: vi.fn() } },
+}))
 
+vi.mock('@/helper/supabase/server', () => ({
+    default: stub.client,
+    supabase: stub.client,
+    createClient: () => stub.client,
+}))
+vi.mock('@/helper/supabase/client', () => ({
+    default: () => stub.client,
+    createClient: () => stub.client,
+}))
+
+const supabase = createClient() as any
 vi.mock('@/backend/admin/actions/questions', () => ({
     getQuestions: vi.fn(),
     deleteQuestion: vi.fn(),

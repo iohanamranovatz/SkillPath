@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getDashboardData } from '@/backend/user/getDashboardData'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { mockFrom } from '../helpers/supabaseMock'
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = { from: vi.fn() }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 // 15 ianuarie 2026 si 10 februarie 2026, in ora locala
 const JAN = new Date(2026, 0, 15, 12).toISOString()
 const FEB = new Date(2026, 1, 10, 12).toISOString()

@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import type {
     DashboardData,
     DashboardStat,
@@ -13,6 +13,8 @@ const SHORT_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const FULL_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export async function getAdminDashboardData(): Promise<DashboardData> {
+    const supabase = await createClient();
+
     // Rulam interogarile in paralel
     const [usersRes, assessmentsRes, questionsRes, categoriesRes, answersRes] = await Promise.all([
         supabase.from("users").select("id, name, email, role"),

@@ -3,14 +3,16 @@ import {
     getAssessmentAnalytics,
     getLatestAssessmentAnalytics,
 } from '@/backend/user/results/getAssessmentAnalytics'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { mockFrom } from '../helpers/supabaseMock'
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = { from: vi.fn(), auth: { getUser: vi.fn() } }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 const ANSWERS = [
     // React: 1 din 3 corecte -> 33% (zona slaba)
     { is_correct: true, questions: { tag_id: 1, tags: { id: 1, name: 'React' } } },

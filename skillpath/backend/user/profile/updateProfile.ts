@@ -1,10 +1,12 @@
 "use server"
 
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import { revalidatePath } from "next/cache";
 
 export async function updateProfile(formData: FormData)
 {
+    const supabase = await createClient();
+
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

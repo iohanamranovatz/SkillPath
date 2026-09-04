@@ -2,19 +2,22 @@ import {beforeEach, describe, expect, it, vi} from "vitest";
 import {createQuestion, deleteQuestion, getQuestions, updateQuestion} from "@/backend/admin/actions/questions";
 import {revalidatePath} from "next/cache";
 
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 
 // mock client
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const mockSupabase = {
         from: vi.fn(),
     }
     return {
         default: mockSupabase,
         supabase: mockSupabase,
+        createClient: () => mockSupabase,
     }
 })
 
+
+const supabase = createClient() as any
 vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }))

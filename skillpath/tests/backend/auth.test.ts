@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { signUpUser } from '@/backend/auth/signUpUser'
 import signOut from '@/backend/auth/logout'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = {
         auth: {
             signUp: vi.fn(),
@@ -13,9 +13,11 @@ vi.mock('@/helper/SupabaseClient', () => {
         },
         from: vi.fn(),
     }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }))

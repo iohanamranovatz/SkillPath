@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import { evaluateUserLevel } from "@/backend/user/evaluateUserLevel";
 import { isInitialAssessment } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 
@@ -8,6 +8,8 @@ export async function submitAssessment(
     assessmentId: number,
     answers: { questionId: number; optionId: string }[]
 ) {
+    const supabase = await createClient();
+
     if (!assessmentId || answers.length === 0) {
         return {success: false, message: "Test invalid.", data: null};
     }

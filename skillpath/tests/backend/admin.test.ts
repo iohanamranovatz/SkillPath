@@ -2,15 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AddUser } from '@/backend/admin/addUser'
 import { updateUserRole } from '@/backend/admin/actions/roleChange'
 import { getWeakCategories } from '@/backend/admin/getWeakCategories'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { mockFrom } from '../helpers/supabaseMock'
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = { from: vi.fn(), auth: { getUser: vi.fn() } }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 vi.mock('next/cache', () => ({
     revalidatePath: vi.fn(),
 }))

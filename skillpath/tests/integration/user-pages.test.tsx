@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { redirect } from 'next/navigation'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { mockFrom } from '../helpers/supabaseMock'
 
 import Home from '@/app/page'
@@ -35,11 +35,13 @@ async function expectRedirect(run: () => Promise<unknown>, to: string) {
     expect(redirect).toHaveBeenCalledWith(to)
 }
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = { from: vi.fn(), auth: { getUser: vi.fn() } }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 vi.mock('@/backend/categories', () => ({ fetchAllResourcesWrapper: vi.fn(async () => []) }))
 vi.mock('@/backend/user/getTests', () => ({ getTests: vi.fn() }))
 vi.mock('@/backend/user/getDashboardData', () => ({ getDashboardData: vi.fn() }))

@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import {supabase} from '@/helper/SupabaseClient';
-
+import { createClient } from "@/helper/supabase/server";
 import { UserDashboardUI } from '@/frontend/user/dashboard/UserDashboardUI';
 import {fetchAllResourcesWrapper} from "@/backend/categories";
 import {getCompletedTests, getTests} from '@/backend/user/getTests';
@@ -12,6 +11,7 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function DashboardPage(){
+    const supabase = await createClient();
 
     const { data } = await supabase.auth.getUser();
     //verificam daca avem un user logat a.i nu poate fi accesata pagina daca

@@ -1,12 +1,14 @@
 "use server";
 
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 
 export async function saveSingleAnswer(
     assessmentId: number,
     questionId: number,
     optionId: string
 ) {
+    const supabase = await createClient();
+
     const { error } = await supabase
         .from("assessment_answers")
         .update({ selected_option_id: optionId })

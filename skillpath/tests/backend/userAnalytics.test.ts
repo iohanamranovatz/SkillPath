@@ -3,15 +3,17 @@ import {
     getAssessmentAnalytics,
     toggleResourceCompletion,
 } from '@/backend/user/actions/getAssessmentAnalytics'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 import { redirect } from 'next/navigation'
 import { mockFrom } from '../helpers/supabaseMock'
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = { from: vi.fn(), auth: { getUser: vi.fn() } }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 const ANSWERS = [
     // Frontend: 2 din 3 -> 67%
     { is_correct: true, questions: { category_id: 1, categories: { id: 1, name: 'Frontend' } } },

@@ -1,10 +1,12 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { supabase } from "../../helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 
 export async function signUpUser(name: string, email: string, password: string)
 {
+    const supabase = await createClient();
+
     const { data, error } = await supabase.auth.signUp({
         email: email,
         password: password,

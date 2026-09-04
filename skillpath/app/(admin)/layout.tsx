@@ -1,12 +1,13 @@
 import AdminSidebar from "@/frontend/admin/components/Sidebar";
 import AdminHeader from "@/frontend/admin/components/Header";
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {redirect} from "next/navigation";
 
 // Layout comun pentru toate rutele din grupul (admin).
 // Randeaza chrome-ul (sidebar + header + footer) o singura data in jurul paginilor.
 // Verificarea sesiunii se face server-side in fiecare pagina (supabase.auth.getUser()).
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+    const supabase = await createClient();
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 

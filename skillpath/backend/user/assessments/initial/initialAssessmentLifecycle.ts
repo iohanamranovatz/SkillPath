@@ -1,4 +1,4 @@
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 
 export const INITIAL_ASSESSMENT_QUESTION_COUNT = 30;
 
@@ -23,6 +23,8 @@ function getCountForAssessment(
 }
 
 export async function isInitialAssessment(assessmentId: number) {
+    const supabase = await createClient();
+
     if (!assessmentId) {
         throw new Error("Assessment ID is required.");
     }
@@ -42,6 +44,8 @@ export async function isInitialAssessment(assessmentId: number) {
 export async function getInitialAssessmentOnboardingState(
     userId: number
 ): Promise<InitialAssessmentOnboardingState> {
+    const supabase = await createClient();
+
     if (!userId) {
         throw new Error("User ID is required.");
     }

@@ -1,6 +1,6 @@
 "use server";
 
-import { supabase } from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {getCompletedTests} from "@/backend/user/getTests";
 
 export interface SkillPoint {
@@ -69,6 +69,8 @@ function mostFrequent<T extends string | number>(items: T[]): T | null {
 }
 
 export async function getDashboardData(userId: number): Promise<DashboardData> {
+    const supabase = await createClient();
+
     const empty: DashboardData = {
         skills: [],
         scoreHistory: [],

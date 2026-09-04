@@ -3,7 +3,7 @@ import { generateAssessment } from '@/backend/user/generateAssessment'
 import { saveSingleAnswer } from '@/backend/user/saveProgressAssessment'
 import { submitAssessment } from '@/backend/user/submitAssessment'
 import { getTests } from '@/backend/user/getTests'
-import { supabase } from '@/helper/SupabaseClient'
+import { createClient } from '@/helper/supabase/server'
 
 /**
  * Test de integrare pentru fluxul complet al unui test:
@@ -14,11 +14,13 @@ import { supabase } from '@/helper/SupabaseClient'
  * granita mock-uita este baza de date, inlocuita cu un store in memorie.
  */
 
-vi.mock('@/helper/SupabaseClient', () => {
+vi.mock('@/helper/supabase/server', () => {
     const client = { from: vi.fn() }
-    return { default: client, supabase: client }
+    return { default: client, supabase: client, createClient: () => client }
 })
 
+
+const supabase = createClient() as any
 type Row = Record<string, any>
 
 // --- baza de date in memorie -------------------------------------------------

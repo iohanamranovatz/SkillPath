@@ -1,9 +1,11 @@
 "use server"
 
-import supabase from "@/helper/SupabaseClient";
+import { createClient } from "@/helper/supabase/server";
 import {revalidatePath} from "next/cache";
 
 export async function AddUser(formData: FormData) {
+    const supabase = await createClient();
+
     const email = formData.get("email") as string;
     const name = formData.get("name") as string;
     const role = formData.get("role") as string;
