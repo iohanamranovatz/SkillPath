@@ -1,20 +1,14 @@
-import {ResetPasswordForm} from "@/frontend/auth/ResetPasswordForm";
-import { createClient } from "@/helper/supabase/server";
-import {redirect} from "next/navigation";
+import {Suspense} from "react";
+import ResetPasswordForm from "@/frontend/auth/ResetPasswordForm";
 
-export default async function ResetPasswordPage() {
-
-    const supabase = await createClient();
-    const { data: { user }, error: error } = await supabase.auth.getUser();
-
-    // If the user is already logged in normally, redirect them to the dashboard
-    if (user || error) {
-        redirect("/");
-    }
-
+export default function ResetPasswordPage() {
     return (
-        <main>
-            <ResetPasswordForm/>
-        </main>
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-[#101218]">
+                <div className="w-8 h-8 border-4 border-[#6B72E1] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        }>
+            <ResetPasswordForm />
+        </Suspense>
     );
 }
