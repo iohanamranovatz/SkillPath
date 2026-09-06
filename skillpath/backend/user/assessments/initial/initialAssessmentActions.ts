@@ -7,6 +7,7 @@ import {
 } from "@/backend/user/assessments/initial/initialAssessmentLifecycle";
 import { createClient } from "@/helper/supabase/server";
 const REQUIRED_ANSWERS_PER_TIER = 6;
+const QUESTIONS_PER_TIER = 10;
 
 type AssessmentAnswerPayload = {
     questionId: number;
@@ -18,7 +19,7 @@ function inferLevelFromInitialScores(scoresByTier: number[]) {
 
     if ((scoresByTier[0] ?? 0) > REQUIRED_ANSWERS_PER_TIER) {
         level = "Intermediate";
-        if ((scoresByTier[1] ?? 0) > REQUIRED_ANSWERS_PER_TIER ) {
+        if ((scoresByTier[1] ?? 0) > REQUIRED_ANSWERS_PER_TIER  && scoresByTier[0] === QUESTIONS_PER_TIER) {
             level = "Advanced";
         }
     }

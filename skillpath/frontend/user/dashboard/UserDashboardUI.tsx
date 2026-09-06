@@ -24,6 +24,17 @@ function DashboardView({initialData, tests, questions, objectives, dashboardData
     questions: number, objectives: Objective[], dashboardData: DashboardData, onStart?: [() => void, () => void], onViewChange?: (view: View) => void}) {
 
     const regularTests = tests.filter((test: any) => !test.isInitial);
+    const testsLastWeek = tests.filter((test: any) => {
+        if (test.status == "completed") {
+            console.log(1);
+            const testDate = new Date(test.completedAt);
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            return testDate >= oneWeekAgo;
+        }
+        return false;
+    }
+    );
 
     return (
         <>
@@ -34,6 +45,8 @@ function DashboardView({initialData, tests, questions, objectives, dashboardData
             <StatCards testsCompleted={tests.filter(test => test.status == "completed").length}
                        problemsSolved={questions}
                        objectives={objectives}
+                       lastWeek={{tests: testsLastWeek.length, problems: testsLastWeek.reduce((acc, test) =>
+                               acc + Math.round((test.score ?? 0)/100 * test.questions), 0)}}
             />
             <ContinueCard test={regularTests.find(t => t.status == "in_progress")}/>
 

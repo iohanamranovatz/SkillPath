@@ -85,7 +85,7 @@ export default function ResetPasswordForm() {
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-gray-400">
-                            New Password
+                            Parola Nouă
                         </label>
                         <input
                             type="password"
@@ -100,7 +100,7 @@ export default function ResetPasswordForm() {
 
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-gray-400">
-                            Confirm New Password
+                            Confirmă Parola
                         </label>
                         <input
                             type="password"

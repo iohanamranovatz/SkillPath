@@ -10,13 +10,16 @@ interface StatCardsProps {
     testsCompleted?: number;
     problemsSolved?: number;
     objectives?: Objective[];
+    lastWeek?: {tests: number, problems: number}
 }
 
 export function StatCards({
                               testsCompleted,
                               problemsSolved,
-                              objectives = []
+                              objectives = [],
+                              lastWeek = { tests: 0, problems: 0 }
                           }: StatCardsProps) {
+
 
     return (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
@@ -30,7 +33,7 @@ export function StatCards({
                     </p>
                     <div className="flex items-center gap-1 text-xs font-medium text-emerald-500">
                         <TrendingUp className="size-3.5" />
-                        <span>+4 this week</span>
+                        <span>+{lastWeek.tests} this week</span>
                     </div>
                 </div>
             </div>
@@ -44,7 +47,7 @@ export function StatCards({
                     </p>
                     <div className="flex items-center gap-1 text-xs font-medium text-emerald-500">
                         <TrendingUp className="size-3.5" />
-                        <span>+10 this week</span>
+                        <span>+{lastWeek.problems} this week</span>
                     </div>
                 </div>
             </div>
