@@ -10,15 +10,16 @@ interface StatCardsProps {
     testsCompleted?: number;
     problemsSolved?: number;
     objectives?: Objective[];
-    lastWeek: {tests: number, problems: number}
+    lastWeek?: {tests: number, problems: number}
 }
 
 export function StatCards({
                               testsCompleted,
                               problemsSolved,
                               objectives = [],
-                              lastWeek,
+                              lastWeek = { tests: 0, problems: 0 }
                           }: StatCardsProps) {
+
 
     return (
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
