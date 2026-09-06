@@ -45,7 +45,12 @@ export function AssessmentViewer({   score,
                         </div>
                         <div className="flex items-center gap-1.5">
                             <CalendarDays className="size-4 opacity-70" />
-                            <span>Started: {details.dateStarted}</span>
+                            <span>
+                              Started: {new Date(details.dateStarted).toLocaleString("ro-RO", {
+                                                            dateStyle: "short",
+                                                            timeStyle: "short",
+                                                        })}
+                            </span>
                         </div>
                     </div>
                 </div>

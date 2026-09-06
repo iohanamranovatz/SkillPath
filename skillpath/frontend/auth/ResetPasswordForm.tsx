@@ -20,7 +20,7 @@ export default function ResetPasswordForm() {
         setError('');
 
         if (password !== confirmPassword) {
-            setError('Parolele nu coincid.');
+            setError('The passwords do not match.');
             return;
         }
 
@@ -50,13 +50,13 @@ export default function ResetPasswordForm() {
                         </div>
                         <h1 className="text-2xl font-bold text-white tracking-wide">SkillPath</h1>
                     </div>
-                    <h2 className="text-xl font-semibold text-white">Parola a fost actualizată!</h2>
-                    <p className="text-sm text-gray-400">Te poți autentifica acum folosind noile tale credențiale.</p>
+                    <h2 className="text-xl font-semibold text-white">The password was updated!</h2>
+                    <p className="text-sm text-gray-400">You can login using your new credentials.</p>
                     <Link
                         href="/login"
                         className="w-full bg-[#6B72E1] hover:bg-[#585ed6] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg shadow-[#6B72E1]/20 inline-block text-center"
                     >
-                        Mergi la Autentificare
+                        Go to Login
                     </Link>
                 </div>
             </div>
@@ -78,14 +78,14 @@ export default function ResetPasswordForm() {
                 </div>
 
                 <div className="mb-8 text-center">
-                    <h2 className="text-xl font-semibold text-white mb-2">Setează noua parolă</h2>
-                    <p className="text-sm text-gray-400">Introdu o parolă nouă și sigură pentru contul tău.</p>
+                    <h2 className="text-xl font-semibold text-white mb-2">Set your new password</h2>
+                    <p className="text-sm text-gray-400">Enter a new, secure password for your account.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-gray-400">
-                            Parola Nouă
+                            New Password
                         </label>
                         <input
                             type="password"
@@ -100,7 +100,7 @@ export default function ResetPasswordForm() {
 
                     <div className="space-y-1.5">
                         <label className="block text-sm font-medium text-gray-400">
-                            Confirmă Parola
+                            Confirm New Password
                         </label>
                         <input
                             type="password"
@@ -124,7 +124,7 @@ export default function ResetPasswordForm() {
                         disabled={loading}
                         className="w-full bg-[#6B72E1] hover:bg-[#585ed6] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 shadow-lg shadow-[#6B72E1]/20 mt-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        <span>{loading ? 'Se actualizează...' : 'Actualizează Parola'}</span>
+                        <span>{loading ? 'Updating...' : 'Update password'}</span>
                         {!loading && (
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
