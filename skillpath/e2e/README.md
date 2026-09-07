@@ -36,31 +36,27 @@ Alte comenzi utile:
 Serverul de dev porneste automat. Daca il ai deja pornit pe `localhost:3000`,
 Playwright il refoloseste.
 
-## ⚠️ Sesiunea este comuna tuturor vizitatorilor
+## Nota istorica: sesiunea partajata (rezolvat)
 
-Testele de protectie a rutelor au scos la iveala o problema reala de securitate
-in aplicatie. `helper/SupabaseClient.js` creeaza **un singur client** la nivel de
-modul, iar `loginUser` este o server action — deci `signInWithPassword` ruleaza
-in procesul Node si salveaza sesiunea in memoria acelui client, **comuna tuturor
-cererilor**. Nu exista cookie-uri de sesiune.
+Testele de protectie a rutelor au scos initial la iveala o problema reala de
+securitate: `helper/SupabaseClient.js` crea **un singur client** la nivel de
+modul, iar `loginUser` este o server action — deci `signInWithPassword` rula in
+procesul Node si salva sesiunea in memoria acelui client, comuna tuturor
+cererilor. Oricine se autentifica, oricine deschidea `/profile` vedea profilul
+lui.
 
-Reproducere:
+**Problema este rezolvata.** Fisierul nu mai exista. Aplicatia foloseste acum
+`@supabase/ssr` cu un client construit **per request** din cookie-urile cererii
+(`helper/supabase/server.ts`), iar `proxy.ts` reimprospateaza token-ul la
+fiecare navigare.
 
-```bash
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000/profile   # 307 -> /
-# ...oricine se logheaza, in orice browser...
-curl -s http://localhost:3000/profile                                     # 200 + profilul lui
-```
+Ce a ramas din perioada aceea, si de ce:
 
-Consecinte in teste: `storageState` (sesiuni salvate per browser) nu are efect,
-pentru ca serverul nu se uita la cookie-uri. De aceea fiecare suita se logheaza
-explicit prin interfata (`e2e/session.ts`), rularea este secventiala
-(`workers: 1`), iar suita `public` ruleaza prima si inchide orice sesiune activa
-inainte de a verifica protectia rutelor.
-
-Dupa ce sesiunile vor fi mutate pe cookie-uri (`@supabase/ssr`, client creat
-per-request), `e2e/session.ts` poate fi inlocuit cu `storageState` si `workers: 1`
-poate disparea.
+- **`e2e/session.ts`** — fiecare suita se autentifica prin interfata. Acum ca
+  sesiunea sta in cookie-uri, ar putea fi inlocuit cu `storageState`. Nu am
+  facut schimbarea in *feature freeze*.
+- **`workers: 1`** — ramane necesar din alt motiv: suitele scriu in aceeasi baza
+  de date si s-ar incurca reciproc daca ar rula in paralel.
 
 ## Conturi de test
 
